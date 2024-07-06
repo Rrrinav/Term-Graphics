@@ -8,6 +8,7 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "./l_gebra.hpp"  // Assuming this is your external library header
 
+
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'_', 'a'}};
 
@@ -63,13 +64,13 @@ public:
     void draw();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
     void empty();
-    void clear_screen();
-    void reset_screen();
+    static void clear_screen();
+    static void reset_screen();
     void fill_buffer(char c);
-    inline void sleep(int milliseconds);
-    void move_cursor(size_t x, size_t y);
-    void hide_cursor();
-    void show_cursor();
+    static inline void sleep(int milliseconds);
+    static void move_cursor(size_t x, size_t y);
+    static void hide_cursor();
+    static void show_cursor();
 
 private:
     void draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch);
@@ -155,8 +156,8 @@ bool Renderer::draw_point(utl::Vec<int, 2> point, char c)
         return false;
     }
 
-    size_t x = point.x();
-    size_t y = point.y();
+    int x = point.x();
+    int y = point.y();
 
     // Ensure y is even for rendering
     y = (y % 2 == 0) ? y : y - 1;
@@ -792,7 +793,7 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
-// TODO: Frame rate control, line clipping, Polygon, Texture Mapping, double buffering
+// TODO: Frame rate control, line clipping, Texture Mapping, double buffering
 //       Camera system, text rendering, merging buffers
 
 #endif  // RENDERER_IMPLEMENTATION
