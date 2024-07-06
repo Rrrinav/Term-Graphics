@@ -2,6 +2,7 @@
 // #include <cstdint>
 // #include <map>
 // Hex codes
+#define TRANSPARENT 0x00000000
 #define BLACK 0x000000
 #define WHITE 0xFFFFFF
 #define RED 0xFF0000

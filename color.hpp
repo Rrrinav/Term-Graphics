@@ -109,6 +109,7 @@ class Color
     uint8_t _r;
     uint8_t _g;
     uint8_t _b;
+    uint8_t _a = 255;
 
 public:
     // Constructors 1. Default 2. RGB 3. Hex 4. ansii terminal code
@@ -116,6 +117,13 @@ public:
     Color(uint8_t r, uint8_t g, uint8_t b) : _r(r), _g(g), _b(b) {}
     Color(const uint32_t &hex_val)
     {
+        if (hex_val == TRANSPARENT)
+        {
+            _r = 0;
+            _g = 0;
+            _b = 0;
+            _a = 0;
+        }
         _r = (hex_val >> 16) & 0xFF;
         _g = (hex_val >> 8) & 0xFF;
         _b = (hex_val >> 0) & 0xFF;
@@ -125,8 +133,14 @@ public:
         _r = (hex_val >> 16) & 0xFF;
         _g = (hex_val >> 8) & 0xFF;
         _b = (hex_val >> 0) & 0xFF;
+        _a = 255;
         return *this;
     }
+    bool const operator!=(const uint32_t &hex_val)
+    {
+        return _r != ((hex_val >> 16) & 0xFF) || _g != ((hex_val >> 8) & 0xFF) || _b != ((hex_val >> 0) & 0xFF);
+    }
+    bool const operator!=(const Color &c) { return _r != c.r() || _g != c.g() || _b != c.b() || _a != c.a(); }
     Color(const Color &c) : _r(c.r()), _g(c.g()), _b(c.b()) {}
     bool operator==(const Color &c) const { return _r == c.r() && _g == c.g() && _b == c.b(); }
     // Accessors
@@ -138,7 +152,8 @@ public:
 
     uint8_t &b() { return _b; }
     const uint8_t &b() const { return _b; }
-
+    uint8_t &a() { return _a; }
+    const uint8_t &a() const { return _a; }
     int to_ansii() const
     {
         if (_r == 0 && _g == 0 && _b == 0) return 16;

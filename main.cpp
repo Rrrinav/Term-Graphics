@@ -12,7 +12,7 @@ int main()
     utl::Vec<int, 2> b = {20, 30};
     utl::Vec<int, 2> c = {30, 10};
 
-    Triangle triangle(a, b, c, 'x');
+    Triangle triangle(a, b, c, 'x', RED);
     auto buffer = Renderer::create_buffer(60, 60);
     Renderer renderer(buffer);
     float angle = 0.0f;
@@ -20,7 +20,7 @@ int main()
 
     Renderer::hide_cursor();
     int i = 0, j = 0, k = 0;
-    renderer.set_bg_color(Color(GREEN));
+    renderer.set_bg_color(GRAY_5);
     while (true)
     {
         renderer.empty();

@@ -10,6 +10,8 @@
 
 // PERF: We need to make this faster, super faster
 
+#define RENDERER_IMPLEMENTATION
+
 #define L_GEBRA_IMPLEMENTATION
 #include "./l_gebra.hpp"  // Assuming this is your external library header
 #include "color.hpp"
@@ -17,36 +19,95 @@
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'_', 'a'}};
 
-// Buffer class
-struct Buffer
+class Pixel
 {
-    char *data;
+public:
+    char _ch;
+    Color _color;
+
+    Pixel() = default;
+    Pixel(char ch, Color color) : _ch(ch), _color(color) {}
+    ~Pixel() = default;
+    void set_color(Color color) { _color = color; }
+    void set_char(char ch) { _ch = ch; }
+    void set(char ch, Color color)
+    {
+        _ch = ch;
+        _color = color;
+    }
+};
+
+// Buffer class
+class Buffer
+{
+public:
+    std::unique_ptr<Pixel[]> data;
     size_t width;
     size_t height;
 
-    Buffer();
-    Buffer(size_t width, size_t height);
-    Buffer(size_t width, size_t height, char fill);
-    Buffer(const Buffer &other);
-    Buffer &operator=(const Buffer &other);
-    ~Buffer();
+    Buffer() : data(nullptr), width(0), height(0) {}
 
-    void set(utl::Vec<int, 2> point, char ch);
-    char &operator()(size_t x, size_t y);
-    const char &operator()(size_t x, size_t y) const;
-};
+    Buffer(size_t width, size_t height) : data(std::make_unique<Pixel[]>(width * height)), width(width), height(height)
+    {
+        for (size_t i = 0; i < width * height; ++i)
+        {
+            data[i] = Pixel(' ', Color());
+        }
+    }
 
-class Pixel
-{
-    utl::Vec<int, 2> _point;
-    Color _color;
+    Buffer(size_t width, size_t height, char fill, Color color)
+        : data(std::make_unique<Pixel[]>(width * height)), width(width), height(height)
+    {
+        for (size_t i = 0; i < width * height; ++i)
+        {
+            data[i] = Pixel(fill, color);
+        }
+    }
+
+    Buffer(const Buffer &other) : data(std::make_unique<Pixel[]>(other.width * other.height)), width(other.width), height(other.height)
+    {
+        std::copy(other.data.get(), other.data.get() + width * height, data.get());
+    }
+
+    Buffer &operator=(const Buffer &other)
+    {
+        if (this != &other)
+        {
+            width = other.width;
+            height = other.height;
+            data = std::make_unique<Pixel[]>(width * height);
+            std::copy(other.data.get(), other.data.get() + width * height, data.get());
+        }
+        return *this;
+    }
+
+    void set(utl::Vec<int, 2> point, char ch, Color color)
+    {
+        size_t x = point.x();
+        size_t y = point.y();
+        if (x >= 0 && x < width && y >= 0 && y < height)
+        {
+            data[y * width + x] = Pixel(ch, color);
+        }
+    }
+
+    Pixel &operator()(size_t x, size_t y) { return data[y * width + x]; }
+    const Pixel &operator()(size_t x, size_t y) const { return data[y * width + x]; }
+    void fill(char ch, Color color)
+    {
+        for (size_t i = 0; i < width * height; ++i)
+        {
+            data[i] = Pixel(ch, color);
+        }
+    }
 };
 
 // Renderer class
 class Renderer
 {
     std::shared_ptr<Buffer> _buffer;
-    Color _bg_color;
+    Color _bg_color = Color(TRANSPARENT);
+    Pixel *_pixels;
 
 public:
     Renderer();
@@ -57,28 +118,28 @@ public:
     size_t get_width() const;
     size_t get_height() const;
 
-    bool draw_point(utl::Vec<int, 2> point, char c);
-    bool draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c);
-    bool draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c);
-    bool draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c);
-    bool draw_circle(utl::Vec<int, 2> center, int radius, char ch);
-    bool draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch);
-    bool draw_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, char char2 = '@');
-    bool draw_fill_rectangle(utl::Vec<int, 2> start, int width, int height, char ch);
-    bool draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch);
-    bool draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch);
-    bool draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch);
-    bool draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch);
-    bool draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch);
-    bool draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch);
-    bool draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f);
+    bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
+    bool draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
+    bool draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
+    bool draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
+    bool draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
+    bool draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
+    bool draw_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, char char2 = '@', Color color = WHITE);
+    bool draw_fill_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, Color color = WHITE);
+    bool draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+    bool draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+    bool draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+    bool draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+    bool draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+    bool draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color = WHITE);
+    bool draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f, Color color = WHITE);
 
     void draw();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
     void empty();
     static void clear_screen();
     static void reset_screen();
-    void fill_buffer(char c);
+    void fill_buffer(char c, Color color);
     void set_bg_color(Color color);
     static inline void sleep(int milliseconds);
     static void move_cursor(size_t x, size_t y);
@@ -86,7 +147,7 @@ public:
     static void show_cursor();
 
 private:
-    void draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch);
+    void draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch, Color color = WHITE);
 };
 
 #ifdef RENDERER_IMPLEMENTATION
@@ -95,62 +156,8 @@ private:
 #include <iostream>
 #include <thread>
 
-// Buffer definitions
-Buffer::Buffer() : data(nullptr), width(0), height(0) {}
-
-Buffer::Buffer(size_t width, size_t height) : data(new char[width * height]), width(width), height(height)
-{
-    std::memset(data, ' ', width * height);  // Initialize buffer with spaces
-}
-
-Buffer::Buffer(size_t width, size_t height, char fill) : data(new char[width * height]), width(width), height(height)
-{
-    std::memset(data, fill, width * height);  // Initialize buffer with specified fill character
-}
-
-Buffer::Buffer(const Buffer &other) : data(new char[other.width * other.height]), width(other.width), height(other.height)
-{
-    std::memcpy(data, other.data, width * height);
-}
-
-Buffer &Buffer::operator=(const Buffer &other)
-{
-    if (this != &other)
-    {
-        delete[] data;
-        width = other.width;
-        height = other.height;
-        data = new char[width * height];
-        std::memcpy(data, other.data, width * height);
-    }
-    return *this;
-}
-
-void Buffer::set(utl::Vec<int, 2> point, char ch)
-{
-    size_t x = point.x();
-    size_t y = point.y();
-    if (x >= 0 && x < width && y >= 0 && y < height)
-    {
-        if (data[y * width + x] != ' ')
-        {
-            data[y * width + x] = '.';
-        }
-        else
-        {
-            data[y * width + x] = ch;
-        }
-    }
-}
-
-Buffer::~Buffer() { delete[] data; }
-
-char &Buffer::operator()(size_t x, size_t y) { return data[y * width + x]; }
-
-const char &Buffer::operator()(size_t x, size_t y) const { return data[y * width + x]; }
-
 // Renderer definitions
-Renderer::Renderer() : _buffer(std::make_shared<Buffer>()) {}
+Renderer::Renderer() : _buffer(std::make_shared<Buffer>()), _pixels(nullptr) {}
 
 Renderer::Renderer(size_t width, size_t height) : _buffer(std::make_shared<Buffer>(width, height)) {}
 
@@ -162,7 +169,7 @@ size_t Renderer::get_width() const { return _buffer->width; }
 
 size_t Renderer::get_height() const { return _buffer->height / 2; }
 
-bool Renderer::draw_point(utl::Vec<int, 2> point, char c)
+bool Renderer::draw_point(utl::Vec<int, 2> point, char c, Color color)
 {
     if (point.x() < 0 || point.x() >= static_cast<int>(_buffer->width) || point.y() < 0 || point.y() >= static_cast<int>(_buffer->height))
     {
@@ -178,13 +185,13 @@ bool Renderer::draw_point(utl::Vec<int, 2> point, char c)
 
     if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
     {
-        _buffer->set({x, y}, c);
+        _buffer->set({x, y}, c, color);
         return true;
     }
     return false;
 }
 
-bool Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c)
+bool Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color)
 {
     // Anti-aliasing will depend upon left or right of the pixel and top or bottom of the pixel
     int x1 = start[0], y1 = start[1];
@@ -212,7 +219,7 @@ bool Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c)
         // Plot the point
         if (x1 >= 0 && x1 < static_cast<int>(_buffer->width) && y1 >= 0 && y1 < static_cast<int>(_buffer->height))
         {
-            (*_buffer)(x1, y1) = c;
+            _buffer->set({x1, y1}, c, color);
         }
 
         // Check if the end point is reached
@@ -236,7 +243,7 @@ bool Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c)
     return true;
 }
 
-bool Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c)
+bool Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color)
 {
     // Anti-aliasing will depend upon left or right of the pixel and top or bottom of the pixel
     int x1 = start[0], y1 = start[1];
@@ -275,31 +282,31 @@ bool Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> e
             {
                 if (prev_y < y1)
                 {
-                    (*_buffer).set({x1, y1}, anti_aliasing[0][0]);
-                    (*_buffer).set({x1, y1 + 1}, anti_aliasing[0][1]);
+                    (*_buffer).set({x1, y1}, anti_aliasing[0][0], color);
+                    (*_buffer).set({x1, y1 + 1}, anti_aliasing[0][1], color);
                 }
                 else
                 {
-                    (*_buffer).set({x1, y1}, anti_aliasing[1][0]);
-                    (*_buffer).set({x1, y1 + 1}, anti_aliasing[1][1]);
+                    (*_buffer).set({x1, y1}, anti_aliasing[1][0], color);
+                    (*_buffer).set({x1, y1 + 1}, anti_aliasing[1][1], color);
                 }
             }
             else if (prev_y == y1)
             {
                 if (prev_x < x1)
                 {
-                    (*_buffer).set({x1, y1}, anti_aliasing[0][0]);
-                    (*_buffer).set({x1 + 1, y1}, anti_aliasing[0][1]);
+                    (*_buffer).set({x1, y1}, anti_aliasing[0][0], color);
+                    (*_buffer).set({x1 + 1, y1}, anti_aliasing[0][1], color);
                 }
                 else
                 {
-                    (*_buffer).set({x1, y1}, anti_aliasing[1][0]);
-                    (*_buffer).set({x1 + 1, y1}, anti_aliasing[1][1]);
+                    (*_buffer).set({x1, y1}, anti_aliasing[1][0], color);
+                    (*_buffer).set({x1 + 1, y1}, anti_aliasing[1][1], color);
                 }
             }
             else
             {
-                _buffer->set({x1, y1}, c);
+                _buffer->set({x1, y1}, c, color);
             }
         }
 
@@ -324,7 +331,7 @@ bool Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> e
     return true;
 }
 
-bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c)
+bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color)
 {
     int x0 = start.x();
     int y0 = start.y();
@@ -357,8 +364,8 @@ bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end,
     {
         if (draw_point({ypxl1, xpxl1}, c) && draw_point({ypxl1 + 1, xpxl1}, c))
         {
-            (*_buffer)(ypxl1, xpxl1) = c;
-            (*_buffer)(ypxl1 + 1, xpxl1) = c;
+            _buffer->set({ypxl1, xpxl1}, c, color);
+            _buffer->set({ypxl1 + 1, xpxl1}, c, color);
         }
         xpxl1 = xend + 1;
     }
@@ -366,8 +373,8 @@ bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end,
     {
         if (draw_point({xpxl1, ypxl1}, c) && draw_point({xpxl1, ypxl1 + 1}, c))
         {
-            (*_buffer)(xpxl1, ypxl1) = c;
-            (*_buffer)(xpxl1, ypxl1 + 1) = c;
+            _buffer->set({xpxl1, ypxl1}, c, color);
+            _buffer->set({xpxl1, ypxl1 + 1}, c, color);
         }
         xpxl1 = xend + 1;
     }
@@ -384,8 +391,8 @@ bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end,
     {
         if (draw_point({ypxl2, xpxl2}, c) && draw_point({ypxl2 + 1, xpxl2}, c))
         {
-            (*_buffer)(ypxl2, xpxl2) = c;
-            (*_buffer)(ypxl2 + 1, xpxl2) = c;
+            _buffer->set({ypxl2, xpxl2}, c, color);
+            _buffer->set({ypxl2 + 1, xpxl2}, c, color);
         }
         xpxl2 = xend + 1;
     }
@@ -393,8 +400,8 @@ bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end,
     {
         if (draw_point({xpxl2, ypxl2}, c) && draw_point({xpxl2, ypxl2 + 1}, c))
         {
-            (*_buffer)(xpxl2, ypxl2) = c;
-            (*_buffer)(xpxl2, ypxl2 + 1) = c;
+            _buffer->set({xpxl2, ypxl2}, c, color);
+            _buffer->set({xpxl2, ypxl2 + 1}, c, color);
         }
         xpxl2 = xend + 1;
     }
@@ -409,13 +416,13 @@ bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end,
                 float alpha = intery - std::floor(intery);
                 if (alpha <= 0.5)
                 {
-                    (*_buffer)(static_cast<int>(intery), x) = anti_aliasing[0][0];
-                    (*_buffer)(static_cast<int>(intery) + 1, x) = anti_aliasing[0][1];
+                    _buffer->set({static_cast<int>(intery), x}, anti_aliasing[0][0], color);
+                    _buffer->set({static_cast<int>(intery) + 1, x}, anti_aliasing[0][1], color);
                 }
                 else
                 {
-                    (*_buffer)(static_cast<int>(intery), x) = anti_aliasing[1][0];
-                    (*_buffer)(static_cast<int>(intery) + 1, x) = anti_aliasing[1][1];
+                    _buffer->set({static_cast<int>(intery), x}, anti_aliasing[1][0], color);
+                    _buffer->set({static_cast<int>(intery) + 1, x}, anti_aliasing[1][1], color);
                 }
             }
         }
@@ -426,13 +433,13 @@ bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end,
                 float alpha = intery - std::floor(intery);
                 if (alpha <= 0.5)
                 {
-                    (*_buffer)(x, static_cast<int>(intery)) = anti_aliasing[0][0];
-                    (*_buffer)(x, static_cast<int>(intery) + 1) = anti_aliasing[0][1];
+                    _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[0][0], color);
+                    _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[0][1], color);
                 }
                 else
                 {
-                    (*_buffer)(x, static_cast<int>(intery)) = anti_aliasing[1][0];
-                    (*_buffer)(x, static_cast<int>(intery) + 1) = anti_aliasing[1][1];
+                    _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[1][0], color);
+                    _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[1][1], color);
                 }
             }
         }
@@ -441,29 +448,30 @@ bool Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end,
 
     return true;
 }
-bool Renderer::draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch)
+bool Renderer::draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color)
 {
-    draw_anti_aliased_line(a, b, ch);
-    draw_anti_aliased_line(b, c, ch);
-    draw_anti_aliased_line(c, a, ch);
+    draw_anti_aliased_line(a, b, ch, color);
+    draw_anti_aliased_line(b, c, ch, color);
+    draw_anti_aliased_line(c, a, ch, color);
     return true;
 }
 
-bool Renderer::draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch)
+bool Renderer::draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color)
 {
-    draw_line(a, b, ch);
-    draw_line(b, c, ch);
-    draw_line(c, a, ch);
+    draw_line(a, b, ch, color);
+    draw_line(b, c, ch, color);
+    draw_line(c, a, ch, color);
     return true;
 }
-bool Renderer::draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch)
+bool Renderer::draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color)
 {
-    draw_xaolin_wu_line(a, b, ch);
-    draw_xaolin_wu_line(b, c, ch);
-    draw_xaolin_wu_line(c, a, ch);
+    draw_xaolin_wu_line(a, b, ch, color);
+    draw_xaolin_wu_line(b, c, ch, color);
+    draw_xaolin_wu_line(c, a, ch, color);
     return true;
 }
-bool Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch)
+
+bool Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color)
 {
     // We will implement anti-aliasing now for the circle
     utl::Vec<int, 2> begin = center + (-1 * radius);
@@ -481,7 +489,7 @@ bool Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch)
 
             if (distance <= radius)
             {
-                (*_buffer)(x, render_y) = ch;  // Drawing character
+                _buffer->set({x, render_y}, ch, color);  // Drawing character
             }  // calculate the anti-aliasing
             else if (distance <= radius + 1)
             {
@@ -492,22 +500,22 @@ bool Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch)
                     // next criteria is coverage
                     if (alpha <= 0.5)
                     {
-                        (*_buffer)(x, render_y) = anti_aliasing[0][0];
+                        _buffer->set({x, render_y}, anti_aliasing[0][0], color);
                     }
                     else
                     {
-                        (*_buffer)(x, render_y) = anti_aliasing[0][1];
+                        _buffer->set({x, render_y}, anti_aliasing[0][1], color);
                     }
                 }
                 else  //Case 2: Bottom of pixel i.e. y is below the center
                 {
                     if (alpha <= 0.5)
                     {
-                        (*_buffer)(x, render_y) = anti_aliasing[1][0];
+                        _buffer->set({x, render_y}, anti_aliasing[1][0], color);
                     }
                     else
                     {
-                        (*_buffer)(x, render_y) = anti_aliasing[1][1];
+                        _buffer->set({x, render_y}, anti_aliasing[1][1], color);
                     }
                 }
             }
@@ -517,7 +525,7 @@ bool Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch)
     return true;
 }
 
-bool Renderer::draw_circle(utl::Vec<int, 2> center, int radius, char ch)
+bool Renderer::draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color)
 {
     int x = radius;
     int y = 0;
@@ -526,7 +534,7 @@ bool Renderer::draw_circle(utl::Vec<int, 2> center, int radius, char ch)
     while (x >= y)
     {
         // Draw pixels in all octants
-        draw_circle_octants(center, x, y, ch);
+        draw_circle_octants(center, x, y, ch, color);
         y++;
 
         if (radiusError < 0)
@@ -542,49 +550,48 @@ bool Renderer::draw_circle(utl::Vec<int, 2> center, int radius, char ch)
     return true;
 }
 
-void Renderer::draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch)
+void Renderer::draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch, Color color)
 {
     // Upper octants
     char old = ch;
-    _buffer->set({center.x() + x, center.y() + y}, ch);
-    _buffer->set({center.x() - x, center.y() + y}, ch);
-    _buffer->set({center.x() + y, center.y() + x}, ch);
-    _buffer->set({center.x() - y, center.y() + x}, ch);
+    _buffer->set({center.x() + x, center.y() + y}, ch, color);
+    _buffer->set({center.x() - x, center.y() + y}, ch, color);
+    _buffer->set({center.x() + y, center.y() + x}, ch, color);
+    _buffer->set({center.x() - y, center.y() + x}, ch, color);
 
     // Lower octants
-    _buffer->set({center.x() + x, center.y() - y}, ch);
-    _buffer->set({center.x() - x, center.y() - y}, ch);
-    _buffer->set({center.x() + y, center.y() - x}, ch);
-    _buffer->set({center.x() - y, center.y() - x}, ch);
+    _buffer->set({center.x() + x, center.y() - y}, ch, color);
+    _buffer->set({center.x() - x, center.y() - y}, ch, color);
+    _buffer->set({center.x() + y, center.y() - x}, ch, color);
+    _buffer->set({center.x() - y, center.y() - x}, ch, color);
 }
 
-bool Renderer::draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch)
+bool Renderer::draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color)
 {
     for (size_t i = 0; i < vertices.size(); i++)
     {
-        draw_line(vertices[i], vertices[(i + 1) % vertices.size()], ch);
+        draw_line(vertices[i], vertices[(i + 1) % vertices.size()], ch, color);
     }
-    draw_line(vertices[vertices.size() - 1], vertices[0], ch);
+    draw_line(vertices[vertices.size() - 1], vertices[0], ch, color);
     return true;
 }
 
-bool Renderer::draw_rectangle(utl::Vec<int, 2> point, int width, int height, char ch, char ch2)
+bool Renderer::draw_rectangle(utl::Vec<int, 2> point, int width, int height, char ch, char ch2, Color color)
 {
     // top-right to bottom-right
-    draw_line({point.x(), point.y() + height}, point, ch2);
+    draw_line({point.x(), point.y() + height}, point, ch2, color);
     // bottom-left to top-left
-    draw_line({point.x() + width, point.y()}, {point.x() + width, point.y() + height}, ch2);
+    draw_line({point.x() + width, point.y()}, {point.x() + width, point.y() + height}, ch2, color);
     // top-left to top-right
-    draw_line(point, {point.x() + width, point.y()}, ch);
+    draw_line(point, {point.x() + width, point.y()}, ch, color);
     // bottom-right to bottom-left
-    draw_line({point.x() + width, point.y() + height}, {point.x(), point.y() + height}, ch);
+    draw_line({point.x() + width, point.y() + height}, {point.x(), point.y() + height}, ch, color);
     return true;
 }
 
-bool Renderer::draw_fill_rectangle(utl::Vec<int, 2> point, int width, int height, char ch)
+bool Renderer::draw_fill_rectangle(utl::Vec<int, 2> point, int width, int height, char ch, Color color)
 {
     utl::Vec<int, 2> end = point + utl::Vec<int, 2>{width, height};
-
     for (int y = point.y(); y <= end.y(); ++y)
     {
         for (int x = point.x(); x <= end.x(); ++x)
@@ -592,20 +599,19 @@ bool Renderer::draw_fill_rectangle(utl::Vec<int, 2> point, int width, int height
             // Ensure y is even for rendering
             if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
             {
-                (*_buffer)(x, y) = ch;
+                _buffer->set({x, y}, ch, color);
             }
         }
     }
     return true;
 }
 
-bool Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch)
+bool Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color)
 {
     // Sort the vertices by y-coordinate
     if (a.y() > b.y()) std::swap(a, b);
     if (a.y() > c.y()) std::swap(a, c);
     if (b.y() > c.y()) std::swap(b, c);
-
     // Function to draw a horizontal line within bounds
     auto safe_draw_line = [&](int x1, int y, int x2)
     {
@@ -616,17 +622,15 @@ bool Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::V
         x2 = std::min(x2, static_cast<int>(_buffer->width) - 1);
         for (int x = x1; x <= x2; ++x)
         {
-            (*_buffer)(x, y) = ch;
+            _buffer->set({x, y}, ch, color);
         }
     };
-
     // Function to interpolate x between two points at a given y
     auto interpolate_x = [](utl::Vec<int, 2> p1, utl::Vec<int, 2> p2, int y) -> int
     {
         if (p1.y() == p2.y()) return p1.x();  // Horizontal line
         return p1.x() + (y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
     };
-
     // Fill the upper part of the triangle (from a to b)
     for (int y = a.y(); y <= b.y(); ++y)
     {
@@ -634,7 +638,6 @@ bool Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::V
         int x2 = interpolate_x(a, c, y);
         safe_draw_line(x1, y, x2);
     }
-
     // Fill the lower part of the triangle (from b to c)
     for (int y = b.y(); y <= c.y(); ++y)
     {
@@ -642,11 +645,10 @@ bool Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::V
         int x2 = interpolate_x(a, c, y);
         safe_draw_line(x1, y, x2);
     }
-
     return true;
 }
 
-bool Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch)
+bool Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color)
 {
     // Sort the vertices by y-coordinate
     if (a.y() > b.y()) std::swap(a, b);
@@ -663,7 +665,7 @@ bool Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2>
         x2 = std::min(x2, static_cast<int>(_buffer->width) - 1);
         for (int x = x1; x <= x2; ++x)
         {
-            (*_buffer)(x, y) = ch;
+            _buffer->set({x, y}, ch, color);
         }
     };
 
@@ -719,7 +721,8 @@ bool Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2>
     return true;
 }
 
-bool Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle /* = 0.0f */)
+bool Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle /* = 0.0f */,
+                        Color color /* = WHITE */)
 {
     float step = 1.0f / radius;  // Step size for angle increment
     float angle = start_angle;
@@ -728,7 +731,7 @@ bool Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_
     {
         int x = static_cast<int>(center.x() + radius * std::cos(angle));
         int y = static_cast<int>(center.y() - radius * std::sin(angle));
-        _buffer->set({x, y}, ch);
+        _buffer->set({x, y}, ch, color);
 
         if (y <= radius + 1)
         {
@@ -739,22 +742,22 @@ bool Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_
                 // next criteria is coverage
                 if (alpha <= 0.5)
                 {
-                    (*_buffer)(x, y) = anti_aliasing[0][0];
+                    _buffer->set({x, y}, anti_aliasing[0][0], color);
                 }
                 else
                 {
-                    (*_buffer)(x, y) = anti_aliasing[0][1];
+                    _buffer->set({x, y}, anti_aliasing[0][1], color);
                 }
             }
             else  //Case 2: Bottom of pixel i.e. y is below the center
             {
                 if (alpha <= 0.5)
                 {
-                    (*_buffer)(x, y) = anti_aliasing[1][0];
+                    _buffer->set({x, y}, anti_aliasing[1][0], color);
                 }
                 else
                 {
-                    (*_buffer)(x, y) = anti_aliasing[1][1];
+                    _buffer->set({x, y}, anti_aliasing[1][1], color);
                 }
             }
         }
@@ -767,14 +770,16 @@ bool Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_
 
 void Renderer::draw()
 {
-    char print[_buffer->width];
-    std::cout << _bg_color.to_ansii_bg_str();
+    if (_bg_color != Color(TRANSPARENT))
+    {
+        std::cout << _bg_color.to_ansii_bg_str();
+    }
     for (size_t y = 0; y < _buffer->height; y += 2)
     {
         for (size_t x = 0; x < _buffer->width; x++)
         {
             // Implement anti-aliasing when drawing the buffer too
-            std::cout << (*_buffer)(x, y); 
+            std::cout << (*_buffer)(x, y)._color.to_ansii_fg_str() << (*_buffer)(x, y)._ch;
         }
         // // fprintf(stdout, "%.*s\n", static_cast<int>(_buffer->width), print);
         // std::cout.write(print, _buffer->width);
@@ -785,7 +790,7 @@ void Renderer::draw()
 
 std::shared_ptr<Buffer> Renderer::create_buffer(size_t width, size_t height) { return std::make_shared<Buffer>(width, height); }
 
-void Renderer::empty() { std::memset(_buffer->data, ' ', _buffer->width * _buffer->height); }
+void Renderer::empty() { _buffer->fill(' ', Color()); }
 
 void Renderer::clear_screen() { std::cout << "\033[2J"; }
 
@@ -795,7 +800,7 @@ void Renderer::reset_screen()
     std::cout << "\033[0;0H";
 }
 
-void Renderer::fill_buffer(char c) { std::memset(_buffer->data, c, _buffer->width * _buffer->height); }
+void Renderer::fill_buffer(char c, Color color) { _buffer->fill(c, color); }
 void Renderer::set_bg_color(Color color) { this->_bg_color = color; }
 void Renderer::sleep(int milliseconds) { std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds)); }
 

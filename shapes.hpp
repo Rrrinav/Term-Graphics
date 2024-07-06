@@ -4,12 +4,14 @@
 
 #include <cmath>
 #define RENDERER_IMPLEMENTATION
+#include "color.hpp"
 #include "renderer.hpp"
-
 // Base class for all shapes
 
 class Shape
 {
+    Color _color = WHITE;
+
 public:
     virtual ~Shape() = default;
     virtual void draw(Renderer &renderer) = 0;
@@ -19,12 +21,13 @@ class Line : public Shape
 {
     utl::Vec<int, 2> _start;
     utl::Vec<int, 2> _end;
+    Color _color;
     char _ch = '*';
 
 public:
     Line() : _start({0, 0}), _end({0, 0}), _ch('*') {}
     Line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char ch) : _start(start), _end(end), _ch(ch) {}
-    Line(int x1, int y1, int x2, int y2, char ch) : _start({x1, y1}), _end({x2, y2}), _ch(ch) {}
+    Line(int x1, int y1, int x2, int y2, char ch, Color color = WHITE) : _start({x1, y1}), _end({x2, y2}), _ch(ch) {}
     Line(const Line &line) : _start(line._start), _end(line._end), _ch(line._ch) {}
     void draw(Renderer &renderer) override { renderer.draw_line(_start, _end, _ch); }
     void draw_anti_alias(Renderer &renderer) { renderer.draw_anti_aliased_line(_start, _end, _ch); }
@@ -108,15 +111,19 @@ class Triangle : public Shape
     utl::Vec<int, 2> _p2;
     utl::Vec<int, 2> _p3;
     char _ch = '*';
+    Color _color;
 
 public:
-    Triangle() : _p1({0, 0}), _p2({0, 0}), _p3({0, 0}), _ch('*') {}
-    Triangle(utl::Vec<int, 2> p1, utl::Vec<int, 2> p2, utl::Vec<int, 2> p3, char ch) : _p1(p1), _p2(p2), _p3(p3), _ch(ch) {}
+    Triangle() : _p1({0, 0}), _p2({0, 0}), _p3({0, 0}), _ch('*'), _color(Color()) {}
+    Triangle(utl::Vec<int, 2> p1, utl::Vec<int, 2> p2, utl::Vec<int, 2> p3, char ch, Color color)
+        : _p1(p1), _p2(p2), _p3(p3), _ch(ch), _color(color)
+    {
+    }
     Triangle(int x1, int y1, int x2, int y2, int x3, int y3, char ch) : _p1({x1, y1}), _p2({x2, y2}), _p3({x3, y3}), _ch(ch) {}
     Triangle(const Triangle &triangle) : _p1(triangle._p1), _p2(triangle._p2), _p3(triangle._p3), _ch(triangle._ch) {}
     void draw(Renderer &renderer) override { renderer.draw_triangle(_p1, _p2, _p3, _ch); }
     void draw_fill(Renderer &renderer) { renderer.draw_fill_triangle(_p1, _p2, _p3, _ch); }
-    void draw_anti_alias(Renderer &renderer) { renderer.draw_antialias_triangle(_p1, _p2, _p3, _ch); }
+    void draw_anti_alias(Renderer &renderer) { renderer.draw_antialias_triangle(_p1, _p2, _p3, _ch, _color); }
     void draw_fill_anti_alias(Renderer &renderer) { renderer.draw_fill_antialias_triangle(_p1, _p2, _p3, _ch); }
     void draw_xaolin_wu(Renderer &renderer) { renderer.draw_xaolin_wu_triangle(_p1, _p2, _p3, _ch); }
     void set_p1(utl::Vec<int, 2> p1) { _p1 = p1; }
@@ -139,7 +146,7 @@ public:
         utl::Vec<int, 2> p1 = _p1.rotate_about_center(center, angle, axis);
         utl::Vec<int, 2> p2 = _p2.rotate_about_center(center, angle, axis);
         utl::Vec<int, 2> p3 = _p3.rotate_about_center(center, angle, axis);
-        return Triangle(p1, p2, p3, _ch);
+        return Triangle(p1, p2, p3, _ch, _color);
     }
 
     void scale(float factor)
