@@ -1,6 +1,6 @@
 // We will define color codes here using both ansii and hex values, so we can use them in both ways.
-
-#ifdef SIXTEEN_BIT_COLOR
+// #include <cstdint>
+// #include <map>
 // Hex codes
 #define BLACK 0x000000
 #define WHITE 0xFFFFFF
@@ -49,10 +49,76 @@
 #define LIGHT_OLIVE 0x6B8E23
 #define LIGHT_TEAL 0x008080
 #define LIGHT_NAVY 0x000080
+#define BRIGHT_BLACK 0x808080
+#define BRIGHT_WHITE 0xC0C0C0
+#define BRIGHT_RED 0xFF8080
+#define BRIGHT_GREEN 0x80FF80
+#define BRIGHT_BLUE 0x8080FF
+#define BRIGHT_YELLOW 0xFFFF80
+#define BRIGHT_CYAN 0x80FFFF
+#define BRIGHT_MAGENTA 0xFF80FF
+#define BRIGHT_ORANGE 0xFFD580
+#define BRIGHT_PURPLE 0xC000C0
+#define BRIGHT_PINK 0xFFFFD2
+#define BRIGHT_GREY 0xC0C0C0
+#define GRAY_1 0x080808
+#define GRAY_2 0x121212
+#define GRAY_3 0x1c1c1c
+#define GRAY_4 0x262626
+#define GRAY_5 0x303030
+#define GRAY_6 0x3a3a3a
+#define GRAY_7 0x444444
+#define GRAY_8 0x4e4e4e
+#define GRAY_9 0x585858
+#define GRAY_10 0x626262
+#define GRAY_11 0x6c6c6c
+#define GRAY_12 0x767676
+#define GRAY_13 0x808080
+#define GRAY_14 0x8a8a8a
+#define GRAY_15 0x949494
+#define GRAY_16 0x9e9e9e
+#define GRAY_17 0xa8a8a8
+#define GRAY_18 0xb2b2b2
+#define GRAY_19 0xbcbcbc
+#define GRAY_20 0xc6c6c6
+#define GRAY_21 0xd0d0d0
+#define GRAY_22 0xdadada
+#define GRAY_23 0xe4e4e4
+#define GRAY_24 0xeeeeee
+//Look-up table for hex values from 1-16
 
-// Ansii Terminal codes for 256 colors
+// std::map<int, uint32_t> ansii_to_hex_less_than_sixteen = {
+//     {0, BLACK},
+//     {1, RED},
+//     {2, GREEN},
+//     {3, YELLOW},
+//     {4, BLUE},
+//     {5, MAGENTA},
+//     {6, CYAN},
+//     {7, WHITE},
+//     {8, BRIGHT_BLACK},
+//     {9, BRIGHT_RED},
+//     {10, BRIGHT_GREEN},
+//     {11, BRIGHT_YELLOW},
+//     {12, BRIGHT_BLUE},
+//     {13, BRIGHT_MAGENTA},
+//     {14, BRIGHT_CYAN},
+//     {15, BRIGHT_WHITE},
+//     {16, BRIGHT_BLACK},
+// };
+//
+// //from 232 to 255, all are black
+// std::map<int, uint32_t> ansii_to_grayscale = {
+//     {232, GRAY_1},  {233, GRAY_2},  {234, GRAY_3},  {235, GRAY_4},  {236, GRAY_5},  {237, GRAY_6},  {238, GRAY_7},  {239, GRAY_8},
+//     {240, GRAY_9},  {241, GRAY_10}, {242, GRAY_11}, {243, GRAY_12}, {244, GRAY_13}, {245, GRAY_14}, {246, GRAY_15}, {247, GRAY_16},
+//     {248, GRAY_17}, {249, GRAY_18}, {250, GRAY_19}, {251, GRAY_20}, {252, GRAY_21}, {253, GRAY_22}, {254, GRAY_23}, {255, GRAY_24}};
+// // Ansii Terminal codes for 256 colors
+//
+// Basic color codes from 0-15
 
-#define ANSII_FG_BLACK "\u001b[38;5;0m"
+#define ANSII_BASIC_FG_BLACK "\u001b[38;5;0m"
+
+#define ANSII_FG_BLACK "\u001b[38;5;232m"
 #define ANSII_FG_WHITE "\u001b[38;5;231m"
 #define ANSII_FG_RED "\u001b[38;5;196m"
 #define ANSII_FG_GREEN "\u001b[38;5;46m"
@@ -101,4 +167,3 @@
 #define ANSII_FG_LIGHT_NAVY "\u001b[38;5;18m"
 #define ANSII_FG_RESET "\u001b[0m"
 #define ANSII_BG_RESET "\u001b[0m"
-#endif

@@ -1,9 +1,14 @@
 #pragma once
 
+#include <unistd.h>
+
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 #include <memory>
 #include <vector>
+
+// PERF: We need to make this faster, super faster
 
 #define L_GEBRA_IMPLEMENTATION
 #include "./l_gebra.hpp"  // Assuming this is your external library header
@@ -31,10 +36,17 @@ struct Buffer
     const char &operator()(size_t x, size_t y) const;
 };
 
+class Pixel
+{
+    utl::Vec<int, 2> _point;
+    Color _color;
+};
+
 // Renderer class
 class Renderer
 {
     std::shared_ptr<Buffer> _buffer;
+    Color _bg_color;
 
 public:
     Renderer();
@@ -67,6 +79,7 @@ public:
     static void clear_screen();
     static void reset_screen();
     void fill_buffer(char c);
+    void set_bg_color(Color color);
     static inline void sleep(int milliseconds);
     static void move_cursor(size_t x, size_t y);
     static void hide_cursor();
@@ -755,20 +768,19 @@ bool Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_
 void Renderer::draw()
 {
     char print[_buffer->width];
+    std::cout << _bg_color.to_ansii_bg_str();
     for (size_t y = 0; y < _buffer->height; y += 2)
     {
         for (size_t x = 0; x < _buffer->width; x++)
         {
             // Implement anti-aliasing when drawing the buffer too
-            bool top = (*_buffer)(x, y) != ' ';
-            bool bottom = (*_buffer)(x, y + 1) != ' ';
-            print[x] = (*_buffer)(x, y);
-            std::cout << (*_buffer)(x, y);
+            std::cout << (*_buffer)(x, y); 
         }
         // // fprintf(stdout, "%.*s\n", static_cast<int>(_buffer->width), print);
         // std::cout.write(print, _buffer->width);
         std::cout << '\n';
     }
+    std::cout << ANSII_BG_RESET;
 }
 
 std::shared_ptr<Buffer> Renderer::create_buffer(size_t width, size_t height) { return std::make_shared<Buffer>(width, height); }
@@ -784,7 +796,7 @@ void Renderer::reset_screen()
 }
 
 void Renderer::fill_buffer(char c) { std::memset(_buffer->data, c, _buffer->width * _buffer->height); }
-
+void Renderer::set_bg_color(Color color) { this->_bg_color = color; }
 void Renderer::sleep(int milliseconds) { std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds)); }
 
 void Renderer::move_cursor(size_t x, size_t y) { std::cout << "\033[" << y << ";" << x << "H"; }

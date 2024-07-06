@@ -4,6 +4,7 @@
 #include "renderer.hpp"
 #include "shapes.hpp"
 
+// We will open a window and draw a rotating triangle
 int main()
 {
     utl::Vec<int, 2> center = {20, 23};
@@ -17,6 +18,9 @@ int main()
     float angle = 0.0f;
     float step = 0.05f;  // Adjust this for smoother rotation
 
+    Renderer::hide_cursor();
+    int i = 0, j = 0, k = 0;
+    renderer.set_bg_color(Color(GREEN));
     while (true)
     {
         renderer.empty();
@@ -29,8 +33,11 @@ int main()
         line.draw_anti_alias(renderer);
         triangle2.draw_anti_alias(renderer);
         renderer.draw();
-        Renderer::sleep(20);
+        Renderer::sleep(1000 / 60);
         angle += step;
         if (angle >= 2 * M_PI) angle -= 2 * M_PI;
+        i += 10;
+        j += 2;
+        k += 5;
     }
 }

@@ -1,7 +1,10 @@
+#include <iostream>
+#include <regex>
 #include <string>
 
 #define RESET "\u001b[0m"
 #define RESET_BG "\u001b[49m"
+#define BOLD "\u001b[1m"
 
 #ifdef EIGHT_BIT_COLOR
 enum class Color
@@ -13,7 +16,15 @@ enum class Color
     Blue = 4,
     Magenta = 5,
     Cyan = 6,
-    White = 7
+    White = 7,
+    Bright_Black,
+    Bright_Red,
+    Bright_Green,
+    Bright_Yellow,
+    Bright_Blue,
+    Bright_Magenta,
+    Bright_Cyan,
+    Bright_White
 };
 
 std::string to_ansii_fg_str(Color c)
@@ -36,6 +47,22 @@ std::string to_ansii_fg_str(Color c)
             return "\u001b[36m";
         case Color::White:
             return "\u001b[37m";
+        case Color::Bright_Black:
+            return "\u001b[30;1m";
+        case Color::Bright_Red:
+            return "\u001b[31;1m";
+        case Color::Bright_Green:
+            return "\u001b[32;1m";
+        case Color::Bright_Yellow:
+            return "\u001b[33;1m";
+        case Color::Bright_Blue:
+            return "\u001b[34;1m";
+        case Color::Bright_Magenta:
+            return "\u001b[35;1m";
+        case Color::Bright_Cyan:
+            return "\u001b[36;1m";
+        case Color::Bright_White:
+            return "\u001b[37;1m";
         default:
             return "";
     }
@@ -43,6 +70,7 @@ std::string to_ansii_fg_str(Color c)
 
 std::string to_ansii_bg_str(Color c)
 {
+    if (c > Color::White) c = static_cast<Color>(static_cast<int>(c) - 8);
     switch (c)
     {
         case Color::Black:
@@ -92,7 +120,13 @@ public:
         _g = (hex_val >> 8) & 0xFF;
         _b = (hex_val >> 0) & 0xFF;
     }
-
+    Color const operator=(const uint32_t &hex_val)
+    {
+        _r = (hex_val >> 16) & 0xFF;
+        _g = (hex_val >> 8) & 0xFF;
+        _b = (hex_val >> 0) & 0xFF;
+        return *this;
+    }
     Color(const Color &c) : _r(c.r()), _g(c.g()), _b(c.b()) {}
     bool operator==(const Color &c) const { return _r == c.r() && _g == c.g() && _b == c.b(); }
     // Accessors
@@ -145,4 +179,3 @@ public:
 #endif  // SIXTEEN_BIT_COLOR
 
 #endif  // EIGHT_BIT_COLOR
-
