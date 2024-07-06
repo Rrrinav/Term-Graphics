@@ -6,3 +6,6 @@ main: main.cpp
 
 debug: main.cpp
 	$(cc) main.cpp -o main $(flags) && gdb ./main
+
+color: color.cpp
+	$(cc) color.cpp -o color $(flags) && ./color
