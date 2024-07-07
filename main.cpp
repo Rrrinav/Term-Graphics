@@ -87,7 +87,6 @@ int main()
         points.erase(std::remove_if(points.begin(), points.end(), [](const Point &point) { return point.get_pos()[0] >= 97; }),
                      points.end());
 
-        renderer.draw_text_with_font({5, 50}, "MIKI JI", BRIGHT_RED, standard_font);
         renderer.draw();
         t += delta_t;  // Increased step for faster animation
         renderer.sleep(1000 / 60);
