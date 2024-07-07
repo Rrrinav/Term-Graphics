@@ -267,7 +267,7 @@ bool Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> e
     // case for horizontal line or vertical line
     if (dx == 0 || dy == 0)
     {
-        draw_line(start, end, c);
+        draw_line(start, end, c, color);
         return true;
     }
     while (true)

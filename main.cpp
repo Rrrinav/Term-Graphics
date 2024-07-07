@@ -26,6 +26,7 @@ int main()
         renderer.empty();
         Renderer::reset_screen();
         Line line;
+        line.set_color(BLUE);
         Triangle triangle2;
         triangle2 = triangle.rotate(angle, center);
         line.set_start({55, 30});
