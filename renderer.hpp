@@ -15,9 +15,33 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "./l_gebra.hpp"  // Assuming this is your external library header
 #include "color.hpp"
-
+#include "font.hpp"
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'_', 'a'}};
+
+// const std::unordered_map<char, std::vector<std::string>> standard_5x5_font = {
+//     {'A', {"     ", " ### ", "#   #", "#####", "#   #"}}, {'B', {"#### ", "#   #", "#### ", "#   #", "#### "}},
+//     {'C', {" ### ", "#   #", "#    ", "#   #", " ### "}}, {'D', {"#### ", "#   #", "#   #", "#   #", "#### "}},
+//     {'E', {"#####", "#    ", "### ", "#    ", "#####"}},  {'F', {"#####", "#    ", "### ", "#    ", "#    "}},
+//     {'G', {" ### ", "#    ", "#  ##", "#   #", " ### "}}, {'H', {"#   #", "#   #", "#####", "#   #", "#   #"}},
+//     {'I', {"#####", "  #  ", "  #  ", "  #  ", "#####"}}, {'J', {"#####", "   # ", "   # ", "#  # ", " ##  "}},
+//     {'K', {"#   #", "#  # ", "###  ", "#  # ", "#   #"}}, {'L', {"#    ", "#    ", "#    ", "#    ", "#####"}},
+//     {'M', {"#   #", "## ##", "# # #", "#   #", "#   #"}}, {'N', {"#   #", "##  #", "# # #", "#  ##", "#   #"}},
+//     {'O', {" ### ", "#   #", "#   #", "#   #", " ### "}}, {'P', {"#### ", "#   #", "#### ", "#    ", "#    "}},
+//     {'Q', {" ### ", "#   #", "# # #", "#  # ", " ## #"}}, {'R', {"#### ", "#   #", "#### ", "#  # ", "#   #"}},
+//     {'S', {" ####", "#    ", " ### ", "    #", "#### "}}, {'T', {"#####", "  #  ", "  #  ", "  #  ", "  #  "}},
+//     {'U', {"#   #", "#   #", "#   #", "#   #", " ### "}}, {'V', {"#   #", "#   #", "#   #", " # # ", "  #  "}},
+//     {'W', {"#   #", "#   #", "# # #", "## ##", "#   #"}}, {'X', {"#   #", " # # ", "  #  ", " # # ", "#   #"}},
+//     {'Y', {"#   #", " # # ", "  #  ", "  #  ", "  #  "}}, {'Z', {"#####", "   # ", "  #  ", " #   ", "#####"}},
+//     {'0', {" ### ", "#  ##", "# # #", "##  #", " ### "}}, {'1', {"  #  ", " ##  ", "  #  ", "  #  ", "#####"}},
+//     {'2', {" ### ", "#   #", "  ## ", " #   ", "#####"}}, {'3', {" ### ", "#   #", "  ## ", "#   #", " ### "}},
+//     {'4', {"#   #", "#   #", "#####", "    #", "    #"}}, {'5', {"#####", "#    ", "#### ", "    #", "#### "}},
+//     {'6', {" ### ", "#    ", "#### ", "#   #", " ### "}}, {'7', {"#####", "   # ", "  #  ", " #   ", "#    "}},
+//     {'8', {" ### ", "#   #", " ### ", "#   #", " ### "}}, {'9', {" ### ", "#   #", " ####", "    #", " ### "}},
+//     {'.', {"     ", "     ", "     ", "     ", "  #  "}}, {',', {"     ", "     ", "     ", "  #  ", " #   "}},
+//     {'!', {"  #  ", "  #  ", "  #  ", "     ", "  #  "}}, {'?', {" ### ", "#   #", "  ## ", "     ", "  #  "}},
+//     {' ', {"     ", "     ", "     ", "     ", "     "}}, {'-', {"     ", "     ", "#####", "     ", "     "}},
+//     {'+', {"     ", "  #  ", "#####", "  #  ", "     "}}, {'=', {"     ", "#####", "     ", "#####", "     "}}};
 
 class Pixel
 {
@@ -133,6 +157,9 @@ public:
     bool draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
     bool draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color = WHITE);
     bool draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f, Color color = WHITE);
+    bool draw_text(utl::Vec<int, 2> start, const std::string &text, Color color = WHITE);
+    bool draw_text_with_font(utl::Vec<int, 2> start, const std::string &text, Color color, const Font &font);
+    static Font load_font(const std::string &font_path);
 
     void draw();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
@@ -766,6 +793,64 @@ bool Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_
     }
 
     return true;
+}
+
+bool Renderer::draw_text(utl::Vec<int, 2> start, const std::string &text, Color color)
+{
+    int x = start.x();
+    int y = start.y();
+    for (size_t i = 0; i < text.size(); ++i)
+    {
+        if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
+        {
+            _buffer->set({x, y}, text[i], color);
+        }
+        x++;
+    }
+    return true;
+}
+
+bool Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &text, Color color, const Font &font)
+{
+    int x = start.x();
+    int y = start.y();
+    int px = 0;
+    int py = 0;
+    int count = 0;
+    for (char ch : text)
+    { 
+        if (font.get_glyph(ch).is_empty()) continue;
+        const Glyph &glyph = font.get_glyph(ch);
+        const std::vector<std::string> &lines = glyph.get_lines();
+        // Render each line of the glyph
+        for (size_t j = 0; j < lines.size(); j++)
+        {
+            for (size_t k = 0; k < lines[j].size(); ++k)
+            {
+                px = x + k;
+                py = y + j * 2;
+                _buffer->set({px, py}, lines[j][k], color);
+            }
+        } 
+        x += glyph.get_width() + 1; 
+        if (x >= static_cast<int>(_buffer->width))
+        {
+            x = start.x();
+            y += (glyph.get_height() + 1) * 2;
+        }
+    }
+
+    return true;
+}
+
+Font Renderer::load_font(const std::string &font_path)
+{
+    Font font;
+    if (font.load_from_file(font_path))
+    {
+        return font;
+    }
+    return Font();
 }
 
 void Renderer::draw()
