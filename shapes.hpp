@@ -23,6 +23,22 @@ public:
     Color get_color() const { return _color; }
 };
 
+class Point : public Shape
+{
+    utl::Vec<int, 2> _pos;
+    char _ch = '*';
+public:
+    Point() : _pos({0, 0}), _ch('*'), Shape() {}
+    Point(utl::Vec<int, 2> pos, char ch, Color color) : _pos(pos), _ch(ch), Shape(color) {}
+    Point(int x, int y, char ch, Color color) : _pos({x, y}), _ch(ch), Shape(color) {}
+    Point(const Point &point) : _pos(point._pos), _ch(point._ch), Shape(point._color) {}
+    void draw(Renderer &renderer) override { renderer.draw_point(_pos, _ch, _color); }
+    void set_pos(utl::Vec<int, 2> pos) { _pos = pos; }
+    void set_char(char ch) { _ch = ch; }
+    utl::Vec<int, 2> get_pos() const { return _pos; }
+    char get_char() const { return _ch; }
+};
+
 class Line : public Shape
 {
     utl::Vec<int, 2> _start;

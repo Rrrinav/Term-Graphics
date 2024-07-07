@@ -1,44 +1,59 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "l_gebra.hpp"
 #define RENDERER_IMPLEMENTATION
+#include <cmath>
+#include <vector>
+
 #include "renderer.hpp"
 #include "shapes.hpp"
 
-// We will open a window and draw a rotating triangle
 int main()
 {
-    utl::Vec<int, 2> center = {20, 23};
-    utl::Vec<int, 2> a = {10, 30};
-    utl::Vec<int, 2> b = {20, 30};
-    utl::Vec<int, 2> c = {30, 10};
-
-    Triangle triangle(a, b, c, 'x', RED);
-    auto buffer = Renderer::create_buffer(60, 60);
-    Renderer renderer(buffer);
-    float angle = 0.0f;
-    float step = 0.05f;  // Adjust this for smoother rotation
-
-    Renderer::hide_cursor();
-    int i = 0, j = 0, k = 0;
-    renderer.set_bg_color(GRAY_5);
+    auto b = Renderer::create_buffer(80, 80);
+    Renderer renderer(b);
+    std::vector<Point> points;
+    float t = 0.0f;
     while (true)
     {
         renderer.empty();
-        Renderer::reset_screen();
-        Line line;
-        line.set_color(BLUE);
-        Triangle triangle2;
-        triangle2 = triangle.rotate(angle, center);
-        line.set_start({55, 30});
-        line.set_end(triangle2.get_p1());
-        line.draw_anti_alias(renderer);
-        triangle2.draw_anti_alias(renderer);
+        renderer.reset_screen();
+
+        // Draw the circle
+        renderer.draw_circle({20, 20}, 10, 'o');
+
+        // Calculate the point on the circle
+        int x = 20 + static_cast<int>(10 * std::sin(t));
+        int y = 20 + static_cast<int>(10 * std::cos(t));
+
+        // Draw the line from circle center to the point on the circle
+        renderer.draw_line({20, 20}, {x, y}, '.');
+
+        // Calculate the y-coordinate for the sine wave
+        int x2 = 30;
+        int y2 = 20 + static_cast<int>(10 * std::sin(t));
+
+        // Add the new point to the sine wave
+        points.insert(points.begin(), Point(x2, y2, '*', RED));
+
+        // Draw all points in the sine wave
+        for (auto &point : points)
+        {
+            point.set_pos({(int)(point.get_pos()[0] + 0.1), point.get_pos()[1]});  // Move points to the right
+            point.draw(renderer);
+        }
+
+        // Draw a line from the end of the radius line to the first point of the sine wave
+        if (!points.empty())
+        {
+            renderer.draw_line({x, y}, {points[0].get_pos()[0], points[0].get_pos()[1]}, '-');
+        }
+
+        // Remove points that are outside the screen
+        points.erase(std::remove_if(points.begin(), points.end(), [](const Point &point) { return point.get_pos()[0] >= 80; }),
+                     points.end());
+
         renderer.draw();
-        Renderer::sleep(1000 / 60);
-        angle += step;
-        if (angle >= 2 * M_PI) angle -= 2 * M_PI;
-        i += 10;
-        j += 2;
-        k += 5;
+        t += 0.1f;  // Increased step for faster animation
+        renderer.sleep(1000 / 60);
     }
 }
