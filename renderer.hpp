@@ -809,7 +809,7 @@ bool Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &te
             }
         }
         x += glyph.get_width() + 1;
-        if (x >= static_cast<int>(_buffer->width))
+        if (x + glyph.get_width() + 1 >= static_cast<int>(_buffer->width))
         {
             x = start.x();
             y += (glyph.get_height() + 1) * 2;
@@ -938,6 +938,7 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
 // TODO: Frame rate control, line clipping, Texture Mapping, double buffering
-//       Camera system, merging buffers
+//       Camera system, merging buffers, gradient fill, 3D rendering, sprite rendering, user input
+//       windowing system
 
 #endif  // RENDERER_IMPLEMENTATION

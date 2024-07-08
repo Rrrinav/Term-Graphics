@@ -69,22 +69,66 @@ public:
             return false;
         }
 
-        char current_char;
-        std::vector<std::string> current_glyph;
         std::string line;
+        int width = 0, height = 0;
 
-        while (file >> current_char)
+        // Read width and height
+        std::getline(file, line);
+        if (line.find("Height") != std::string::npos)
         {
-            file.ignore();  // Skip the space after the character
+            height = std::stoi(line.substr(7));
+            std::getline(file, line);  // read the next line
+        }
+        else
+        {
+            std::cerr << "Error: Height information not found in file." << std::endl;
+            return false;
+        }
 
-            current_glyph.clear();
-            while (std::getline(file, line) && !line.empty())
+        if (line.find("Width") != std::string::npos)
+        {
+            width = std::stoi(line.substr(6));
+        }
+        else
+        {
+            std::cerr << "Error: Width information not found in file." << std::endl;
+            return false;
+        }
+
+        // Find the start of the sprites
+        while (std::getline(file, line) && line != "Sprites")
+        {
+            continue;  // ignore lines until we reach "Sprites"
+        }
+
+        // Read the sprites
+        while (std::getline(file, line))
+        {
+            if (line.empty() || line[0] == '#') continue;  // skip empty lines and comments
+
+            char sprite_char = line[0];
+            std::vector<std::string> sprite_lines;
+
+            for (int i = 0; i < height; ++i)
             {
-                current_glyph.push_back(line);
+                if (!std::getline(file, line))
+                {
+                    std::cerr << "Error: Incomplete sprite for character '" << sprite_char << "'." << std::endl;
+                    return false;
+                }
+                if (line.size() < static_cast<size_t>(width))
+                {
+                    line += std::string(width - line.size(), ' ');  // pad line if it's too short
+                }
+                sprite_lines.push_back(line.substr(0, width));  // trim line if it's too long
             }
 
-            glyphs[current_char] = Glyph(current_glyph);
+            glyphs[sprite_char] = Glyph(sprite_lines);
         }
+
+        glyphs[' '] = Glyph(std::vector<std::string>(height, std::string(((width < 4) ? width : width - 2), ' ')));
+
+        file.close();
         return true;
     }
 
