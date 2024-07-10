@@ -20,6 +20,7 @@ class Window
 {
 private:
     static std::unordered_map<Keys, bool> key_states;
+    static utl::Vec<int, 2> mouse_pos;
 #ifdef _WIN32
     HANDLE hConsole;
     HANDLE hConsoleInput;
@@ -38,6 +39,7 @@ public:
         hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
         SetConsoleActiveScreenBuffer(hConsole);
         hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
+        setConsoleMode(hConsoleInput, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
         system("cls");  // or "cls" on Windows
 #else
         tcgetattr(STDIN_FILENO, &orig_termios);
@@ -160,37 +162,37 @@ public:
             }
         }
 #else
-        struct pollfd fds[1];
-        fds[0].fd = STDIN_FILENO;
-        fds[0].events = POLLIN;
-
-        if (poll(fds, 1, 0) > 0 && (fds[0].revents & POLLIN))
-        {
-            char buf[64];
-            ssize_t nread = read(STDIN_FILENO, buf, sizeof(buf));
-
-            for (ssize_t i = 0; i < nread; i++)
-            {
-                if (buf[i] == '\033' && i + 5 < nread && buf[i + 1] == '[' && buf[i + 2] == 'M')
-                {
-                    int button = buf[i + 3] - 32;
-                    int x = buf[i + 4] - 33;
-                    int y = buf[i + 5] - 33;
-
-                    // Check if it's a movement or button press event
-                    if ((button & 0x20) || (button & 0x3) != 3)
-                    {
-                        last_valid_pos[0] = x;
-                        last_valid_pos[1] = y;
-                    }
-
-                    i += 5;  // Skip the rest of this mouse event
-                }
-            }
-        }
+        // struct pollfd fds[2];
+        // fds[0].fd = STDIN_FILENO;
+        // fds[0].events = POLLIN;
+        //
+        // if (poll(fds, 1, 0) > 0 && (fds[0].revents & POLLIN))
+        // {
+        //     char buf[64];
+        //     ssize_t nread = read(STDIN_FILENO, buf, sizeof(buf));
+        //
+        //     for (ssize_t i = 0; i < nread; i++)
+        //     {
+        //         if (buf[i] == '\033' && i + 5 < nread && buf[i + 1] == '[' && buf[i + 2] == 'M')
+        //         {
+        //             int button = buf[i + 3] - 32;
+        //             std::cout << "Button: " << button << std::endl;
+        //             int x = buf[i + 4] - 33;
+        //             std::cout << "X: " << x << std::endl;
+        //             int y = buf[i + 5] - 33;
+        //             std::cout << "Y: " << y << std::endl;
+        //             // Check if it's a movement or button press event
+        //             last_valid_pos[0] = x;
+        //             last_valid_pos[1] = y;
+        //
+        //             i += 5;  // Skip the rest of this mouse event
+        //         }
+        //     }
+        // }
+        return mouse_pos;
 #endif
 
-        return last_valid_pos;
+        return mouse_pos;
     }
     static bool is_pressed(Keys key)
     {
@@ -250,7 +252,7 @@ public:
         struct timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 0;
-
+        utl::Vec<int, 2> last_valid_pos = {-1, -1};  // Store last valid position
         FD_ZERO(&readfds);
         FD_SET(STDIN_FILENO, &readfds);
 
@@ -258,7 +260,7 @@ public:
         for (auto &pair : key_states)
         {
             pair.second = false;
-        }
+        } 
 
         if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv) > 0)
         {
@@ -270,9 +272,11 @@ public:
                 {
                     if (buf[i] == '\033' && i + 2 < nread && buf[i + 1] == '[' && buf[i + 2] == 'M')
                     {
-                        // This is a mouse event, skip it
+                        int button = buf[i + 3] - 32;
+                        int x = buf[i + 4] - 33;
+                        int y = buf[i + 5] - 33;
+                        mouse_pos = {x, y};
                         i += 5;  // Skip the entire mouse event sequence
-                        continue;
                     }
                     Keys k = static_cast<Keys>(parse_key(buf[i]));
                     key_states[k] = true;
@@ -297,3 +301,4 @@ public:
 
 // Initialize the static member
 std::unordered_map<Keys, bool> Window::key_states;
+utl::Vec<int, 2> Window::mouse_pos;

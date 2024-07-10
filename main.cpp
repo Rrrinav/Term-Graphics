@@ -108,8 +108,11 @@ int main()
         if (Window::is_pressed(Keys::KEY_s)) pos[1] += 2;
         if (Window::is_pressed(Keys::KEY_a)) pos[0] -= 1;
         if (Window::is_pressed(Keys::KEY_d)) pos[0] += 1;
-        utl::Vec<int, 2> mouse_pos = Window::get_mouse_pos();
+        if (Window::is_pressed(Keys::KEY_ESC)) break;
+        auto mouse_pos = Window::get_mouse_pos();
+        mouse_pos[1] *= 2;
         renderer.draw_sprite(pos, sprite, GREEN);
+        renderer.draw_point(mouse_pos, 'o', RED);
         renderer.draw_text({0, 0}, debug_info, WHITE);  // Assuming you have a draw_text method
         renderer.draw_text({4, 4}, std::to_string(mouse_pos[0]) + " " + std::to_string(mouse_pos[1]), RED);
         renderer.draw();
@@ -141,5 +144,6 @@ int main()
     //     j += 2;
     //     k += 5;
     // }
+
     return 0;
 }
