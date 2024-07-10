@@ -10,9 +10,10 @@
 
 #define L_GEBRA_IMPLEMENTATION
 #include "./l_gebra.hpp"  // Assuming this is your external library header
+#include "basic_units.hpp"
 #include "color.hpp"
 #include "font.hpp"
-#include "basic_units.hpp"
+#include "sprites.hpp"
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'_', 'a'}};
 
@@ -52,6 +53,8 @@ public:
     bool draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &text, Color color, Color shadow_color, const Font &font,
                                int shadow_offset_x = 1, int shadow_offset_y = 1);
     static Font load_font(const std::string &font_path);
+    Sprite load_sprite(const std::string &sprite_path);
+    bool draw_sprite(utl::Vec<int, 2> start, const Sprite &sprite, Color color = WHITE);
 
     void draw();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
@@ -830,6 +833,45 @@ void Renderer::draw()
     }
     std::cout << ANSII_BG_RESET;
 }
+
+Sprite Renderer::load_sprite(const std::string &sprite_path)
+{
+    Sprite sprite;
+    if (sprite.load_from_file(sprite_path))
+    {
+        return sprite;
+    }
+    return Sprite();
+}
+
+bool Renderer::draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Color color)
+{
+    auto lines = sprite.get_data();
+    int px = 0;
+    int py = 0;
+    int x = start_pos.x();
+    int y = start_pos.y();
+    // for (auto &row : data)
+    // {
+    //     for (auto &ch : row)
+    //     {
+    //       std::cout << ch;
+    //     }
+    //     std::cout << '\n';
+    //
+    // }
+    for (size_t j = 0; j < lines.size(); j++)
+    {
+        for (size_t k = 0; k < lines[j].size(); ++k)
+        {
+            px = x + k;
+            py = y + j * 2; 
+            _buffer->set({px, py}, lines[j][k], color);
+        }
+    }
+    return true;
+}
+
 
 std::shared_ptr<Buffer> Renderer::create_buffer(size_t width, size_t height) { return std::make_shared<Buffer>(width, height); }
 
