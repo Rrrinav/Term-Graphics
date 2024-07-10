@@ -1,7 +1,9 @@
+#include <queue>
 #include <string>
+
 #include "window.hpp"
-#define L_GEBRA_IMPLEMENTATION
-#include "l_gebra.hpp"
+// #define L_GEBRA_IMPLEMENTATION
+// #include "l_gebra.hpp"
 #define RENDERER_IMPLEMENTATION
 #include <algorithm>
 #include <cmath>
@@ -82,29 +84,62 @@ int main()
     //     renderer.sleep(500);
     //     i++;
     // }
-
-    renderer.Init();
-    Animated_sprite animated_sprite;
-    animated_sprite.load_from_file("animation.txt");
-    utl::Vec<int, 2> start_pos = {10, 10};
-    int frame = 0;
     int i = 0, j = 0, k = 0;
-    char key;
-
+    renderer.Init();
+    Sprite sprite;
+    sprite.load_from_file("flower.txt");
+    utl::Vec<int, 2> pos = {10, 11};
+    std::queue<Keys> keys;
     while (true)
     {
-        if (Window::check_input() == Keys::KEY_ESC) break;
-        if (Window::check_input() == Keys::KEY_G || Window::check_input() == Keys::KEY_g) renderer.set_bg_color(Color(i % 255, j % 255, k % 255));
         renderer.empty();
         renderer.reset_screen();
-        renderer.draw_text_with_font({10, 10}, "ANIM", GREEN, standard_font);
-        renderer.draw_sprite(start_pos, animated_sprite.get_frame(frame));
+        Window::update_key_states();
+
+        std::string debug_info = "Key States: ";
+        debug_info += "W:" + std::to_string(Window::is_pressed(Keys::KEY_w)) + " ";
+        debug_info += "S:" + std::to_string(Window::is_pressed(Keys::KEY_s)) + " ";
+        debug_info += "A:" + std::to_string(Window::is_pressed(Keys::KEY_a)) + " ";
+        debug_info += "D:" + std::to_string(Window::is_pressed(Keys::KEY_d)) + " ";
+        debug_info += "ESC:" + std::to_string(Window::is_pressed(Keys::KEY_ESC));
+
+        if (Window::is_pressed(Keys::KEY_c)) renderer.set_bg_color(Color(i % 255, j % 255, k % 255));
+        if (Window::is_pressed(Keys::KEY_w)) pos[1] -= 2;
+        if (Window::is_pressed(Keys::KEY_s)) pos[1] += 2;
+        if (Window::is_pressed(Keys::KEY_a)) pos[0] -= 1;
+        if (Window::is_pressed(Keys::KEY_d)) pos[0] += 1;
+        utl::Vec<int, 2> mouse_pos = Window::get_mouse_pos();
+        renderer.draw_sprite(pos, sprite, GREEN);
+        renderer.draw_text({0, 0}, debug_info, WHITE);  // Assuming you have a draw_text method
+        renderer.draw_text({4, 4}, std::to_string(mouse_pos[0]) + " " + std::to_string(mouse_pos[1]), RED);
         renderer.draw();
-        renderer.sleep(1000 / 10);
-        frame = (frame + 1) % animated_sprite.get_frame_count();
-        i += 10;
+        renderer.sleep(1000 / 60);
+        i += 1;
         j += 2;
         k += 5;
     }
+
+    // renderer.Init();
+    // Animated_sprite animated_sprite;
+    // animated_sprite.load_from_file("animation.txt");
+    // utl::Vec<int, 2> start_pos = {10, 10};
+    // int frame = 0;
+    // int i = 0, j = 0, k = 0;
+    // char key;
+    //
+    // while (true)
+    // {
+    //     Keys key = Window::check_input();
+    //     renderer.empty();
+    //     renderer.reset_screen();
+    //     renderer.draw_text_with_font({10, 10}, "ANIM", GREEN, standard_font);
+    //     renderer.draw_sprite(start_pos, animated_sprite.get_frame(frame));
+    //     renderer.draw();
+    //     renderer.sleep(1000 / 10);
+    //     frame = (frame + 1) % animated_sprite.get_frame_count();
+    //     i += 10;
+    //     j += 2;
+    //     k += 5;
+    // }
     return 0;
 }

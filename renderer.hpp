@@ -865,6 +865,7 @@ bool Renderer::draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Col
     int py = 0;
     int x = start_pos.x();
     int y = start_pos.y();
+    if (y % 2 != 0) y--;
     // for (auto &row : data)
     // {
     //     for (auto &ch : row)

@@ -2,10 +2,15 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
+
+#define L_GEBRA_IMPLEMENTATION
 #include "keys.hpp"
+#include "l_gebra.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #else
+#include <fcntl.h>
 #include <poll.h>
 #include <termios.h>
 #include <unistd.h>
@@ -14,6 +19,7 @@
 class Window
 {
 private:
+    static std::unordered_map<Keys, bool> key_states;
 #ifdef _WIN32
     HANDLE hConsole;
     HANDLE hConsoleInput;
@@ -32,13 +38,15 @@ public:
         hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
         SetConsoleActiveScreenBuffer(hConsole);
         hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
+        system("cls");  // or "cls" on Windows
 #else
         tcgetattr(STDIN_FILENO, &orig_termios);
         struct termios raw = orig_termios;
         raw.c_lflag &= ~(ECHO | ICANON);
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+        std::cout << "\033[?1003h";  // Enable mouse tracking
+        system("clear");             // or "cls" on Windows
 #endif
-        system("clear");  // or "cls" on Windows
     }
 
     void cleanup_terminal()
@@ -47,6 +55,7 @@ public:
         CloseHandle(hConsole);
 #else
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+        std::cout << "\033[?1003l";  // Disable mouse tracking
 #endif
         system("clear");  // or "cls" on Windows
     }
@@ -120,4 +129,171 @@ public:
 #endif
         return Keys::KEY_UNKNOWN;
     }
+
+    static utl::Vec<int, 2> get_mouse_pos()
+    {
+        static utl::Vec<int, 2> last_valid_pos = {-1, -1};  // Store last valid position
+
+#ifdef _WIN32
+        DWORD numEvents = 0;
+        GetNumberOfConsoleInputEvents(hConsoleInput, &numEvents);
+
+        if (numEvents > 0)
+        {
+            INPUT_RECORD inputBuffer[128];
+            DWORD eventsRead;
+
+            if (ReadConsoleInput(hConsoleInput, inputBuffer, std::min(numEvents, DWORD(128)), &eventsRead))
+            {
+                for (DWORD i = 0; i < eventsRead; i++)
+                {
+                    if (inputBuffer[i].EventType == MOUSE_EVENT)
+                    {
+                        MOUSE_EVENT_RECORD mouseEvent = inputBuffer[i].Event.MouseEvent;
+                        if (mouseEvent.dwEventFlags == MOUSE_MOVED || (mouseEvent.dwEventFlags == 0 && mouseEvent.dwButtonState != 0))
+                        {
+                            last_valid_pos[0] = mouseEvent.dwMousePosition.X;
+                            last_valid_pos[1] = mouseEvent.dwMousePosition.Y;
+                        }
+                    }
+                }
+            }
+        }
+#else
+        struct pollfd fds[1];
+        fds[0].fd = STDIN_FILENO;
+        fds[0].events = POLLIN;
+
+        if (poll(fds, 1, 0) > 0 && (fds[0].revents & POLLIN))
+        {
+            char buf[64];
+            ssize_t nread = read(STDIN_FILENO, buf, sizeof(buf));
+
+            for (ssize_t i = 0; i < nread; i++)
+            {
+                if (buf[i] == '\033' && i + 5 < nread && buf[i + 1] == '[' && buf[i + 2] == 'M')
+                {
+                    int button = buf[i + 3] - 32;
+                    int x = buf[i + 4] - 33;
+                    int y = buf[i + 5] - 33;
+
+                    // Check if it's a movement or button press event
+                    if ((button & 0x20) || (button & 0x3) != 3)
+                    {
+                        last_valid_pos[0] = x;
+                        last_valid_pos[1] = y;
+                    }
+
+                    i += 5;  // Skip the rest of this mouse event
+                }
+            }
+        }
+#endif
+
+        return last_valid_pos;
+    }
+    static bool is_pressed(Keys key)
+    {
+        auto it = key_states.find(key);
+        return (it != key_states.end() && it->second);
+    }
+
+    static bool is_not_pressed(Keys key)
+    {
+        auto it = key_states.find(key);
+        return (it == key_states.end() || !it->second);
+    }
+
+    static int get_key_state(Keys key)
+    {
+#ifdef _WIN32
+        SHORT state = GetAsyncKeyState(key);
+        return (state & 0x8000) ? key : 0;
+#else
+        struct termios oldt, newt;
+        int ch;
+        int oldf;
+
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+        oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+        fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+        ch = getchar();
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+        if (ch != EOF)
+        {
+            return (parse_key(static_cast<int>(ch)));
+        }
+        else
+        {
+            return 0;
+        }
+#endif
+    }
+
+    static void update_key_states()
+    {
+#ifdef _WIN32
+        for (int key = 0; key < 256; ++key)
+        {
+            SHORT state = GetAsyncKeyState(key);
+            key_states[static_cast<Keys>(key)] = (state & 0x8000) != 0;
+        }
+#else
+        fd_set readfds;
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+
+        FD_ZERO(&readfds);
+        FD_SET(STDIN_FILENO, &readfds);
+
+        // Reset all key states to false at the start of each frame
+        for (auto &pair : key_states)
+        {
+            pair.second = false;
+        }
+
+        if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv) > 0)
+        {
+            char buf[256];
+            ssize_t nread = read(STDIN_FILENO, buf, sizeof(buf));
+            if (nread > 0)
+            {
+                for (ssize_t i = 0; i < nread; ++i)
+                {
+                    if (buf[i] == '\033' && i + 2 < nread && buf[i + 1] == '[' && buf[i + 2] == 'M')
+                    {
+                        // This is a mouse event, skip it
+                        i += 5;  // Skip the entire mouse event sequence
+                        continue;
+                    }
+                    Keys k = static_cast<Keys>(parse_key(buf[i]));
+                    key_states[k] = true;
+                    //    std::cout << "Key pressed: " << static_cast<int>(k) << std::endl;
+                }
+            }
+        }
+#endif
+
+        //     std::cout << "Key states updated: ";
+        //     for (const auto &pair : key_states)
+        //     {
+        //         if (pair.second)
+        //         {
+        //             std::cout << static_cast<int>(pair.first) << " ";
+        //         }
+        //     }
+        //     std::cout << std::endl;
+        // }
+    }
 };
+
+// Initialize the static member
+std::unordered_map<Keys, bool> Window::key_states;
