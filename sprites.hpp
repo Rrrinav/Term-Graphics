@@ -1,8 +1,6 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <string>
 #include <vector>
 #define L_GEBRA_IMPLEMENTATION
 #include "l_gebra.hpp"
@@ -208,6 +206,27 @@ public:
 
         while (std::getline(file, line))
         {
+            int num_digits_in_frame_number = 0;
+            int frame_num = frame_number;
+            bool is_frame_number = false;
+            while (frame_num > 0)
+            {
+                frame_num /= 10;
+                num_digits_in_frame_number++;
+            }
+            for (size_t i = 0; i < line.size(); i++)
+            {
+                if (std::isdigit(line[i]) && i <= num_digits_in_frame_number)
+                {
+                    is_frame_number = true;
+                }
+                else
+                {
+                    is_frame_number = false;
+                    break;
+                }
+            }
+
             if (line[0] == '#')  // Skip comments
             {
                 continue;
@@ -221,7 +240,7 @@ public:
                     current_frame_data.clear();
                 }
             }
-            else if (isdigit(line[0]))  // Frame number
+            else if (is_frame_number)  // Frame number
             {
                 if (!current_frame_data.empty())
                 {
@@ -256,5 +275,20 @@ public:
         }
 
         file.close();
-    } 
+    }
+
+    Sprite get_current_frame() const { return frames[current_frame]; }
+    Sprite get_frame(int index) const { return frames[index]; }
+    Sprite update(float dt)
+    {
+        frame_time += dt;
+        if (frame_time >= frame_duration)
+        {
+            frame_time = 0;
+            current_frame = (current_frame + 1) % frames.size();
+        }
+        return frames[current_frame];
+    }
+    size_t get_frame_count() const { return frames.size(); }
+    void set_frame_duration(float duration) { frame_duration = duration; }
 };

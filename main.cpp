@@ -1,4 +1,5 @@
 #include <string>
+#include "window.hpp"
 #define L_GEBRA_IMPLEMENTATION
 #include "l_gebra.hpp"
 #define RENDERER_IMPLEMENTATION
@@ -12,7 +13,7 @@
 
 int main()
 {
-    auto b = Renderer::create_buffer(80, 80);
+    auto b = Renderer::create_buffer(100, 80);
     Renderer renderer(b);
     renderer.set_bg_color(GRAY_4);
     std::vector<Point> points;
@@ -82,8 +83,28 @@ int main()
     //     i++;
     // }
 
-  Animated_sprite animated_sprite;
-  animated_sprite.load_from_file("animated_sprite.txt");
-  
+    renderer.Init();
+    Animated_sprite animated_sprite;
+    animated_sprite.load_from_file("animation.txt");
+    utl::Vec<int, 2> start_pos = {10, 10};
+    int frame = 0;
+    int i = 0, j = 0, k = 0;
+    char key;
 
+    while (true)
+    {
+        if (Window::check_input() == Keys::KEY_ESC) break;
+        if (Window::check_input() == Keys::KEY_G || Window::check_input() == Keys::KEY_g) renderer.set_bg_color(Color(i % 255, j % 255, k % 255));
+        renderer.empty();
+        renderer.reset_screen();
+        renderer.draw_text_with_font({10, 10}, "ANIM", GREEN, standard_font);
+        renderer.draw_sprite(start_pos, animated_sprite.get_frame(frame));
+        renderer.draw();
+        renderer.sleep(1000 / 10);
+        frame = (frame + 1) % animated_sprite.get_frame_count();
+        i += 10;
+        j += 2;
+        k += 5;
+    }
+    return 0;
 }

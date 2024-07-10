@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstring>
 #include <memory>
+#include <string>
 #include <vector>
 
 // PERF: We need to make this faster, super faster
@@ -14,6 +15,7 @@
 #include "color.hpp"
 #include "font.hpp"
 #include "sprites.hpp"
+#include "window.hpp"
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'_', 'a'}};
 
@@ -23,6 +25,7 @@ class Renderer
     std::shared_ptr<Buffer> _buffer;
     Color _bg_color = Color(TRANSPARENT);
     Pixel *_pixels;
+    Window _window;
 
 public:
     Renderer();
@@ -32,6 +35,7 @@ public:
     const Buffer &get_buffer() const;
     size_t get_width() const;
     size_t get_height() const;
+    void Init();
 
     bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
     bool draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
@@ -90,6 +94,8 @@ const Buffer &Renderer::get_buffer() const { return *_buffer; }
 size_t Renderer::get_width() const { return _buffer->width; }
 
 size_t Renderer::get_height() const { return _buffer->height / 2; }
+
+void Renderer::Init() { _window.init_terminal(); }
 
 bool Renderer::draw_point(utl::Vec<int, 2> point, char c, Color color)
 {
@@ -816,22 +822,30 @@ Font Renderer::load_font(const std::string &font_path)
 
 void Renderer::draw()
 {
+    std::string print_buffer;
+
     if (_bg_color != Color(TRANSPARENT))
     {
-        std::cout << _bg_color.to_ansii_bg_str();
+        print_buffer += _bg_color.to_ansii_bg_str();
+        // std::cout << _bg_color.to_ansii_bg_str();
     }
     for (size_t y = 0; y < _buffer->height; y += 2)
     {
         for (size_t x = 0; x < _buffer->width; x++)
         {
             // Implement anti-aliasing when drawing the buffer too
-            std::cout << (*_buffer)(x, y)._color.to_ansii_fg_str() << (*_buffer)(x, y)._ch;
+            //std::cout << (*_buffer)(x, y)._color.to_ansii_fg_str() << (*_buffer)(x, y)._ch;
+            print_buffer += (*_buffer)(x, y)._color.to_ansii_fg_str();
+            print_buffer += (*_buffer)(x, y)._ch;
         }
         // // fprintf(stdout, "%.*s\n", static_cast<int>(_buffer->width), print);
         // std::cout.write(print, _buffer->width);
-        std::cout << '\n';
+        //std::cout << '\n';
+        print_buffer += '\n';
     }
-    std::cout << ANSII_BG_RESET;
+    //    std::cout << ANSII_BG_RESET;
+    print_buffer += ANSII_BG_RESET;
+    _window.draw(print_buffer);
 }
 
 Sprite Renderer::load_sprite(const std::string &sprite_path)
@@ -865,13 +879,12 @@ bool Renderer::draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Col
         for (size_t k = 0; k < lines[j].size(); ++k)
         {
             px = x + k;
-            py = y + j * 2; 
+            py = y + j * 2;
             _buffer->set({px, py}, lines[j][k], color);
         }
     }
     return true;
 }
-
 
 std::shared_ptr<Buffer> Renderer::create_buffer(size_t width, size_t height) { return std::make_shared<Buffer>(width, height); }
 
