@@ -223,7 +223,7 @@ public:
         //  This was the original code for mouse input on Unix systems
         //  It was replaced by the code below it because it was not working properly as we need to update the mouse position every frame
         //  along with the key states.
-      //  This way only one event is recorded per frame but doing it together with the key states allows for multiple events to be recorded
+        //  This way only one event is recorded per frame but doing it together with the key states allows for multiple events to be recorded
         // struct pollfd fds[2];
         // fds[0].fd = STDIN_FILENO;
         // fds[0].events = POLLIN;
@@ -378,7 +378,7 @@ public:
                         }
                         mouse_pos = {x, y};
                         mouse_event.x = x;
-                        mouse_event.y = y;
+                        mouse_event.y = y * 2;
                         switch (button)
                         {
                             case 0:

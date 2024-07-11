@@ -84,72 +84,84 @@ int main()
     //     renderer.sleep(500);
     //     i++;
     // }
-    // int i = 0, j = 0, k = 0;
-    // renderer.Init();
-    // Sprite sprite;
-    // sprite.load_from_file("flower.txt");
-    // utl::Vec<int, 2> pos = {10, 11};
-    // std::vector<utl::Vec<int, 2>> poss;
-    // while (true)
-    // {
-    //     renderer.empty();
-    //     renderer.reset_screen();
-    //     Window::update_input_states();
-    //
-    //     std::string debug_info = "Key States: ";
-    //     debug_info += "W:" + std::to_string(Window::is_pressed(Keys::KEY_w)) + " ";
-    //     debug_info += "S:" + std::to_string(Window::is_pressed(Keys::KEY_s)) + " ";
-    //     debug_info += "A:" + std::to_string(Window::is_pressed(Keys::KEY_a)) + " ";
-    //     debug_info += "D:" + std::to_string(Window::is_pressed(Keys::KEY_d)) + " ";
-    //     debug_info += "ESC:" + std::to_string(Window::is_pressed(Keys::KEY_ESC));
-    //
-    //     if (Window::is_pressed(Keys::KEY_c)) renderer.set_bg_color(Color(i % 255, j % 255, k % 255));
-    //     if (Window::is_pressed(Keys::KEY_w)) pos[1] -= 2;
-    //     if (Window::is_pressed(Keys::KEY_s)) pos[1] += 2;
-    //     if (Window::is_pressed(Keys::KEY_a)) pos[0] -= 1;
-    //     if (Window::is_pressed(Keys::KEY_d)) pos[0] += 1;
-    //     if (Window::is_pressed(Keys::KEY_ESC)) break;
-    //     auto mouse_pos = Window::get_mouse_pos();
-    //     mouse_pos[1] *= 2;
-    //     renderer.draw_sprite(pos, sprite, GREEN);
-    //     poss.push_back(mouse_pos);
-    //     for (auto p : poss)
-    //     {
-    //         renderer.draw_point(p, 'u', BLUE);
-    //     }
-    //     renderer.draw_point(mouse_pos, 'o', RED);
-    //     renderer.draw_text({0, 0}, debug_info, WHITE);  // Assuming you have a draw_text method
-    //     renderer.draw_text({4, 4}, std::to_string(mouse_pos[0]) + " " + std::to_string(mouse_pos[1]), RED);
-    //     renderer.draw();
-    //     renderer.sleep(1000 / 60);
-    //     i += 1;
-    //     j += 2;
-    //     k += 5;
-    // }
-
+    int i = 0, j = 0, k = 0;
     renderer.Init();
-
+    Sprite sprite;
+    sprite.load_from_file("flower.txt");
+    utl::Vec<int, 2> pos = {10, 11};
+    std::vector<utl::Vec<int, 2>> poss;
     while (true)
     {
         renderer.empty();
         renderer.reset_screen();
         Window::update_input_states();
-        if (Window::is_pressed(Keys::KEY_ESC)) break;
-        auto mouse = Window::get_mouse_event();
-        std::string debug_info = "Mouse: ";
-        debug_info += "X:" + std::to_string(mouse.x) + " ";
-        debug_info += "Y:" + std::to_string(mouse.y) + " ";
-        if (mouse.event == Event_type::LEFT_CLICK) debug_info += "LEFT_CLICK ";
-        if (mouse.event == Event_type::RIGHT_CLICK) debug_info += "RIGHT_CLICK ";
-        if (mouse.event == Event_type::MIDDLE_CLICK) debug_info += "MIDDLE_CLICK ";
-        if (mouse.event == Event_type::SCROLL_UP) debug_info += "SCROLL_UP ";
-        if (mouse.event == Event_type::SCROLL_DOWN) debug_info += "SCROLL_DOWN ";
-        renderer.draw_text({0, 0}, debug_info, WHITE);
 
-        renderer.draw_text_with_font({10, 10}, "HELLO", GREEN, standard_font);
+        std::string debug_info = "Key States: ";
+        debug_info += "W:" + std::to_string(Window::is_pressed(Keys::KEY_w)) + " ";
+        debug_info += "S:" + std::to_string(Window::is_pressed(Keys::KEY_s)) + " ";
+        debug_info += "A:" + std::to_string(Window::is_pressed(Keys::KEY_a)) + " ";
+        debug_info += "D:" + std::to_string(Window::is_pressed(Keys::KEY_d)) + " ";
+        debug_info += "ESC:" + std::to_string(Window::is_pressed(Keys::KEY_ESC));
+
+        if (Window::is_pressed(Keys::KEY_c)) renderer.set_bg_color(Color(i % 255, j % 255, k % 255));
+        if (Window::is_pressed(Keys::KEY_w)) pos[1] -= 2;
+        if (Window::is_pressed(Keys::KEY_s)) pos[1] += 2;
+        if (Window::is_pressed(Keys::KEY_a)) pos[0] -= 1;
+        if (Window::is_pressed(Keys::KEY_d)) pos[0] += 1;
+        if (Window::is_pressed(Keys::KEY_ESC)) break;
+        auto mouse_pos = Window::get_mouse_pos();
+        mouse_pos[1] *= 2;
+        renderer.draw_sprite(pos, sprite, GREEN);
+        poss.push_back(mouse_pos);
+        for (auto p : poss)
+        {
+            if ((*b)(p[0], p[1])._ch != '.' && (*b)(p[0], p[1])._ch != ' ')
+            {
+                Color c = (*b)(p[0], p[1])._color.blend(LIGHT_TEAL);
+                renderer.draw_point(p, '.', YELLOW);
+            }
+            else
+            {
+                renderer.draw_point(p, '.', BLUE);
+            }
+        }
+        renderer.draw_point(mouse_pos, 'o', RED);
+        renderer.draw_text({0, 0}, debug_info, WHITE);  // Assuming you have a draw_text method
+        renderer.draw_text({4, 4}, std::to_string(mouse_pos[0]) + " " + std::to_string(mouse_pos[1]), RED);
         renderer.draw();
         renderer.sleep(1000 / 60);
+        i += 1;
+        j += 2;
+        k += 5;
     }
+
+    // renderer.Init();
+    //
+    // while (true)
+    // {
+    //     renderer.empty();
+    //     renderer.reset_screen();
+    //     Window::update_input_states();
+    //     if (Window::is_pressed(Keys::KEY_ESC)) break;
+    //     auto mouse = Window::get_mouse_event();
+    //     std::string debug_info = "Mouse: ";
+    //     debug_info += "X:" + std::to_string(mouse.x) + " ";
+    //     debug_info += "Y:" + std::to_string(mouse.y) + " ";
+    //     if (mouse.event == Event_type::LEFT_CLICK) debug_info += "LEFT_CLICK ";
+    //     if (mouse.event == Event_type::RIGHT_CLICK)
+    //     {
+    //         debug_info += "RIGHT_CLICK ";
+    //         renderer.set_bg_color(Color( (mouse.x * 10 + mouse.y * 20) % 255, (mouse.x * 5 + mouse.y * 7) % 255, (mouse.x * 6 + mouse.y * 4) % 255));
+    //     }
+    //     if (mouse.event == Event_type::MIDDLE_CLICK) debug_info += "MIDDLE_CLICK ";
+    //     if (mouse.event == Event_type::SCROLL_UP) debug_info += "SCROLL_UP ";
+    //     if (mouse.event == Event_type::SCROLL_DOWN) debug_info += "SCROLL_DOWN ";
+    //     renderer.draw_text({0, 0}, debug_info, WHITE);
+    //
+    //     renderer.draw_text_with_font({10, 10}, "HELLO", GREEN, standard_font);
+    //     renderer.draw();
+    //     renderer.sleep(1000 / 60);
+    // }
     // renderer.Init();
     // Animated_sprite animated_sprite;
     // animated_sprite.load_from_file("animation.txt");
