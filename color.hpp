@@ -1,5 +1,4 @@
-#include <iostream>
-#include <regex>
+#pragma once 
 #include <string>
 
 #define RESET "\u001b[0m"
@@ -189,6 +188,11 @@ public:
     Color invert() const { return Color(255 - _r, 255 - _g, 255 - _b); }
 
     Color blend(const Color &c) const { return Color((_r + c.r()) / 2, (_g + c.g()) / 2, (_b + c.b()) / 2); }
+    
+    std::string get_rgb_string() const
+    {
+      return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b);
+    }
 };
 
 #endif  // SIXTEEN_BIT_COLOR

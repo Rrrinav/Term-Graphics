@@ -1,32 +1,57 @@
-// WE WILL IMPLEMENT CACHE SYSTEM HERE TO CACHE MEMORY TO DECREASE PERFORMANCE OVERHEAD
-#include <string>
+#include <cstddef>
 #include <unordered_map>
 #include <vector>
-#define L_GEBRA_IMPLEMENTATION
-#include "l_gebra.hpp"
+
 #include "shapes.hpp"
 
 class Cache
 {
-    std::unordered_map<std::string, std::vector<utl::Vec<int, 2>>> _cache_buffer;
+    std::unordered_map<size_t, std::vector<Point>> _text_cache;
 
 public:
-    Cache() : _cache_buffer(std::unordered_map<std::string, std::vector<utl::Vec<int, 2>>>()) {}
-    Cache(const std::unordered_map<std::string, std::vector<utl::Vec<int, 2>>> &cache_buffer) : _cache_buffer(cache_buffer) {}
-    Cache(const Cache &other) : _cache_buffer(other._cache_buffer) {}
-
-    void cache_data(const std::string &key, const std::vector<utl::Vec<int, 2>> &value) { _cache_buffer[key] = value; }
-
-    void cache_point(const std::string &key, const utl::Vec<int, 2> &value)
+    Cache() = default;
+    std::vector<Point> cache_text(size_t id, std::vector<Point> points)
     {
-        // If key doesn't exist, create a new key
-        if (_cache_buffer.find(key) == _cache_buffer.end())
+        auto it = _text_cache.find(id);
+        if (it == _text_cache.end())
         {
-            _cache_buffer[key] = {value};
+            _text_cache[id] = points;
+            return _text_cache[id];
         }
         else
         {
-            _cache_buffer[key].push_back(value);
+            for (auto &p : points)
+            {
+                _text_cache[id].push_back(p);
+            }
         }
+        return _text_cache[id];
+    }
+
+    std::vector<Point> get_text(size_t id)
+    {
+        auto it = _text_cache.find(id);
+        if (it == _text_cache.end())
+        {
+            return std::vector<Point>();
+        }
+        return _text_cache[id];
+    }
+
+    std::vector<Point> remove_text(size_t id)
+    {
+        auto it = _text_cache.find(id);
+        if (it == _text_cache.end())
+        {
+            return std::vector<Point>();
+        }
+        std::vector<Point> points = _text_cache[id];
+        _text_cache.erase(id);
+        return points;
+    }
+
+    std::unordered_map<size_t, std::vector<Point>> get_text_cache()
+    {
+      return _text_cache;
     }
 };

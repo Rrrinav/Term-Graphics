@@ -1,7 +1,10 @@
+#pragma once
+
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <memory>
+
 #define L_GEBRA_IMPLEMENTATION
 #include "./l_gebra.hpp"  // Assuming this is your external library header
 #include "color.hpp"

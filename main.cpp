@@ -1,6 +1,7 @@
 #include <queue>
 #include <string>
 
+#include "color.hpp"
 #include "window.hpp"
 // #define L_GEBRA_IMPLEMENTATION
 // #include "l_gebra.hpp"
@@ -90,6 +91,7 @@ int main()
     sprite.load_from_file("flower.txt");
     utl::Vec<int, 2> pos = {10, 11};
     std::vector<utl::Vec<int, 2>> poss;
+    renderer.cache_text({4, 10}, "This is not getting calculated every frame", YELLOW);
     while (true)
     {
         renderer.empty();
@@ -104,6 +106,8 @@ int main()
         debug_info += "ESC:" + std::to_string(Window::is_pressed(Keys::KEY_ESC));
 
         if (Window::is_pressed(Keys::KEY_c)) renderer.set_bg_color(Color(i % 255, j % 255, k % 255));
+        std::string color_info = "Color: ";
+        color_info = color_info + Color(i % 255, j % 255, k % 255).get_rgb_string();
         if (Window::is_pressed(Keys::KEY_w)) pos[1] -= 2;
         if (Window::is_pressed(Keys::KEY_s)) pos[1] += 2;
         if (Window::is_pressed(Keys::KEY_a)) pos[0] -= 1;
@@ -125,11 +129,19 @@ int main()
                 renderer.draw_point(p, '.', BLUE);
             }
         }
+        auto mouse_event = Window::get_mouse_event();
         renderer.draw_point(mouse_pos, 'o', RED);
+        std::string click;
+        if (mouse_event.event == Event_type::LEFT_CLICK) click = "LEFT_CLICK";
+        if (mouse_event.event == Event_type::RIGHT_CLICK) click = "RIGHT_CLICK";
         renderer.draw_text({0, 0}, debug_info, WHITE);  // Assuming you have a draw_text method
-        renderer.draw_text({4, 4}, std::to_string(mouse_pos[0]) + " " + std::to_string(mouse_pos[1]), RED);
+        renderer.draw_text(
+            {4, 4}, "Mouse pos: " + std::to_string(mouse_event.x) + " " + std::to_string(mouse_event.y) + " Click: " + click, RED);
+        renderer.draw_text({4, 6}, color_info, WHITE);
+        renderer.draw_text({4, 8}, "Click <c> to change color to 'color_info'", RED);
         renderer.draw();
-        renderer.sleep(1000 / 60);
+        renderer.sleep(1000 / 120);
+
         i += 1;
         j += 2;
         k += 5;

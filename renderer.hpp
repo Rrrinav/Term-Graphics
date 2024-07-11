@@ -1,4 +1,6 @@
 #pragma once
+#ifndef RENDERER_HPP
+#define RENDERER_HPP
 
 #include <cstddef>
 #include <cstdio>
@@ -8,14 +10,18 @@
 #include <vector>
 
 // PERF: We need to make this faster, super faster
+// TODO: Check on windows
 
 #define L_GEBRA_IMPLEMENTATION
 #include "./l_gebra.hpp"  // Assuming this is your external library header
 #include "basic_units.hpp"
+#include "cache.hpp"
 #include "color.hpp"
 #include "font.hpp"
+#include "shapes.hpp"
 #include "sprites.hpp"
 #include "window.hpp"
+
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'_', 'a'}};
 
@@ -26,6 +32,8 @@ class Renderer
     Color _bg_color = Color(TRANSPARENT);
     Pixel *_pixels;
     Window _window;
+    Cache _cache;
+    size_t _text_id = 0;
 
 public:
     Renderer();
@@ -37,6 +45,7 @@ public:
     size_t get_height() const;
     void Init();
 
+    // TODO: Implement draw methods using shapes, bruv..
     bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
     bool draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
     bool draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
@@ -59,6 +68,24 @@ public:
     static Font load_font(const std::string &font_path);
     Sprite load_sprite(const std::string &sprite_path);
     bool draw_sprite(utl::Vec<int, 2> start, const Sprite &sprite, Color color = WHITE);
+
+    int cache_text(utl::Vec<int, 2> start, const std::string &text, Color color = WHITE)
+    {
+        _text_id++;
+        std::vector<Point> points;
+        int x = start.x();
+        int y = start.y();
+        for (size_t i = 0; i < text.size(); ++i)
+        {
+            if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
+            {
+                points.push_back(Point({x, y}, text[i], color));
+            }
+            x++;
+        }
+        _cache.cache_text(_text_id, points);
+        return _text_id;
+    }
 
     void draw();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
@@ -820,10 +847,23 @@ Font Renderer::load_font(const std::string &font_path)
     return Font();
 }
 
+//TODO: Implement 8 bit colors too bruv
+#ifdef EIGHT_BIT_COLORS
+
+#endif  // DEBUG
 void Renderer::draw()
 {
     std::string print_buffer;
 
+    auto text_cache = _cache.get_text_cache();
+    for (auto &id : text_cache)
+    {
+        auto text_vec = id.second;
+        for (auto &text : text_vec)
+        {
+            _buffer->set(text.get_pos(), text.get_char(), text.get_color());
+        }
+    }
     if (_bg_color != Color(TRANSPARENT))
     {
         print_buffer += _bg_color.to_ansii_bg_str();
@@ -910,7 +950,6 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
 // TODO: Frame rate control, line clipping, Texture Mapping, double buffering
-//       Camera system, merging buffers, gradient fill, 3D rendering, sprite rendering, user input
-//       windowing system
-
+//       Camera system, merging buffers, gradient fill, 3D rendering
 #endif  // RENDERER_IMPLEMENTATION
+#endif  // RENDERER_HPP
