@@ -91,7 +91,6 @@ int main()
     sprite.load_from_file("flower.txt");
     utl::Vec<int, 2> pos = {10, 11};
     std::vector<utl::Vec<int, 2>> poss;
-    renderer.cache_text({4, 10}, "This is not getting calculated every frame", YELLOW);
     while (true)
     {
         renderer.empty();

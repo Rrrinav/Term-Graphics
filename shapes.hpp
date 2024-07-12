@@ -3,7 +3,6 @@
 #include <uchar.h>
 
 #include <cmath>
-#define RENDERER_IMPLEMENTATION
 #include "color.hpp"
 #define L_GEBRA_IMPLEMENTATION
 #include "l_gebra.hpp"
