@@ -61,7 +61,8 @@ int main()
             time++;
         }
         std::string amp_str = "AMP:" + std::to_string(amp);
-        renderer.draw_text_with_font({(int)(amp_str.length() * 13 / 2 + 2), 1}, "Click a to increment and s to decrement the amp coeff", BRIGHT_PURPLE, font_2);
+        renderer.draw_text(
+            {(int)(amp_str.length() * 13 / 2 + 2), 1}, "Click a to increment and s to decrement the amp coeff", BRIGHT_PURPLE);
         renderer.draw_text_with_font({1, 1}, amp_str, BRIGHT_RED, standard_font);
         renderer.print();
         // phase1 += delta_t;

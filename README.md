@@ -51,6 +51,9 @@ int main() {
 ```cpp
 sprite.load_from_file("animation.txt");
 renderer.draw_sprite({10, 10}, animated_sprite.get_frame(frame));
+Animated_sprite animated_sprite;
+animated_sprite.load_from_file("animation.txt");
+renderer.draw_sprite(start_pos, animated_sprite.get_frame(frame));
 ```
 
 ### Shapes and anti-aliasing
