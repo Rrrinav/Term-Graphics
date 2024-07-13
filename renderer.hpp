@@ -45,22 +45,83 @@ public:
 
     // TODO: Implement draw methods using shapes and caching for all the shapes bruv..
     bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
+    bool draw_point(const Point &point)
+    {
+        bool i = draw_point(point.get_pos(), point.get_char(), point.get_color());
+        return i;
+    }
     int draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE), bool cache = false);
+    void draw_line(const Line &line) { int i = draw_line(line.get_start(), line.get_end(), line.get_char(), line.get_color()); }
     int draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE), bool cache = false);
+    void draw_anti_aliased_line(const Line &line)
+    {
+        int i = draw_anti_aliased_line(line.get_start(), line.get_end(), line.get_char(), line.get_color());
+    }
     int draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE), bool cache = false);
+    void draw_xaolin_wu_line(const Line &line)
+    {
+        int i = draw_xaolin_wu_line(line.get_start(), line.get_end(), line.get_char(), line.get_color());
+    }
     int draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE, bool cache = false);
+    void draw_circle(const Circle &circle)
+    {
+        int i = draw_circle(circle.get_center(), circle.get_radius(), circle.get_char(), circle.get_color());
+    }
     int draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE, bool cache = false);
+    void draw_fill_circle(const Circle &circle)
+    {
+        int i = draw_fill_circle(circle.get_center(), circle.get_radius(), circle.get_char(), circle.get_color());
+    }
     int draw_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, char char2 = '@', Color color = WHITE, bool cache = false);
+    void draw_rectangle(const Rectangle &rectangle)
+    {
+        int i = draw_rectangle(
+            rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(), '@', rectangle.get_color());
+    }
     int draw_fill_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, Color color = WHITE, bool cache = false);
+    void draw_fill_rectangle(const Rectangle &rectangle)
+    {
+      int i = draw_fill_rectangle(rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(),
+                                  rectangle.get_color());
+    }
     int draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE, bool cache = false);
+    void draw_triangle(const Triangle &triangle)
+    {
+      auto points = triangle.get_vertices();
+      int i = draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+    }
     int draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
                                 bool cache = false);
+    void draw_antialias_triangle(const Triangle &triangle)
+    {
+      auto points = triangle.get_vertices();
+      int i = draw_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+    }
     int draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
                                 bool cache = false);
+    void draw_xaolin_wu_triangle(const Triangle &triangle)
+    {
+      auto points = triangle.get_vertices();
+      int i = draw_xaolin_wu_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+    }
     int draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE, bool cache = false);
+    void draw_fill_triangle(const Triangle &triangle)
+    {
+      auto points = triangle.get_vertices();
+      int i = draw_fill_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+    }
     int draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
                                      bool cache = false);
+    void draw_fill_antialias_triangle(const Triangle &triangle)
+    {
+      auto points = triangle.get_vertices();
+      int i = draw_fill_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+    }
     int draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color = WHITE, bool cache = false);
+    void draw_polygon(const Polygon &polygon)
+    {
+      int i = draw_polygon(polygon.get_vertices(), polygon.get_char(), polygon.get_color());
+    }
     int draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f, Color color = WHITE,
                  bool cache = false);
     int draw_text(utl::Vec<int, 2> start, const std::string &text, Color color = WHITE, bool cache = false);
@@ -950,5 +1011,6 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
 // TODO: Frame rate control, line clipping, Texture Mapping, double buffering
-//       Camera system, merging buffers, gradient fill, 3D rendering
+//       Camera system, merging buffers, gradient fill, 3D rendering, key frames, procedural generation
+//       filter-effects, Noise
 #endif  // RENDERER_IMPLEMENTATION

@@ -123,6 +123,8 @@ public:
     void set_bottom_right(utl::Vec<int, 2> bottom_right) { _bottom_right = bottom_right; }
     void set_char(char ch) { _ch = ch; }
     utl::Vec<int, 2> get_top_left() const { return _top_left; }
+    int get_width() const { return _width; }
+    int get_height() const { return _height; }
     utl::Vec<int, 2> get_bottom_right() const { return _bottom_right; }
     char get_char() const { return _ch; }
     float get_area() const { return (_bottom_right[0] - _top_left[0]) * (_bottom_right[1] - _top_left[1]); }
@@ -161,6 +163,7 @@ public:
     // void draw_anti_alias(Renderer &renderer) { renderer.draw_antialias_triangle(_p1, _p2, _p3, _ch, _color); }
     // void draw_fill_anti_alias(Renderer &renderer) { renderer.draw_fill_antialias_triangle(_p1, _p2, _p3, _ch, _color); }
     // void draw_xaolin_wu(Renderer &renderer) { renderer.draw_xaolin_wu_triangle(_p1, _p2, _p3, _ch, _color); }
+    std::vector<utl::Vec<int, 2>> get_vertices() const { return {_p1, _p2, _p3}; }
     void set_p1(utl::Vec<int, 2> p1) { _p1 = p1; }
     void set_p2(utl::Vec<int, 2> p2) { _p2 = p2; }
     void set_p3(utl::Vec<int, 2> p3) { _p3 = p3; }
@@ -203,4 +206,6 @@ public:
     Polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color) : _vertices(vertices), _ch(ch), Shape(color) {}
     Polygon(const Polygon &polygon) : _vertices(polygon._vertices), _ch(polygon._ch), Shape(polygon._color) {}
     // void draw(Renderer &renderer) override { renderer.draw_polygon(_vertices, _ch, _color); }
+    std::vector<utl::Vec<int, 2>> get_vertices() const { return _vertices; }
+    char get_char() const { return _ch; }
 };
