@@ -10,6 +10,7 @@
 // PERF: We need to make this faster, super faster
 // TODO: Check on windows
 // BUG: Anti-aliasing in circle sucks
+// TODO: More and better error handling and exception handling, lessssgooooooooo...........!
 
 #include "./l_gebra.hpp"  // Assuming this is your external library header
 #include "basic_units.hpp"
@@ -18,10 +19,10 @@
 #include "font.hpp"
 #include "shapes.hpp"
 #include "sprites.hpp"
-#include "window.hpp"
+#include "window2.hpp"
 
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
-static char anti_aliasing[2][2] = {{'`', '^'}, {'_', 'c'}};
+static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
 
 // Renderer class
 class Renderer
@@ -81,47 +82,44 @@ public:
     int draw_fill_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, Color color = WHITE, bool cache = false);
     void draw_fill_rectangle(const Rectangle &rectangle)
     {
-      int i = draw_fill_rectangle(rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(),
-                                  rectangle.get_color());
+        int i = draw_fill_rectangle(
+            rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(), rectangle.get_color());
     }
     int draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE, bool cache = false);
     void draw_triangle(const Triangle &triangle)
     {
-      auto points = triangle.get_vertices();
-      int i = draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+        auto points = triangle.get_vertices();
+        int i = draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
     int draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
                                 bool cache = false);
     void draw_antialias_triangle(const Triangle &triangle)
     {
-      auto points = triangle.get_vertices();
-      int i = draw_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+        auto points = triangle.get_vertices();
+        int i = draw_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
     int draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
                                 bool cache = false);
     void draw_xaolin_wu_triangle(const Triangle &triangle)
     {
-      auto points = triangle.get_vertices();
-      int i = draw_xaolin_wu_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+        auto points = triangle.get_vertices();
+        int i = draw_xaolin_wu_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
     int draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE, bool cache = false);
     void draw_fill_triangle(const Triangle &triangle)
     {
-      auto points = triangle.get_vertices();
-      int i = draw_fill_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+        auto points = triangle.get_vertices();
+        int i = draw_fill_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
     int draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
                                      bool cache = false);
     void draw_fill_antialias_triangle(const Triangle &triangle)
     {
-      auto points = triangle.get_vertices();
-      int i = draw_fill_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+        auto points = triangle.get_vertices();
+        int i = draw_fill_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
     int draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color = WHITE, bool cache = false);
-    void draw_polygon(const Polygon &polygon)
-    {
-      int i = draw_polygon(polygon.get_vertices(), polygon.get_char(), polygon.get_color());
-    }
+    void draw_polygon(const Polygon &polygon) { int i = draw_polygon(polygon.get_vertices(), polygon.get_char(), polygon.get_color()); }
     int draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f, Color color = WHITE,
                  bool cache = false);
     int draw_text(utl::Vec<int, 2> start, const std::string &text, Color color = WHITE, bool cache = false);
@@ -131,7 +129,7 @@ public:
     static Font load_font(const std::string &font_path);
     Sprite load_sprite(const std::string &sprite_path);
     int draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Color color = WHITE, bool cache = false);
-    void draw();
+    void print();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
     void empty();
     static void clear_screen();
@@ -487,6 +485,7 @@ int Renderer::draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, ut
     return true;
 }
 
+// TODO: Make anti-aliasing better now that we have proper pixel class
 int Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color, bool cahce)
 {
     // We will implement anti-aliasing now for the circle
@@ -500,14 +499,11 @@ int Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Col
         {
             float distance = center.distance(utl::Vec<int, 2>{x, y});
 
-            // Ensure y is even for rendering
-            int render_y = (y % 2 == 0) ? y : y - 1;
-
             if (distance <= radius)
             {
-                _buffer->set({x, render_y}, ch, color);  // Drawing character
+                _buffer->set({x, y}, ch, color);  // Drawing character
             }  // calculate the anti-aliasing
-            else if (distance <= radius + 1)
+            else if (distance < radius + 1)
             {
                 float alpha = std::abs((float)distance - radius);
                 //Case 1: Top of pixel i.e. y is above the center
@@ -516,22 +512,22 @@ int Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Col
                     // next criteria is coverage
                     if (alpha <= 0.5)
                     {
-                        _buffer->set({x, render_y}, anti_aliasing[0][0], color);
+                        _buffer->set({x, y}, anti_aliasing[0][0], '/', color);
                     }
                     else
                     {
-                        _buffer->set({x, render_y}, anti_aliasing[0][1], color);
+                        _buffer->set({x, y}, anti_aliasing[0][1], color);
                     }
                 }
                 else  //Case 2: Bottom of pixel i.e. y is below the center
                 {
                     if (alpha <= 0.5)
                     {
-                        _buffer->set({x, render_y}, anti_aliasing[1][0], color);
+                        _buffer->set({x, y}, anti_aliasing[1][0], '\"', color);
                     }
                     else
                     {
-                        _buffer->set({x, render_y}, anti_aliasing[1][1], color);
+                        _buffer->set({x, y}, anti_aliasing[1][1], color);
                     }
                 }
             }
@@ -788,13 +784,17 @@ int Renderer::draw_text(utl::Vec<int, 2> start, const std::string &text, Color c
 {
     int x = start.x();
     int y = start.y();
-    for (size_t i = 0; i < text.size(); ++i)
+    for (size_t i = 0; i < text.size() / 2; i++)
     {
         if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
         {
-            _buffer->set({x, y}, text[i], color);
+            _buffer->set({x, y}, text[i * 2], text[i * 2 + 1], color);
         }
         x++;
+    }
+    if (text.size() % 2 == 1)
+    { 
+        _buffer->set({x, y}, text[(int)(text.length() - 1)], ' ', color);
     }
     return true;
 }
@@ -812,20 +812,27 @@ int Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &tex
         const Glyph &glyph = font.get_glyph(ch);
         const std::vector<std::string> &lines = glyph.get_lines();
         // Render each line of the glyph
+        // if width is odd then we need to draw last character, no biggies
         for (size_t j = 0; j < lines.size(); j++)
         {
-            for (size_t k = 0; k < lines[j].size(); ++k)
+            for (size_t k = 0; k < lines[j].size() / 2; k++)
             {
                 px = x + k;
-                py = y + j * 2;
-                _buffer->set({px, py}, lines[j][k], color);
+                py = y + j;
+                _buffer->set({px, py}, lines[j][2 * k], lines[j][2 * k + 1], color);
+            }
+            if (lines.size() % 2 == 1)
+            {
+                px = x + lines[0].size() / 2;
+                py = y + j;
+                _buffer->set({px, py}, lines[j][lines[j].size() - 1], ' ', color);
             }
         }
-        x += glyph.get_width() + 1;
+        x += glyph.get_width() / 2 + 1;
         if (x + glyph.get_width() + 1 >= static_cast<int>(_buffer->width))
         {
             x = start.x();
-            y += (glyph.get_height() + 1) * 2;
+            y += (glyph.get_height() + 1);
         }
     }
 
@@ -882,7 +889,8 @@ int Renderer::draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &t
             {
                 px = x + k;
                 py = y + j * 2;
-                if ((*_buffer)(px, py)._ch != ' ' && lines[j][k] == ' ') continue;
+                // BUG: This uses ch1
+                if ((*_buffer)(px, py)._ch1 != ' ' && lines[j][k] == ' ') continue;
                 _buffer->set({px, py}, lines[j][k], color);
             }
         }
@@ -912,7 +920,7 @@ Font Renderer::load_font(const std::string &font_path)
 #ifdef EIGHT_BIT_COLORS
 
 #endif  // DEBUG
-void Renderer::draw()
+void Renderer::print()
 {
     std::string print_buffer;
 
@@ -930,14 +938,22 @@ void Renderer::draw()
         print_buffer += _bg_color.to_ansii_bg_str();
         // std::cout << _bg_color.to_ansii_bg_str();
     }
-    for (size_t y = 0; y < _buffer->height; y += 2)
+    for (size_t y = 0; y < _buffer->height; y++)
     {
         for (size_t x = 0; x < _buffer->width; x++)
         {
             // Implement anti-aliasing when drawing the buffer too
             //std::cout << (*_buffer)(x, y)._color.to_ansii_fg_str() << (*_buffer)(x, y)._ch;
             print_buffer += (*_buffer)(x, y)._color.to_ansii_fg_str();
-            print_buffer += (*_buffer)(x, y)._ch;
+            // BUG: This uses ch1 and ch2
+            if ((*_buffer)(x, y)._ch1 == ' ' && (*_buffer)(x, y)._ch2 == ' ')
+            {
+                print_buffer += ' ';
+                print_buffer += ' ';
+                continue;
+            }
+            print_buffer += (*_buffer)(x, y)._ch1;
+            print_buffer += (*_buffer)(x, y)._ch2;
         }
         // // fprintf(stdout, "%.*s\n", static_cast<int>(_buffer->width), print);
         // std::cout.write(print, _buffer->width);
@@ -966,7 +982,7 @@ int Renderer::draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Colo
     int py = 0;
     int x = start_pos.x();
     int y = start_pos.y();
-    if (y % 2 != 0) y--;
+    // if (y % 2 != 0) y--;
     // for (auto &row : data)
     // {
     //     for (auto &ch : row)
@@ -978,11 +994,11 @@ int Renderer::draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Colo
     // }
     for (size_t j = 0; j < lines.size(); j++)
     {
-        for (size_t k = 0; k < lines[j].size(); ++k)
+        for (size_t k = 0; k < lines[j].size(); k += 2)
         {
-            px = x + k;
-            py = y + j * 2;
-            _buffer->set({px, py}, lines[j][k], color);
+            px = x + k / 2;
+            py = y + j;
+            _buffer->set({px, py}, lines[j][k], lines[j][k + 1], color);
         }
     }
     return true;

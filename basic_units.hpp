@@ -12,17 +12,35 @@
 class Pixel
 {
 public:
-    char _ch;
+    char _ch1;
+    char _ch2;
     Color _color;
 
     Pixel() = default;
-    Pixel(char ch, Color color) : _ch(ch), _color(color) {}
+    Pixel(char ch, Color color) : _ch1(ch), _ch2(ch), _color(color) {}
+    Pixel(char ch1, char ch2, Color color) : _ch1(ch1), _ch2(ch2), _color(color) {}
     ~Pixel() = default;
     void set_color(Color color) { _color = color; }
-    void set_char(char ch) { _ch = ch; }
+    void set_char(char ch)
+    {
+        _ch1 = ch;
+        _ch2 = ch;
+    }
+    void set_char(char ch1, char ch2)
+    {
+        _ch1 = ch1;
+        _ch2 = ch2;
+    }
     void set(char ch, Color color)
     {
-        _ch = ch;
+        _ch1 = ch;
+        _ch2 = ch;
+        _color = color;
+    }
+    void set(char ch1, char ch2, Color color)
+    {
+        _ch1 = ch1;
+        _ch2 = ch2;
         _color = color;
     }
 };
@@ -78,6 +96,15 @@ public:
         if (x >= 0 && x < width && y >= 0 && y < height)
         {
             data[y * width + x] = Pixel(ch, color);
+        }
+    }
+    void set(utl::Vec<int, 2> point, char ch1, char ch2, Color color)
+    {
+        size_t x = point.x();
+        size_t y = point.y();
+        if (x >= 0 && x < width && y >= 0 && y < height)
+        {
+            data[y * width + x] = Pixel(ch1, ch2, color);
         }
     }
 
