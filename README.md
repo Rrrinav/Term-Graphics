@@ -17,6 +17,7 @@ A powerful and flexible ASCII graphics rendering engine with advanced features f
 ## Quick Start
 
 ```cpp
+#define RENDERER_IMPLEMENTATION
 #include "renderer.hpp"
 
 int main() {
