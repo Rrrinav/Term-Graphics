@@ -98,6 +98,6 @@ All contributions are welcome and appreciated. For major changes, please open an
 
 ## Acknowledgements
 
-[Rinav](github.com/Rrrinav) (original author)
+[Rinav](https://github.com/Rrrinav) (original author)
 
 ### STILL IN DEVELOPMENT
