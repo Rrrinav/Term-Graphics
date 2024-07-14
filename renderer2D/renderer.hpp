@@ -8,23 +8,24 @@
 #include <vector>
 
 // PERF: We need to make this faster, super faster
-// TODO: Check on windows
+// TODO: Testing on windows
 // BUG: Anti-aliasing in circle sucks
-// TODO: More and better error handling and exception handling, lessssgooooooooo...........!
+// TODO: More and better error handling and exception handling (even though we dont need much of it)
 
 #define L_GEBRA_IMPLEMENTATION
-#include "../l_gebra/l_gebra.hpp" 
-#include "basic_units.hpp"
 #include "../dependencies/cache.hpp"
 #include "../dependencies/color.hpp"
 #include "../dependencies/font.hpp"
 #include "../dependencies/shapes.hpp"
 #include "../dependencies/sprites.hpp"
+#include "../l_gebra/l_gebra.hpp"
 #include "../window/window.hpp"
+#include "basic_units.hpp"
 
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
 
+#define RENDERER_IMPLEMENTATION
 // Renderer class
 class Renderer
 {
@@ -47,6 +48,7 @@ public:
 
     // TODO: Implement draw methods using shapes and caching for all the shapes bruv..
     bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
+    bool draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color = Color(WHITE));
     bool draw_point(const Point &point)
     {
         bool i = draw_point(point.get_pos(), point.get_char(), point.get_color());
@@ -92,12 +94,12 @@ public:
         auto points = triangle.get_vertices();
         int i = draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
-    int draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
-                                bool cache = false);
-    void draw_antialias_triangle(const Triangle &triangle)
+    int draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
+                                  bool cache = false);
+    void draw_antialiased_triangle(const Triangle &triangle)
     {
         auto points = triangle.get_vertices();
-        int i = draw_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+        int i = draw_antialiased_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
     int draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE,
                                 bool cache = false);
@@ -143,7 +145,7 @@ public:
     static void show_cursor();
 
 private:
-    void draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch, Color color = WHITE);
+    void draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch, std::vector<Point> &points, Color color, bool cache);
 };
 
 #ifdef RENDERER_IMPLEMENTATION
@@ -170,9 +172,7 @@ void Renderer::Init() { _window.init_terminal(); }
 bool Renderer::draw_point(utl::Vec<int, 2> point, char c, Color color)
 {
     if (point.x() < 0 || point.x() >= static_cast<int>(_buffer->width) || point.y() < 0 || point.y() >= static_cast<int>(_buffer->height))
-    {
         return false;
-    }
 
     int x = point.x();
     int y = point.y();
@@ -189,10 +189,25 @@ bool Renderer::draw_point(utl::Vec<int, 2> point, char c, Color color)
     return false;
 }
 
+bool Renderer::draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color)
+{
+    if (point.x() < 0 || point.x() >= static_cast<int>(_buffer->width) || point.y() < 0 || point.y() >= static_cast<int>(_buffer->height))
+        return false;
+
+    int x = point.x();
+    int y = point.y();
+
+    if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
+        _buffer->set({x, y}, c, c2, color);
+
+    return true;
+}
+
 int Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color, bool cache)
 {
     std::vector<Point> points;
-    if (cache) _cache_id++;
+    if (cache)
+        _cache_id++;
     // Anti-aliasing will depend upon left or right of the pixel and top or bottom of the pixel
     int x1 = start[0], y1 = start[1];
     int x2 = end[0], y2 = end[1];
@@ -220,11 +235,13 @@ int Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Co
         if (x1 >= 0 && x1 < static_cast<int>(_buffer->width) && y1 >= 0 && y1 < static_cast<int>(_buffer->height))
         {
             _buffer->set({x1, y1}, c, color);
-            if (cache) points.push_back(Point({x1, y1}, c, color));
+            if (cache)
+                points.push_back(Point({x1, y1}, c, color));
         }
 
         // Check if the end point is reached
-        if (x1 == x2 && y1 == y2) break;
+        if (x1 == x2 && y1 == y2)
+            break;
 
         e2 = 2 * err;
 
@@ -240,7 +257,8 @@ int Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Co
             y1 += sy;
         }
     }
-    _cache.create_cache(_cache_id, points);
+    if (cache)
+        _cache.create_cache(_cache_id, points);
 
     return _cache_id;
 }
@@ -287,16 +305,20 @@ int Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> en
                 if (prev_y < y1)
                 {
                     (*_buffer).set({x1, y1}, anti_aliasing[0][0], color);
-                    if (cache) points.push_back(Point({x1, y1}, c, color));
+                    if (cache)
+                        points.push_back(Point({x1, y1}, c, color));
                     (*_buffer).set({x1, y1 + 1}, anti_aliasing[0][1], color);
-                    if (cache) points.push_back(Point({x1, y1 + 1}, c, color));
+                    if (cache)
+                        points.push_back(Point({x1, y1 + 1}, c, color));
                 }
                 else
                 {
                     (*_buffer).set({x1, y1}, anti_aliasing[1][0], color);
-                    if (cache) points.push_back(Point({x1, y1}, c, color));
+                    if (cache)
+                        points.push_back(Point({x1, y1}, c, color));
                     (*_buffer).set({x1, y1 + 1}, anti_aliasing[1][1], color);
-                    if (cache) points.push_back(Point({x1, y1 + 1}, c, color));
+                    if (cache)
+                        points.push_back(Point({x1, y1 + 1}, c, color));
                 }
             }
             else if (prev_y == y1)
@@ -304,16 +326,20 @@ int Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> en
                 if (prev_x < x1)
                 {
                     (*_buffer).set({x1, y1}, anti_aliasing[0][0], color);
-                    if (cache) points.push_back(Point({x1, y1}, anti_aliasing[0][0], color));
+                    if (cache)
+                        points.push_back(Point({x1, y1}, anti_aliasing[0][0], color));
                     (*_buffer).set({x1 + 1, y1}, anti_aliasing[0][1], color);
-                    if (cache) points.push_back(Point({x1 + 1, y1}, anti_aliasing[0][1], color));
+                    if (cache)
+                        points.push_back(Point({x1 + 1, y1}, anti_aliasing[0][1], color));
                 }
                 else
                 {
                     (*_buffer).set({x1, y1}, anti_aliasing[1][0], color);
-                    if (cache) points.push_back(Point({x1, y1}, anti_aliasing[1][0], color));
+                    if (cache)
+                        points.push_back(Point({x1, y1}, anti_aliasing[1][0], color));
                     (*_buffer).set({x1 + 1, y1}, anti_aliasing[1][1], color);
-                    if (cache) points.push_back(Point({x1 + 1, y1}, anti_aliasing[1][1], color));
+                    if (cache)
+                        points.push_back(Point({x1 + 1, y1}, anti_aliasing[1][1], color));
                 }
             }
             else
@@ -324,7 +350,8 @@ int Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> en
         }
 
         // Check if the end point is reached
-        if (x1 == x2 && y1 == y2) break;
+        if (x1 == x2 && y1 == y2)
+            break;
 
         e2 = 2 * err;
 
@@ -340,14 +367,18 @@ int Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> en
             y1 += sy;
         }
     }
-
-    _cache.create_cache(id, points);
+    if (cache)
+        _cache.create_cache(id, points);
 
     return id;
 }
 
 int Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color, bool cache)
 {
+    std::vector<Point> points;
+    if (cache)
+        _cache_id++;
+
     int x0 = start.x();
     int y0 = start.y();
     int x1 = end.x();
@@ -380,7 +411,11 @@ int Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, 
         if (draw_point({ypxl1, xpxl1}, c) && draw_point({ypxl1 + 1, xpxl1}, c))
         {
             _buffer->set({ypxl1, xpxl1}, c, color);
+            if (cache)
+                points.push_back(Point({ypxl1, xpxl1}, c, color));
             _buffer->set({ypxl1 + 1, xpxl1}, c, color);
+            if (cache)
+                points.push_back(Point({ypxl1 + 1, xpxl1}, c, color));
         }
         xpxl1 = xend + 1;
     }
@@ -389,7 +424,11 @@ int Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, 
         if (draw_point({xpxl1, ypxl1}, c) && draw_point({xpxl1, ypxl1 + 1}, c))
         {
             _buffer->set({xpxl1, ypxl1}, c, color);
+            if (cache)
+                points.push_back(Point({xpxl1, ypxl1}, c, color));
             _buffer->set({xpxl1, ypxl1 + 1}, c, color);
+            if (cache)
+                points.push_back(Point({xpxl1, ypxl1 + 1}, c, color));
         }
         xpxl1 = xend + 1;
     }
@@ -407,7 +446,11 @@ int Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, 
         if (draw_point({ypxl2, xpxl2}, c) && draw_point({ypxl2 + 1, xpxl2}, c))
         {
             _buffer->set({ypxl2, xpxl2}, c, color);
+            if (cache)
+                points.push_back(Point({ypxl2, xpxl2}, c, color));
             _buffer->set({ypxl2 + 1, xpxl2}, c, color);
+            if (cache)
+                points.push_back(Point({ypxl2 + 1, xpxl2}, c, color));
         }
         xpxl2 = xend + 1;
     }
@@ -416,7 +459,11 @@ int Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, 
         if (draw_point({xpxl2, ypxl2}, c) && draw_point({xpxl2, ypxl2 + 1}, c))
         {
             _buffer->set({xpxl2, ypxl2}, c, color);
+            if (cache)
+                points.push_back(Point({xpxl2, ypxl2}, c, color));
             _buffer->set({xpxl2, ypxl2 + 1}, c, color);
+            if (cache)
+                points.push_back(Point({xpxl2, ypxl2 + 1}, c, color));
         }
         xpxl2 = xend + 1;
     }
@@ -432,68 +479,129 @@ int Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, 
                 if (alpha <= 0.5)
                 {
                     _buffer->set({static_cast<int>(intery), x}, anti_aliasing[0][0], color);
+                    if (cache)
+                        points.push_back(Point({static_cast<int>(intery), x}, anti_aliasing[0][0], color));
                     _buffer->set({static_cast<int>(intery) + 1, x}, anti_aliasing[0][1], color);
+                    if (cache)
+                        points.push_back(Point({static_cast<int>(intery) + 1, x}, anti_aliasing[0][1], color));
                 }
                 else
                 {
                     _buffer->set({static_cast<int>(intery), x}, anti_aliasing[1][0], color);
+                    if (cache)
+                        points.push_back(Point({static_cast<int>(intery), x}, anti_aliasing[1][0], color));
                     _buffer->set({static_cast<int>(intery) + 1, x}, anti_aliasing[1][1], color);
+                    if (cache)
+                        points.push_back(Point({static_cast<int>(intery) + 1, x}, anti_aliasing[1][1], color));
                 }
             }
         }
-        else
+        else if (draw_point({x, static_cast<int>(intery)}, c) && draw_point({x, static_cast<int>(intery) + 1}, c))
         {
-            if (draw_point({x, static_cast<int>(intery)}, c) && draw_point({x, static_cast<int>(intery) + 1}, c))
+            float alpha = intery - std::floor(intery);
+            if (alpha <= 0.5)
             {
-                float alpha = intery - std::floor(intery);
-                if (alpha <= 0.5)
-                {
-                    _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[0][0], color);
-                    _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[0][1], color);
-                }
-                else
-                {
-                    _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[1][0], color);
-                    _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[1][1], color);
-                }
+                _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[0][0], color);
+                if (cache)
+                    points.push_back(Point({x, static_cast<int>(intery)}, anti_aliasing[0][0], color));
+                _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[0][1], color);
+                if (cache)
+                    points.push_back(Point({x, static_cast<int>(intery) + 1}, anti_aliasing[0][1], color));
+            }
+            else
+            {
+                _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[1][0], color);
+                if (cache)
+                    points.push_back(Point({x, static_cast<int>(intery)}, anti_aliasing[1][0], color));
+                _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[1][1], color);
+                if (cache)
+                    points.push_back(Point({x, static_cast<int>(intery) + 1}, anti_aliasing[1][1], color));
             }
         }
         intery += gradient;  // Increment y intersection
     }
+    if (cache)
+        _cache.create_cache(_cache_id, points);
 
-    return true;
+    return _cache_id;
 }
-int Renderer::draw_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color, bool cache)
+
+int Renderer::draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color, bool cache)
 {
-    draw_anti_aliased_line(a, b, ch, color);
-    draw_anti_aliased_line(b, c, ch, color);
-    draw_anti_aliased_line(c, a, ch, color);
-    return true;
+    std::vector<Point> points;
+
+    int id = draw_anti_aliased_line(a, b, ch, color, cache);
+    int id2 = draw_anti_aliased_line(b, c, ch, color, cache);
+    int id3 = draw_anti_aliased_line(c, a, ch, color, cache);
+    if (cache)
+    {
+        _cache_id++;
+        std::vector<Point> points1 = _cache.get_cache(id);
+        std::vector<Point> points2 = _cache.get_cache(id2);
+        std::vector<Point> points3 = _cache.get_cache(id3);
+        points.insert(points.end(), points1.begin(), points1.end());
+        points.insert(points.end(), points2.begin(), points2.end());
+        points.insert(points.end(), points3.begin(), points3.end());
+        _cache.create_cache(_cache_id, points);
+    }
+
+    return _cache_id;
 }
 
 int Renderer::draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color, bool cache)
 {
-    draw_line(a, b, ch, color);
-    draw_line(b, c, ch, color);
-    draw_line(c, a, ch, color);
-    return true;
+    std::vector<Point> points;
+
+    int id = draw_line(a, b, ch, color, cache);
+    int id2 = draw_line(b, c, ch, color, cache);
+    int id3 = draw_line(c, a, ch, color, cache);
+    if (cache)
+    {
+        _cache_id++;
+        std::vector<Point> points1 = _cache.get_cache(id);
+        std::vector<Point> points2 = _cache.get_cache(id2);
+        std::vector<Point> points3 = _cache.get_cache(id3);
+        points.insert(points.end(), points1.begin(), points1.end());
+        points.insert(points.end(), points2.begin(), points2.end());
+        points.insert(points.end(), points3.begin(), points3.end());
+        _cache.create_cache(_cache_id, points);
+    }
+
+    return _cache_id;
 }
 int Renderer::draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color, bool cache)
 {
-    draw_xaolin_wu_line(a, b, ch, color);
-    draw_xaolin_wu_line(b, c, ch, color);
-    draw_xaolin_wu_line(c, a, ch, color);
-    return true;
+    std::vector<Point> points;
+
+    int id = draw_xaolin_wu_line(a, b, ch, color, cache);
+    int id2 = draw_xaolin_wu_line(b, c, ch, color, cache);
+    int id3 = draw_xaolin_wu_line(c, a, ch, color, cache);
+    if (cache)
+    {
+        _cache_id++;
+        std::vector<Point> points1 = _cache.get_cache(id);
+        std::vector<Point> points2 = _cache.get_cache(id2);
+        std::vector<Point> points3 = _cache.get_cache(id3);
+        points.insert(points.end(), points1.begin(), points1.end());
+        points.insert(points.end(), points2.begin(), points2.end());
+        points.insert(points.end(), points3.begin(), points3.end());
+        _cache.create_cache(_cache_id, points);
+    }
+
+    return _cache_id;
 }
 
 // TODO: Make anti-aliasing better now that we have proper pixel class
 int Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color, bool cahce)
 {
+    std::vector<Point> points;
+
     // We will implement anti-aliasing now for the circle
     utl::Vec<int, 2> begin = center + (-1 * radius);
     utl::Vec<int, 2> end = center + radius;
 
-    if (radius % 2 == 0 && begin[1] - 1 > 0 && begin[1] - 1 < _buffer->height) begin[1] = begin[1] - 1;
+    if (radius % 2 == 0 && begin[1] - 1 > 0 && begin[1] - 1 < _buffer->height)
+        begin[1] = begin[1] - 1;
     for (int y = begin.y(); y <= end.y(); ++y)
     {
         for (int x = begin.x(); x <= end.x(); ++x)
@@ -503,6 +611,8 @@ int Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Col
             if (distance <= radius)
             {
                 _buffer->set({x, y}, ch, color);  // Drawing character
+                if (cahce)
+                    points.push_back(Point({x, y}, ch, color));
             }  // calculate the anti-aliasing
             else if (distance < radius + 1)
             {
@@ -514,32 +624,42 @@ int Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Col
                     if (alpha <= 0.5)
                     {
                         _buffer->set({x, y}, anti_aliasing[0][0], '/', color);
+                        if (cahce)
+                            points.push_back(Point({x, y}, anti_aliasing[0][0], color));
                     }
                     else
                     {
                         _buffer->set({x, y}, anti_aliasing[0][1], color);
+                        if (cahce)
+                            points.push_back(Point({x, y}, anti_aliasing[0][1], color));
                     }
                 }
                 else  //Case 2: Bottom of pixel i.e. y is below the center
-                {
                     if (alpha <= 0.5)
                     {
                         _buffer->set({x, y}, anti_aliasing[1][0], '\"', color);
+                        if (cahce)
+                            points.push_back(Point({x, y}, anti_aliasing[1][0], color));
                     }
                     else
                     {
                         _buffer->set({x, y}, anti_aliasing[1][1], color);
+                        if (cahce)
+                            points.push_back(Point({x, y}, anti_aliasing[1][1], color));
                     }
-                }
             }
         }
     }
-
-    return true;
+    if (cahce)
+        _cache.create_cache(_cache_id, points);
+    return _cache_id;
 }
 
 int Renderer::draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color, bool cache)
 {
+    if (cache)
+        _cache_id++;
+    std::vector<Point> points;
     int x = radius;
     int y = 0;
     int radiusError = 1 - x;
@@ -547,7 +667,7 @@ int Renderer::draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color co
     while (x >= y)
     {
         // Draw pixels in all octants
-        draw_circle_octants(center, x, y, ch, color);
+        draw_circle_octants(center, x, y, ch, points, color, cache);
         y++;
 
         if (radiusError < 0)
@@ -560,31 +680,44 @@ int Renderer::draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color co
             radiusError += 2 * (y - x + 1);
         }
     }
-    return true;
+    if (cache)
+        _cache.create_cache(_cache_id, points);
+    return _cache_id;
 }
 
-void Renderer::draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch, Color color)
+void Renderer::draw_circle_octants(const utl::Vec<int, 2> &center, int x, int y, char ch, std::vector<Point> &points, Color color,
+                                   bool cache)
 {
-    // Upper octants
-    char old = ch;
-    _buffer->set({center.x() + x, center.y() + y}, ch, color);
-    _buffer->set({center.x() - x, center.y() + y}, ch, color);
-    _buffer->set({center.x() + y, center.y() + x}, ch, color);
-    _buffer->set({center.x() - y, center.y() + x}, ch, color);
+    if (!cache)
+    {
+        _buffer->set({center.x() + x, center.y() + y}, ch, color);
+        _buffer->set({center.x() - x, center.y() + y}, ch, color);
+        _buffer->set({center.x() + y, center.y() + x}, ch, color);
+        _buffer->set({center.x() - y, center.y() + x}, ch, color);
 
-    // Lower octants
-    _buffer->set({center.x() + x, center.y() - y}, ch, color);
-    _buffer->set({center.x() - x, center.y() - y}, ch, color);
-    _buffer->set({center.x() + y, center.y() - x}, ch, color);
-    _buffer->set({center.x() - y, center.y() - x}, ch, color);
+        // Lower octants
+        _buffer->set({center.x() + x, center.y() - y}, ch, color);
+        _buffer->set({center.x() - x, center.y() - y}, ch, color);
+        _buffer->set({center.x() + y, center.y() - x}, ch, color);
+        _buffer->set({center.x() - y, center.y() - x}, ch, color);
+    }
+    if (cache)
+    {
+        points.push_back(Point({center.x() + x, center.y() + y}, ch, color));
+        points.push_back(Point({center.x() - x, center.y() + y}, ch, color));
+        points.push_back(Point({center.x() + y, center.y() + x}, ch, color));
+        points.push_back(Point({center.x() - y, center.y() + x}, ch, color));
+        // Lower octants
+        points.push_back(Point({center.x() + x, center.y() - y}, ch, color));
+        points.push_back(Point({center.x() - x, center.y() - y}, ch, color));
+        points.push_back(Point({center.x() + y, center.y() - x}, ch, color));
+        points.push_back(Point({center.x() - y, center.y() - x}, ch, color));
+    }
 }
 
 int Renderer::draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color, bool cache)
 {
-    for (size_t i = 0; i < vertices.size(); i++)
-    {
-        draw_line(vertices[i], vertices[(i + 1) % vertices.size()], ch, color);
-    }
+    for (size_t i = 0; i < vertices.size(); i++) draw_line(vertices[i], vertices[(i + 1) % vertices.size()], ch, color);
     draw_line(vertices[vertices.size() - 1], vertices[0], ch, color);
     return true;
 }
@@ -611,9 +744,7 @@ int Renderer::draw_fill_rectangle(utl::Vec<int, 2> point, int width, int height,
         {
             // Ensure y is even for rendering
             if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
-            {
                 _buffer->set({x, y}, ch, color);
-            }
         }
     }
     return true;
@@ -622,30 +753,34 @@ int Renderer::draw_fill_rectangle(utl::Vec<int, 2> point, int width, int height,
 int Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color, bool cache)
 {
     // Sort the vertices by y-coordinate
-    if (a.y() > b.y()) std::swap(a, b);
-    if (a.y() > c.y()) std::swap(a, c);
-    if (b.y() > c.y()) std::swap(b, c);
+    if (a.y() > b.y())
+        std::swap(a, b);
+    if (a.y() > c.y())
+        std::swap(a, c);
+    if (b.y() > c.y())
+        std::swap(b, c);
     // Function to draw a horizontal line within bounds
     auto safe_draw_line = [&](int x1, int y, int x2)
     {
-        if (y < 0 || y >= static_cast<int>(_buffer->height)) return;
-        if (x1 > x2) std::swap(x1, x2);
-        if (x2 < 0 || x1 >= static_cast<int>(_buffer->width)) return;
-        x1 = std::max(x1, 0);
-        x2 = std::min(x2, static_cast<int>(_buffer->width) - 1);
-        for (int x = x1; x <= x2; ++x)
-        {
-            _buffer->set({x, y}, ch, color);
-        }
+        // if (y < 0 || y >= static_cast<int>(_buffer->height))
+        //     return;
+        // if (x1 > x2)
+        //     std::swap(x1, x2);
+        // if (x2 < 0 || x1 >= static_cast<int>(_buffer->width))
+        //     return;
+        // x1 = std::max(x1, 0);
+        // x2 = std::min(x2, static_cast<int>(_buffer->width) - 1);
+        for (int x = x1; x <= x2; ++x) _buffer->set({x, y}, ch, color);
     };
     // Function to interpolate x between two points at a given y
     auto interpolate_x = [](utl::Vec<int, 2> p1, utl::Vec<int, 2> p2, int y) -> int
     {
-        if (p1.y() == p2.y()) return p1.x();  // Horizontal line
+        if (p1.y() == p2.y())
+            return p1.x();  // Horizontal line
         return p1.x() + (y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
     };
     // Fill the upper part of the triangle (from a to b)
-    for (int y = a.y(); y <= b.y(); ++y)
+    for (int y = a.y(); y < b.y(); ++y)
     {
         int x1 = interpolate_x(a, b, y);
         int x2 = interpolate_x(a, c, y);
@@ -664,28 +799,32 @@ int Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Ve
 int Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color, bool cache)
 {
     // Sort the vertices by y-coordinate
-    if (a.y() > b.y()) std::swap(a, b);
-    if (a.y() > c.y()) std::swap(a, c);
-    if (b.y() > c.y()) std::swap(b, c);
+    if (a.y() > b.y())
+        std::swap(a, b);
+    if (a.y() > c.y())
+        std::swap(a, c);
+    if (b.y() > c.y())
+        std::swap(b, c);
 
     // Function to draw a horizontal line within bounds
     auto safe_draw_line = [&](int x1, int y, int x2)
     {
-        if (y < 0 || y >= static_cast<int>(_buffer->height)) return;
-        if (x1 > x2) std::swap(x1, x2);
-        if (x2 < 0 || x1 >= static_cast<int>(_buffer->width)) return;
+        if (y < 0 || y >= static_cast<int>(_buffer->height))
+            return;
+        if (x1 > x2)
+            std::swap(x1, x2);
+        if (x2 < 0 || x1 >= static_cast<int>(_buffer->width))
+            return;
         x1 = std::max(x1, 0);
         x2 = std::min(x2, static_cast<int>(_buffer->width) - 1);
-        for (int x = x1; x <= x2; ++x)
-        {
-            _buffer->set({x, y}, ch, color);
-        }
+        for (int x = x1; x <= x2; ++x) _buffer->set({x, y}, ch, color);
     };
 
     // Function to interpolate x between two points at a given y
     auto interpolate_x = [](utl::Vec<int, 2> p1, utl::Vec<int, 2> p2, int y) -> int
     {
-        if (p1.y() == p2.y()) return p1.x();  // Horizontal line
+        if (p1.y() == p2.y())
+            return p1.x();  // Horizontal line
         return p1.x() + (y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
     };
 
@@ -700,13 +839,9 @@ int Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> 
         safe_draw_line(x1, y, x2);
         // Implement anti-aliasing here based on number of empty pixels
         if (count && prev_x1 != x1)
-        {
             draw_anti_aliased_line({prev_x1, y - 1}, {x1, y}, ch);
-        }
         if (count && prev_x2 != x2)
-        {
             draw_anti_aliased_line({prev_x2, y - 1}, {x2, y}, ch);
-        }
         prev_x1 = x1;
         prev_x2 = x2;
         count++;
@@ -719,13 +854,9 @@ int Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> 
         int x2 = interpolate_x(a, c, y);
         safe_draw_line(x1, y, x2);
         if (count && prev_x1 != x1)
-        {
             draw_anti_aliased_line({prev_x1, y - 1}, {x1, y}, ch);
-        }
         if (count && prev_x2 != x2)
-        {
             draw_anti_aliased_line({prev_x2, y - 1}, {x2, y}, ch);
-        }
         prev_x1 = x1;
         prev_x2 = x2;
         count++;
@@ -754,24 +885,16 @@ int Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_a
             {
                 // next criteria is coverage
                 if (alpha <= 0.5)
-                {
                     _buffer->set({x, y}, anti_aliasing[0][0], color);
-                }
                 else
-                {
                     _buffer->set({x, y}, anti_aliasing[0][1], color);
-                }
             }
             else  //Case 2: Bottom of pixel i.e. y is below the center
             {
                 if (alpha <= 0.5)
-                {
                     _buffer->set({x, y}, anti_aliasing[1][0], color);
-                }
                 else
-                {
                     _buffer->set({x, y}, anti_aliasing[1][1], color);
-                }
             }
         }
 
@@ -783,6 +906,10 @@ int Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_a
 
 int Renderer::draw_text(utl::Vec<int, 2> start, const std::string &text, Color color, bool cache)
 {
+    if (cache)
+        _cache_id++;
+
+    std::vector<Point> points;
     int x = start.x();
     int y = start.y();
     for (size_t i = 0; i < text.size() / 2; i++)
@@ -790,18 +917,28 @@ int Renderer::draw_text(utl::Vec<int, 2> start, const std::string &text, Color c
         if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
         {
             _buffer->set({x, y}, text[i * 2], text[i * 2 + 1], color);
+            if (cache)
+                points.push_back(Point({x, y}, text[i * 2], text[i * 2 + 1], color));
         }
         x++;
     }
     if (text.size() % 2 == 1)
     {
         _buffer->set({x, y}, text[(int)(text.length() - 1)], ' ', color);
+        if (cache)
+            points.push_back(Point({x, y}, text[(int)(text.length() - 1)], ' ', color));
     }
-    return true;
+    if (cache)
+        _cache.create_cache(_cache_id, points);
+
+    return _cache_id;
 }
 
 int Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &text, Color color, const Font &font, bool cache)
 {
+    if (cache)
+        _cache_id++;
+    std::vector<Point> points;
     int x = start.x();
     int y = start.y();
     int px = 0;
@@ -809,7 +946,8 @@ int Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &tex
     int count = 0;
     for (char ch : text)
     {
-        if (font.get_glyph(ch).is_empty()) continue;
+        if (font.get_glyph(ch).is_empty())
+            continue;
         const Glyph &glyph = font.get_glyph(ch);
         const std::vector<std::string> &lines = glyph.get_lines();
         // Render each line of the glyph
@@ -821,12 +959,16 @@ int Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &tex
                 px = x + k;
                 py = y + j;
                 _buffer->set({px, py}, lines[j][2 * k], lines[j][2 * k + 1], color);
+                if (cache)
+                    points.push_back(Point({px, py}, lines[j][2 * k], lines[j][2 * k + 1], color));
             }
             if (lines.size() % 2 == 1)
             {
                 px = x + lines[0].size() / 2;
                 py = y + j;
                 _buffer->set({px, py}, lines[j][lines[j].size() - 1], ' ', color);
+                if (cache)
+                    points.push_back(Point({px, py}, lines[j][lines[j].size() - 1], ' ', color));
             }
         }
         x += glyph.get_width() / 2 + 1;
@@ -837,7 +979,10 @@ int Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &tex
         }
     }
 
-    return true;
+    if (cache)
+        _cache.create_cache(_cache_id, points);
+
+    return _cache_id;
 }
 
 int Renderer::draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &text, Color color, Color shadow_color, const Font &font,
@@ -851,7 +996,8 @@ int Renderer::draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &t
     // Draw the shadow first
     for (char ch : text)
     {
-        if (font.get_glyph(ch).is_empty()) continue;
+        if (font.get_glyph(ch).is_empty())
+            continue;
         const Glyph &glyph = font.get_glyph(ch);
         const std::vector<std::string> &lines = glyph.get_lines();
 
@@ -880,7 +1026,8 @@ int Renderer::draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &t
     // Draw the actual text
     for (char ch : text)
     {
-        if (font.get_glyph(ch).is_empty()) continue;
+        if (font.get_glyph(ch).is_empty())
+            continue;
         const Glyph &glyph = font.get_glyph(ch);
         const std::vector<std::string> &lines = glyph.get_lines();
         // Render each line of the glyph
@@ -891,7 +1038,8 @@ int Renderer::draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &t
                 px = x + k;
                 py = y + j * 2;
                 // BUG: This uses ch1
-                if ((*_buffer)(px, py)._ch1 != ' ' && lines[j][k] == ' ') continue;
+                if ((*_buffer)(px, py)._ch1 != ' ' && lines[j][k] == ' ')
+                    continue;
                 _buffer->set({px, py}, lines[j][k], color);
             }
         }
@@ -911,9 +1059,7 @@ Font Renderer::load_font(const std::string &font_path)
 {
     Font font;
     if (font.load_from_file(font_path))
-    {
         return font;
-    }
     return Font();
 }
 
@@ -929,10 +1075,7 @@ void Renderer::print()
     for (auto &id : text_cache)
     {
         auto text_vec = id.second;
-        for (auto &text : text_vec)
-        {
-            _buffer->set(text.get_pos(), text.get_char(), text.get_color());
-        }
+        for (auto &text : text_vec) _buffer->set(text.get_pos(), text.get_char(), text.get_char2(), text.get_color());
     }
     if (_bg_color != Color(TRANSPARENT))
     {
@@ -970,9 +1113,7 @@ Sprite Renderer::load_sprite(const std::string &sprite_path)
 {
     Sprite sprite;
     if (sprite.load_from_file(sprite_path))
-    {
         return sprite;
-    }
     return Sprite();
 }
 

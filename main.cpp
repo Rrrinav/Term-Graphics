@@ -1,10 +1,9 @@
-#include <string>
-
-#define RENDERER_IMPLEMENTATION
-#include <algorithm>
+//#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#define RENDERER_IMPLEMENTATION
 #include "assets/library_fonts.hpp"
 #include "renderer2D/renderer.hpp"
 
@@ -27,6 +26,7 @@ int main()
     font1.load_from_file("assets/slant.txt");
     Font font_2;
     font_2.load_from_file("assets/small_font.txt");
+    Font font3(standard_5x5_font);
 
     float phase1 = 3.0f;
     float phase2 = 2.0f;
@@ -35,16 +35,17 @@ int main()
     int time = 0;
     float flight_coeff = 0.5;
     utl::Vec<int, 2> v = {0, 4};
+    //    renderer.draw_fill_circle({20, 20}, 10, 'o', BRIGHT_BLUE, true);
+    renderer.draw_text({3, 8}, "Click a to increment and s to decrement the amp coeff", BRIGHT_PURPLE, true);
     for (;;)
     {
         Window::update_input_states();
         renderer.empty();
         renderer.reset_screen();
         if (Window::is_pressed(Keys::KEY_a))
-        {
             amp += 1;
-        }
-        if (Window::is_pressed(Keys::KEY_s)) amp -= 1;
+        if (Window::is_pressed(Keys::KEY_s))
+            amp -= 1;
         for (int x = 0; x < 120; x++)
         {
             int y = 100 - (50 + static_cast<int>(2 * amp * exp(std::sin(time / 7.0f + delta_t * phase1)) +
@@ -55,8 +56,6 @@ int main()
             time++;
         }
         std::string amp_str = "AMP:" + std::to_string(amp);
-        renderer.draw_text(
-            {(int)(amp_str.length() * 13 / 2 + 2), 1}, "Click a to increment and s to decrement the amp coeff", BRIGHT_PURPLE);
         renderer.draw_text_with_font({1, 1}, amp_str, BRIGHT_RED, font1);
         renderer.print();
         // phase1 += delta_t;
@@ -233,16 +232,17 @@ int main()
     //     k += 5;
     // }
 
-    // Drawing water top layer using sum of sine waves
     // int gravity = 80;
     // utl::Vec<float, 2> c_pos = {RAD, RAD};
     // utl::Vec<float, 2> velocity = {15, 0};
     // utl::Vec<float, 2> acceleration = {0, 18};
     // delta_t = 0.16f;
+    // renderer.draw_anti_aliased_line({120, 20}, {0, 60}, '-', BRIGHT_WHITE, true);
     // while (true)
     // {
     //     renderer.empty();
     //     renderer.reset_screen();
+    //     renderer.draw_fill_triangle({80, 10}, {60, 40}, {160, 60}, 'l', BRIGHT_RED, true);
     //     velocity = velocity + acceleration * delta_t;
     //     c_pos = c_pos + velocity * delta_t;
     //     if (c_pos[0] + RAD >= 120 || c_pos[0] - RAD <= 0)

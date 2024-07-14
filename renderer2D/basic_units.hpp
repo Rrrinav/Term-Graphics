@@ -6,8 +6,8 @@
 #include <memory>
 
 #define L_GEBRA_IMPLEMENTATION
-#include "../l_gebra/l_gebra.hpp"  // Assuming this is your external library header
 #include "../dependencies/color.hpp"
+#include "../l_gebra/l_gebra.hpp"  // Assuming this is your external library header
 
 class Pixel
 {
@@ -15,34 +15,64 @@ public:
     char _ch1;
     char _ch2;
     Color _color;
+    bool _is_empty = true;
 
     Pixel() = default;
-    Pixel(char ch, Color color) : _ch1(ch), _ch2(ch), _color(color) {}
-    Pixel(char ch1, char ch2, Color color) : _ch1(ch1), _ch2(ch2), _color(color) {}
+    Pixel(char ch, Color color) : _ch1(ch), _ch2(ch), _color(color)
+    {
+        if (ch == ' ')
+            _is_empty = true;
+        else
+            _is_empty = false;
+    }
+    Pixel(char ch1, char ch2, Color color) : _ch1(ch1), _ch2(ch2), _color(color)
+    {
+        if (ch1 == ' ' && ch2 == ' ')
+            _is_empty = true;
+        else
+            _is_empty = false;
+    }
     ~Pixel() = default;
     void set_color(Color color) { _color = color; }
     void set_char(char ch)
     {
         _ch1 = ch;
         _ch2 = ch;
+        if (ch == ' ')
+            _is_empty = true;
+        else
+            _is_empty = false;
     }
     void set_char(char ch1, char ch2)
     {
         _ch1 = ch1;
         _ch2 = ch2;
+        if (ch1 == ' ' && ch2 == ' ')
+            _is_empty = true;
+        else
+            _is_empty = false;
     }
     void set(char ch, Color color)
     {
         _ch1 = ch;
         _ch2 = ch;
         _color = color;
+        if (ch == ' ')
+            _is_empty = true;
+        else
+            _is_empty = false;
     }
     void set(char ch1, char ch2, Color color)
     {
         _ch1 = ch1;
         _ch2 = ch2;
         _color = color;
+        if (ch1 == ' ' && ch2 == ' ')
+            _is_empty = true;
+        else
+            _is_empty = false;
     }
+    bool is_empty() { return _is_empty; }
 };
 
 // Buffer class
@@ -57,19 +87,13 @@ public:
 
     Buffer(size_t width, size_t height) : data(std::make_unique<Pixel[]>(width * height)), width(width), height(height)
     {
-        for (size_t i = 0; i < width * height; ++i)
-        {
-            data[i] = Pixel(' ', Color());
-        }
+        for (size_t i = 0; i < width * height; ++i) data[i] = Pixel(' ', Color());
     }
 
     Buffer(size_t width, size_t height, char fill, Color color)
         : data(std::make_unique<Pixel[]>(width * height)), width(width), height(height)
     {
-        for (size_t i = 0; i < width * height; ++i)
-        {
-            data[i] = Pixel(fill, color);
-        }
+        for (size_t i = 0; i < width * height; ++i) data[i] = Pixel(fill, color);
     }
 
     Buffer(const Buffer &other) : data(std::make_unique<Pixel[]>(other.width * other.height)), width(other.width), height(other.height)
@@ -95,7 +119,10 @@ public:
         size_t y = point.y();
         if (x >= 0 && x < width && y >= 0 && y < height)
         {
-            data[y * width + x] = Pixel(ch, color);
+            if (!data[y * width + x].is_empty())
+                data[y * width + x] = Pixel('.', color);
+            else
+                data[y * width + x] = Pixel(ch, color);
         }
     }
     void set(utl::Vec<int, 2> point, char ch1, char ch2, Color color)
@@ -103,18 +130,13 @@ public:
         size_t x = point.x();
         size_t y = point.y();
         if (x >= 0 && x < width && y >= 0 && y < height)
-        {
             data[y * width + x] = Pixel(ch1, ch2, color);
-        }
     }
 
     Pixel &operator()(size_t x, size_t y) { return data[y * width + x]; }
     const Pixel &operator()(size_t x, size_t y) const { return data[y * width + x]; }
     void fill(char ch, Color color)
     {
-        for (size_t i = 0; i < width * height; ++i)
-        {
-            data[i] = Pixel(ch, color);
-        }
+        for (size_t i = 0; i < width * height; ++i) data[i] = Pixel(ch, color);
     }
 };

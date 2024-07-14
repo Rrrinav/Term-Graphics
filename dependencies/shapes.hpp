@@ -3,6 +3,7 @@
 #include <uchar.h>
 
 #include <cmath>
+
 #include "color.hpp"
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
@@ -27,17 +28,21 @@ class Point : public Shape
 {
     utl::Vec<int, 2> _pos;
     char _ch = '*';
+    char _ch2 = '*';
 
 public:
     Point() : _pos({0, 0}), _ch('*'), Shape() {}
-    Point(utl::Vec<int, 2> pos, char ch, Color color) : _pos(pos), _ch(ch), Shape(color) {}
-    Point(int x, int y, char ch, Color color) : _pos({x, y}), _ch(ch), Shape(color) {}
-    Point(const Point &point) : _pos(point._pos), _ch(point._ch), Shape(point._color) {}
+    Point(utl::Vec<int, 2> pos, char ch, Color color) : _pos(pos), _ch(ch), _ch2(ch), Shape(color) {}
+    Point(utl::Vec<int, 2> pos, char ch1, char ch2, Color color) : _pos(pos), _ch(ch1), _ch2(ch2), Shape(color) {}
+    Point(int x, int y, char ch, Color color) : _pos({x, y}), _ch(ch), _ch2(ch), Shape(color) {}
+    Point(const Point &point) : _pos(point._pos), _ch(point._ch), _ch2(point._ch2) ,Shape(point._color) {}
     // void draw(Renderer &renderer) override { renderer.draw_point(_pos, _ch, _color); }
     void set_pos(utl::Vec<int, 2> pos) { _pos = pos; }
     void set_char(char ch) { _ch = ch; }
+    void set_char(char ch1, char ch2) { _ch = ch1; _ch2 = ch2; }
     utl::Vec<int, 2> get_pos() const { return _pos; }
     char get_char() const { return _ch; }
+    char get_char2() const { return _ch2; }
 };
 
 class Line : public Shape
