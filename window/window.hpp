@@ -27,6 +27,7 @@ enum Event_type
     SCROLL_UP,
     SCROLL_DOWN,
     MIDDLE_CLICK,
+    MOUSE_MOVE,
 };
 
 /**
@@ -190,72 +191,7 @@ public:
      * Get the current mouse position.
      * @return A vector representing the current mouse position.
      */
-    static utl::Vec<int, 2> get_mouse_pos()
-    {
-        static utl::Vec<int, 2> last_valid_pos = {-1, -1};  // Store last valid position
-
-#ifdef _WIN32
-        DWORD numEvents = 0;
-        GetNumberOfConsoleInputEvents(hConsoleInput, &numEvents);
-
-        if (numEvents > 0)
-        {
-            INPUT_RECORD inputBuffer[128];
-            DWORD eventsRead;
-
-            if (ReadConsoleInput(hConsoleInput, inputBuffer, std::min(numEvents, DWORD(128)), &eventsRead))
-            {
-                for (DWORD i = 0; i < eventsRead; i++)
-                {
-                    if (inputBuffer[i].EventType == MOUSE_EVENT)
-                    {
-                        MOUSE_EVENT_RECORD mouseEvent = inputBuffer[i].Event.MouseEvent;
-                        if (mouseEvent.dwEventFlags == MOUSE_MOVED || (mouseEvent.dwEventFlags == 0 && mouseEvent.dwButtonState != 0))
-                        {
-                            last_valid_pos[0] = mouseEvent.dwMousePosition.X;
-                            last_valid_pos[1] = mouseEvent.dwMousePosition.Y;
-                        }
-                    }
-                }
-            }
-        }
-#else
-        //  This was the original code for mouse input on Unix systems
-        //  It was replaced by the code below it because it was not working properly as we need to update the mouse position every frame
-        //  along with the key states.
-        //  This way only one event is recorded per frame but doing it to
-        // struct pollfd fds[2];
-        // fds[0].fd = STDIN_FILENO;
-        // fds[0].events = POLLIN;
-        //
-        // if (poll(fds, 1, 0) > 0 && (fds[0].revents & POLLIN))
-        // {
-        //     char buf[64];
-        //     ssize_t nread = read(STDIN_FILENO, buf, sizeof(buf));
-        //
-        //     for (ssize_t i = 0; i < nread; i++)
-        //     {
-        //         if (buf[i] == '\033' && i + 5 < nread && buf[i + 1] == '[' && buf[i + 2] == 'M')
-        //         {
-        //             int button = buf[i + 3] - 32;
-        //             std::cout << "Button: " << button << std::endl;
-        //             int x = buf[i + 4] - 33;
-        //             std::cout << "X: " << x << std::endl;
-        //             int y = buf[i + 5] - 33;
-        //             std::cout << "Y: " << y << std::endl;
-        //             // Check if it's a movement or button press event
-        //             last_valid_pos[0] = x;
-        //             last_valid_pos[1] = y;
-        //
-        //             i += 5;  // Skip the rest of this mouse event
-        //         }
-        //     }
-        // }
-        return mouse_pos;
-#endif
-
-        return mouse_pos;
-    }
+    static utl::Vec<int, 2> get_mouse_pos() { return mouse_pos; }
 
     /**
      * Check if the mouse has moved.
@@ -349,7 +285,6 @@ public:
         struct timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 0;
-        utl::Vec<int, 2> last_valid_pos = {-1, -1};  // Store last valid position
         FD_ZERO(&readfds);
         FD_SET(STDIN_FILENO, &readfds);
 
@@ -361,53 +296,98 @@ public:
 
         if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv) > 0)
         {
-            unsigned char buf[256];
+            char buf[1024];
             ssize_t nread = read(STDIN_FILENO, buf, sizeof(buf));
             if (nread > 0)
             {
                 for (ssize_t i = 0; i < nread; ++i)
                 {
-                    if (buf[i] == '\033' && i + 2 < nread && buf[i + 1] == '[' && buf[i + 2] == 'M')
+                    if (buf[i] == '\033' && i + 2 < nread && buf[i + 1] == '[' && buf[i + 2] == '<')
                     {
-                        int button = buf[i + 3] - 32;
-                        int x = buf[i + 4] - 33;
-                        int y = buf[i + 5] - 33;
-                        if (mouse_pos[0] != x || mouse_pos[1] != y)
+                        // SGR mouse event
+                        int button = 0, x = 0, y = 0;
+                        char eventType = 0;
+                        int parsed = 0;
+                        int j = i + 3;  // Start after "<"
+
+                        // Parse button
+                        while (j < nread && buf[j] >= '0' && buf[j] <= '9')
                         {
-                            mouse_moved = true;
+                            button = button * 10 + (buf[j] - '0');
+                            j++;
                         }
-                        mouse_pos = {x, y};
-                        mouse_event.x = x / 2;
-                        mouse_event.y = y;
-                        switch (button)
+                        if (j < nread && buf[j] == ';') j++;
+
+                        // Parse x
+                        while (j < nread && buf[j] >= '0' && buf[j] <= '9')
                         {
-                            case 0:
-                                mouse_event.event = Event_type::LEFT_CLICK;
-                                break;
-                            case 1:
-                                mouse_event.event = Event_type::MIDDLE_CLICK;
-                                break;
-                            case 2:
-                                mouse_event.event = Event_type::RIGHT_CLICK;
-                                break;
-                            case 64:
-                                mouse_event.event = Event_type::SCROLL_UP;
-                                break;
-                            case 65:
-                                mouse_event.event = Event_type::SCROLL_DOWN;
-                                break;
-                            case 3:
-                                mouse_event.event = Event_type::RELEASE;
-                                break;
-                            default:
-                                mouse_event.event = Event_type::RELEASE;
-                                break;
+                            x = x * 10 + (buf[j] - '0');
+                            j++;
                         }
-                        i += 5;  // Skip the entire mouse event sequence
+                        x /= 2;
+                        if (j < nread && buf[j] == ';') j++;
+
+                        // Parse y
+                        while (j < nread && buf[j] >= '0' && buf[j] <= '9')
+                        {
+                            y = y * 10 + (buf[j] - '0');
+                            j++;
+                        }
+
+                        // Get event type
+                        if (j < nread)
+                        {
+                            eventType = buf[j];
+                            parsed = j - i + 1;
+                        }
+
+                        if (parsed > 0 && (eventType == 'M' || eventType == 'm'))
+                        {
+                            mouse_pos = {x - 1, y - 1};  // SGR reports 1-based coordinates
+                            mouse_event.x = x - 1;
+                            mouse_event.y = y - 1;
+
+                            if (mouse_pos[0] != x - 1 || mouse_pos[1] != y - 1)
+                            {
+                                mouse_moved = true;
+                            }
+
+                            switch (button)
+                            {
+                                case 0:
+                                    mouse_event.event = Event_type::LEFT_CLICK;
+                                    break;
+                                case 1:
+                                    mouse_event.event = Event_type::MIDDLE_CLICK;
+                                    break;
+                                case 2:
+                                    mouse_event.event = Event_type::RIGHT_CLICK;
+                                    break;
+                                case 64:
+                                    mouse_event.event = Event_type::SCROLL_UP;
+                                    break;
+                                case 65:
+                                    mouse_event.event = Event_type::SCROLL_DOWN;
+                                    break;
+                                case 32:
+                                    mouse_event.event = Event_type::MOUSE_MOVE;
+                                    break;
+                                default:
+                                    if (eventType == 'm')
+                                        mouse_event.event = Event_type::RELEASE;
+                                    else
+                                        mouse_event.event = Event_type::MOUSE_MOVE;
+                                    break;
+                            }
+
+                            i += parsed - 1;  // Move i to the end of the parsed sequence
+                        }
                     }
-                    Keys k = static_cast<Keys>(parse_key(buf[i]));
-                    key_states[k] = true;
-                    //    std::cout << "Key pressed: " << static_cast<int>(k) << std::endl;
+                    else
+                    {
+                        Keys k = static_cast<Keys>(parse_key(buf[i]));
+                        key_states[k] = true;
+                    }
                 }
             }
         }

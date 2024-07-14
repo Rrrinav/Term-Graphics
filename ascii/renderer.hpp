@@ -19,7 +19,7 @@
 #include "font.hpp"
 #include "shapes.hpp"
 #include "sprites.hpp"
-#include "window2.hpp"
+#include "window.hpp"
 
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
@@ -793,7 +793,7 @@ int Renderer::draw_text(utl::Vec<int, 2> start, const std::string &text, Color c
         x++;
     }
     if (text.size() % 2 == 1)
-    { 
+    {
         _buffer->set({x, y}, text[(int)(text.length() - 1)], ' ', color);
     }
     return true;

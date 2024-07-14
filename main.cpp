@@ -1,7 +1,7 @@
 #include <queue>
 #include <string>
 
-#include "./window2.hpp"
+#include "./window.hpp"
 #include "color.hpp"
 #define L_GEBRA_IMPLEMENTATION
 #include "l_gebra.hpp"
