@@ -4,12 +4,14 @@
 
 #include "shapes.hpp"
 
-class Cache
+// This cache class is designed to used and printed automatically
+// User just has to use the flag 'cache' in the function call of draw methods
+class Automatic_cache
 {
     std::unordered_map<size_t, std::vector<Point>> _cache_map;
 
 public:
-    Cache() = default;
+    Automatic_cache() = default;
     std::vector<Point> create_cache(size_t id, std::vector<Point> points)
     {
         auto it = _cache_map.find(id);
@@ -70,4 +72,48 @@ public:
     }
 
     std::unordered_map<size_t, std::vector<Point>> get_cache_map() { return _cache_map; }
+};
+
+// This cache class is designed to used and printed manually by the user
+// Interface will still remain renderer itself
+class External_cache
+{
+    std::unordered_map<std::string, std::vector<Point>> _cache_map;
+
+public:
+    External_cache() = default;
+    
+    std::unordered_map<std::string, std::vector<Point>> get_cache_map() { return _cache_map; }
+
+    std::vector<Point> create_cache(std::string id, std::vector<Point> points)
+    {
+        auto it = _cache_map.find(id);
+        if (it == _cache_map.end())
+        {
+            _cache_map[id] = points;
+            return _cache_map[id];
+        }
+        else
+        {
+            for (auto &p : points) _cache_map[id].push_back(p);
+        }
+        return _cache_map[id];
+    }
+
+    std::vector<Point> get_cache(std::string id)
+    {
+        auto it = _cache_map.find(id);
+        if (it == _cache_map.end())
+            return std::vector<Point>();
+        return _cache_map[id];
+    }
+
+    std::vector<Point> insert_points(std::string id, std::vector<Point> points)
+    {
+        auto it = _cache_map.find(id);
+        if (it == _cache_map.end())
+            return std::vector<Point>();
+        for (auto &p : points) _cache_map[id].push_back(p);
+        return _cache_map[id];
+    }
 };

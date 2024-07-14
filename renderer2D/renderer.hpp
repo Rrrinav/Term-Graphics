@@ -25,7 +25,6 @@
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
 
-#define RENDERER_IMPLEMENTATION
 // Renderer class
 class Renderer
 {
@@ -33,7 +32,7 @@ class Renderer
     Color _bg_color = Color(TRANSPARENT);
     Pixel *_pixels;
     Window _window;
-    Cache _cache;
+    Automatic_cache _cache;
     size_t _cache_id = 0;
 
 public:
@@ -60,11 +59,6 @@ public:
     void draw_anti_aliased_line(const Line &line)
     {
         int i = draw_anti_aliased_line(line.get_start(), line.get_end(), line.get_char(), line.get_color());
-    }
-    int draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE), bool cache = false);
-    void draw_xaolin_wu_line(const Line &line)
-    {
-        int i = draw_xaolin_wu_line(line.get_start(), line.get_end(), line.get_char(), line.get_color());
     }
     int draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE, bool cache = false);
     void draw_circle(const Circle &circle)
@@ -130,6 +124,85 @@ public:
     int draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &text, Color color, Color shadow_color, const Font &font,
                               int shadow_offset_x = 1, int shadow_offset_y = 1, bool cache = false);
     static Font load_font(const std::string &font_path);
+    static External_cache create_user_cache()
+    {
+        External_cache cache;
+        return cache;
+    }
+
+    std::vector<Point> user_cache_shape(External_cache &external_cache, const Line &line, std::string id)
+    {
+        int id_auto_cache = draw_line(line.get_start(), line.get_end(), line.get_char(), line.get_color(), true);
+        auto points = _cache.get_cache(id_auto_cache);
+        return external_cache.create_cache(id, points);
+    }
+
+    std::vector<Point> user_cache_shape(External_cache &external_cache, const Circle &circle, std::string id)
+    {
+        int id_auto_cache = draw_circle(circle.get_center(), circle.get_radius(), circle.get_char(), circle.get_color(), true);
+        auto points = _cache.get_cache(id_auto_cache);
+        return external_cache.create_cache(id, points);
+    }
+
+    std::vector<Point> user_cache_shape(External_cache &external_cache, const Rectangle &rectangle, std::string id)
+    {
+        int id_auto_cache = draw_rectangle(rectangle.get_top_left(),
+                                           rectangle.get_width(),
+                                           rectangle.get_height(),
+                                           rectangle.get_char(),
+                                           '@',
+                                           rectangle.get_color(),
+                                           true);
+        auto points = _cache.get_cache(id_auto_cache);
+        return external_cache.create_cache(id, points);
+    }
+
+    std::vector<Point> user_cache_shape(External_cache &external_cache, const Triangle &triangle, std::string id)
+    {
+        auto points = triangle.get_vertices();
+        int id_auto_cache = draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color(), true);
+        auto points1 = _cache.get_cache(id_auto_cache);
+        return external_cache.create_cache(id, points1);
+    }
+
+    std::vector<Point> user_cache_shape(External_cache &external_cache, const Polygon &polygon, std::string id)
+    {
+        int id_auto_cache = draw_polygon(polygon.get_vertices(), polygon.get_char(), polygon.get_color(), true);
+        auto points = _cache.get_cache(id_auto_cache);
+        return external_cache.create_cache(id, points);
+    }
+
+    std::vector<Point> user_cache_text(External_cache &external_cache, utl::Vec<int, 2> start, const std::string &text, Color color,
+                                       std::string id)
+    {
+        int id_auto_cache = draw_text(start, text, color, true);
+        auto points = _cache.get_cache(id_auto_cache);
+        return external_cache.create_cache(id, points);
+    }
+
+    std::vector<Point> user_cache_text_with_font(External_cache &external_cache, utl::Vec<int, 2> start, const std::string &text,
+                                                 Color color, const Font &font, std::string id)
+    {
+        int id_auto_cache = draw_text_with_font(start, text, color, font, true);
+        auto points = _cache.get_cache(id_auto_cache);
+        return external_cache.create_cache(id, points);
+    }
+
+    std::vector<Point> get_user_cache(External_cache &external_cache, std::string id) { return external_cache.get_cache(id); }
+
+    void draw_user_cache(External_cache &external_cache, std::string id)
+    {
+        auto points = external_cache.get_cache(id);
+        for (auto &p : points) draw_point(p);
+    }
+
+    void draw_user_cache(External_cache &cache)
+    {
+        auto points = cache.get_cache_map();
+        for (auto &v : points)
+            for (auto &p : v.second) draw_point(p);
+    }
+
     Sprite load_sprite(const std::string &sprite_path);
     int draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Color color = WHITE, bool cache = false);
     void print();
@@ -264,116 +337,6 @@ int Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Co
 }
 
 int Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color, bool cache)
-{
-    int id;
-    std::vector<Point> points;
-    // Anti-aliasing will depend upon left or right of the pixel and top or bottom of the pixel
-    int x1 = start[0], y1 = start[1];
-    int x2 = end[0], y2 = end[1];
-
-    // Ensure y1 and y2 are even for rendering
-    y1 = (y1 % 2 == 0) ? y1 : y1 - 1;
-    y2 = (y2 % 2 == 0) ? y2 : y2 - 1;
-
-    // Calculate the difference between the points
-    int dx = std::abs(x2 - x1);
-    int dy = std::abs(y2 - y1);
-
-    // Determine the direction of the line
-    int sx = (x1 < x2) ? 1 : -1;
-    int sy = (y1 < y2) ? 1 : -1;
-
-    int err = dx - dy;
-    int e2;
-
-    // case for horizontal line or vertical line
-    if (dx == 0 || dy == 0)
-    {
-        int id = draw_line(start, end, c, color, cache);
-        return true;
-    }
-    while (true)
-    {
-        int prev_x = x1;
-        int prev_y = y1;
-        // Plot the point
-        if (x1 >= 0 && x1 < static_cast<int>(_buffer->width) && y1 >= 0 && y1 < static_cast<int>(_buffer->height))
-        {
-            // Anti-aliasing will depend upon left or right of the pixel and top or bottom of the pixel
-            if (prev_x == x1)
-            {
-                if (prev_y < y1)
-                {
-                    (*_buffer).set({x1, y1}, anti_aliasing[0][0], color);
-                    if (cache)
-                        points.push_back(Point({x1, y1}, c, color));
-                    (*_buffer).set({x1, y1 + 1}, anti_aliasing[0][1], color);
-                    if (cache)
-                        points.push_back(Point({x1, y1 + 1}, c, color));
-                }
-                else
-                {
-                    (*_buffer).set({x1, y1}, anti_aliasing[1][0], color);
-                    if (cache)
-                        points.push_back(Point({x1, y1}, c, color));
-                    (*_buffer).set({x1, y1 + 1}, anti_aliasing[1][1], color);
-                    if (cache)
-                        points.push_back(Point({x1, y1 + 1}, c, color));
-                }
-            }
-            else if (prev_y == y1)
-            {
-                if (prev_x < x1)
-                {
-                    (*_buffer).set({x1, y1}, anti_aliasing[0][0], color);
-                    if (cache)
-                        points.push_back(Point({x1, y1}, anti_aliasing[0][0], color));
-                    (*_buffer).set({x1 + 1, y1}, anti_aliasing[0][1], color);
-                    if (cache)
-                        points.push_back(Point({x1 + 1, y1}, anti_aliasing[0][1], color));
-                }
-                else
-                {
-                    (*_buffer).set({x1, y1}, anti_aliasing[1][0], color);
-                    if (cache)
-                        points.push_back(Point({x1, y1}, anti_aliasing[1][0], color));
-                    (*_buffer).set({x1 + 1, y1}, anti_aliasing[1][1], color);
-                    if (cache)
-                        points.push_back(Point({x1 + 1, y1}, anti_aliasing[1][1], color));
-                }
-            }
-            else
-            {
-                _buffer->set({x1, y1}, c, color);
-                points.push_back(Point({x1, y1}, c, color));
-            }
-        }
-
-        // Check if the end point is reached
-        if (x1 == x2 && y1 == y2)
-            break;
-
-        e2 = 2 * err;
-
-        if (e2 > -dy)
-        {
-            err -= dy;
-            x1 += sx;
-        }
-
-        if (e2 < dx)
-        {
-            err += dx;
-            y1 += sy;
-        }
-    }
-    if (cache)
-        _cache.create_cache(id, points);
-
-    return id;
-}
-
-int Renderer::draw_xaolin_wu_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color, bool cache)
 {
     std::vector<Point> points;
     if (cache)
@@ -555,27 +518,6 @@ int Renderer::draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int
     int id = draw_line(a, b, ch, color, cache);
     int id2 = draw_line(b, c, ch, color, cache);
     int id3 = draw_line(c, a, ch, color, cache);
-    if (cache)
-    {
-        _cache_id++;
-        std::vector<Point> points1 = _cache.get_cache(id);
-        std::vector<Point> points2 = _cache.get_cache(id2);
-        std::vector<Point> points3 = _cache.get_cache(id3);
-        points.insert(points.end(), points1.begin(), points1.end());
-        points.insert(points.end(), points2.begin(), points2.end());
-        points.insert(points.end(), points3.begin(), points3.end());
-        _cache.create_cache(_cache_id, points);
-    }
-
-    return _cache_id;
-}
-int Renderer::draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color, bool cache)
-{
-    std::vector<Point> points;
-
-    int id = draw_xaolin_wu_line(a, b, ch, color, cache);
-    int id2 = draw_xaolin_wu_line(b, c, ch, color, cache);
-    int id3 = draw_xaolin_wu_line(c, a, ch, color, cache);
     if (cache)
     {
         _cache_id++;
