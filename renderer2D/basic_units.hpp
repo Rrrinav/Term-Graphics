@@ -6,8 +6,8 @@
 #include <memory>
 
 #define L_GEBRA_IMPLEMENTATION
-#include "./l_gebra.hpp"  // Assuming this is your external library header
-#include "color.hpp"
+#include "../l_gebra/l_gebra.hpp"  // Assuming this is your external library header
+#include "../dependencies/color.hpp"
 
 class Pixel
 {

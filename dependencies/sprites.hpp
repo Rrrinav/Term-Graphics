@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 #define L_GEBRA_IMPLEMENTATION
-#include "l_gebra.hpp"
+#include "../l_gebra/l_gebra.hpp"
 
 class Sprite
 {

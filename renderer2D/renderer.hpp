@@ -12,14 +12,15 @@
 // BUG: Anti-aliasing in circle sucks
 // TODO: More and better error handling and exception handling, lessssgooooooooo...........!
 
-#include "./l_gebra.hpp"  // Assuming this is your external library header
+#define L_GEBRA_IMPLEMENTATION
+#include "../l_gebra/l_gebra.hpp" 
 #include "basic_units.hpp"
-#include "cache.hpp"
-#include "color.hpp"
-#include "font.hpp"
-#include "shapes.hpp"
-#include "sprites.hpp"
-#include "window.hpp"
+#include "../dependencies/cache.hpp"
+#include "../dependencies/color.hpp"
+#include "../dependencies/font.hpp"
+#include "../dependencies/shapes.hpp"
+#include "../dependencies/sprites.hpp"
+#include "../window/window.hpp"
 
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};

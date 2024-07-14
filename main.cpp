@@ -1,18 +1,12 @@
-#include <queue>
 #include <string>
 
-#include "./window.hpp"
-#include "color.hpp"
-#define L_GEBRA_IMPLEMENTATION
-#include "l_gebra.hpp"
 #define RENDERER_IMPLEMENTATION
 #include <algorithm>
 #include <cmath>
 #include <vector>
 
-#include "library_fonts.hpp"
-#include "renderer.hpp"
-#include "shapes.hpp"
+#include "assets/library_fonts.hpp"
+#include "renderer2D/renderer.hpp"
 
 #define GRAVITY 80.0f
 #define RAD 4
@@ -29,10 +23,10 @@ int main()
     const int circle_center_y = 20;
     const int circle_radius = 10;
     const int wave_x = 30;
-    Font standard_font;
-    standard_font.load_from_file("slant.txt");
+    Font font1;
+    font1.load_from_file("assets/slant.txt");
     Font font_2;
-    font_2.load_from_file("small_font.txt");
+    font_2.load_from_file("assets/small_font.txt");
 
     float phase1 = 3.0f;
     float phase2 = 2.0f;
@@ -63,7 +57,7 @@ int main()
         std::string amp_str = "AMP:" + std::to_string(amp);
         renderer.draw_text(
             {(int)(amp_str.length() * 13 / 2 + 2), 1}, "Click a to increment and s to decrement the amp coeff", BRIGHT_PURPLE);
-        renderer.draw_text_with_font({1, 1}, amp_str, BRIGHT_RED, standard_font);
+        renderer.draw_text_with_font({1, 1}, amp_str, BRIGHT_RED, font1);
         renderer.print();
         // phase1 += delta_t;
         // phase2 += delta_t;

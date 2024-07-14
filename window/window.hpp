@@ -6,7 +6,7 @@
 
 #define L_GEBRA_IMPLEMENTATION
 #include "keys.hpp"
-#include "l_gebra.hpp"
+#include "../l_gebra/l_gebra.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #else

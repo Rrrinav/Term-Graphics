@@ -5,7 +5,7 @@
 #include <cmath>
 #include "color.hpp"
 #define L_GEBRA_IMPLEMENTATION
-#include "l_gebra.hpp"
+#include "../l_gebra/l_gebra.hpp"
 // Base class for all shapes
 
 class Shape
