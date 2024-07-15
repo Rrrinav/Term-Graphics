@@ -118,12 +118,7 @@ public:
         size_t x = point.x();
         size_t y = point.y();
         if (x >= 0 && x < width && y >= 0 && y < height)
-        {
-            if (!data[y * width + x].is_empty())
-                data[y * width + x] = Pixel('.', color);
-            else
-                data[y * width + x] = Pixel(ch, color);
-        }
+            data[y * width + x] = Pixel(ch, color);
     }
     void set(utl::Vec<int, 2> point, char ch1, char ch2, Color color)
     {
