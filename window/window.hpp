@@ -88,7 +88,7 @@ public:
         struct termios raw = orig_termios;
         raw.c_lflag &= ~(ECHO | ICANON);
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-        std::cout << "\033[?1003h";  // Enable SGR mouse mode
+        std::cout << "\033[?1006h";  // Enable SGR mouse mode
         system("clear");             // or "cls" on Windows
 #endif
     }
@@ -102,7 +102,7 @@ public:
         CloseHandle(hConsole);
 #else
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
-        std::cout << "\033[?1003l";  // Disable mouse tracking
+        std::cout << "\033[?1006l";  // Disable mouse tracking
 #endif
         system("clear");  // or "cls" on Windows
     }
@@ -334,8 +334,8 @@ public:
                         // Check if it's a valid mouse event
                         if (eventType == 'M' || eventType == 'm')
                         {
-                            mouse_pos = {x - 1, y - 1};  // SGR reports 1-based coordinates
-                            mouse_event.x = (x - 1) / 2; // Fix for double width characters
+                            mouse_pos = {x - 1, y - 1};   // SGR reports 1-based coordinates
+                            mouse_event.x = (x - 1) / 2;  // Fix for double width characters
                             mouse_event.y = y - 1;
                             mouse_moved = true;  // Set mouse moved flag
 
@@ -378,10 +378,7 @@ public:
 #endif
     }
 
-    static void update_input_states()
-    {
-        update_mouse_and_key_states();
-    }
+    static void update_input_states() { update_mouse_and_key_states(); }
 };
 
 // TODO: Implement arrow keys too bruv...

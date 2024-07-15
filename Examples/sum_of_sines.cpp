@@ -34,9 +34,9 @@ int main()
         time = fps.get_elapsed_time();
         for (x = 0; x < 120; x++)
         {
-            int y = 30 -
-                    2 * (std::exp(std::sin(x / 3 + 5 * fps.get_elapsed_time())) + std::exp(std::sin(x / 4 + 0.5 * fps.get_elapsed_time())) +
-                         std::exp(std::sin(x / 3 + 9 * fps.get_elapsed_time())));
+            int y = 30 - 2 * (std::exp(std::sin((float)x / 3 + 5 * fps.get_elapsed_time())) +
+                              std::exp(std::sin((float)x / 4 + 0.5 * fps.get_elapsed_time())) +
+                              std::exp(std::sin((float)x / 3 + 9 * fps.get_elapsed_time())));
             ascii.draw_line({x % 120, 80}, {x, y}, ':', BLUE);
             ascii.draw_point({x % 120, y}, 'o', RED);
             time = time + fps.get_delta_time() * 30;

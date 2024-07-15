@@ -16,8 +16,8 @@
 
 #include "../dependencies/color.hpp"
 #include "../dependencies/font.hpp"
+#include "../dependencies/glyph.hpp"
 #include "../dependencies/shapes.hpp"
-#include "../dependencies/sprites.hpp"
 #include "../l_gebra/l_gebra.hpp"
 #include "../window/window.hpp"
 #include "basic_units.hpp"
@@ -119,8 +119,8 @@ public:
     void draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &text, Color color, Color shadow_color, const Font &font,
                                int shadow_offset_x = 1, int shadow_offset_y = 1);
     static Font load_font(const std::string &font_path);
-    Sprite load_sprite(const std::string &sprite_path);
-    void draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Color color = WHITE);
+    Glyph load_glyph(const std::string &glyph_path);
+    void draw_glyph(utl::Vec<int, 2> start_pos, const Glyph &glyph, Color color = WHITE);
     void sync_fps() {}
     void print();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
@@ -654,7 +654,7 @@ void Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &te
     {
         if (font.get_glyph(ch).is_empty())
             continue;
-        const Glyph &glyph = font.get_glyph(ch);
+        const Font_glyph &glyph = font.get_glyph(ch);
         const std::vector<std::string> &lines = glyph.get_lines();
         // Render each line of the glyph
         // if width is odd then we need to draw last character, no biggies
@@ -695,7 +695,7 @@ void Renderer::draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &
     {
         if (font.get_glyph(ch).is_empty())
             continue;
-        const Glyph &glyph = font.get_glyph(ch);
+        const Font_glyph &glyph = font.get_glyph(ch);
         const std::vector<std::string> &lines = glyph.get_lines();
 
         for (size_t j = 0; j < lines.size(); j++)
@@ -725,7 +725,7 @@ void Renderer::draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &
     {
         if (font.get_glyph(ch).is_empty())
             continue;
-        const Glyph &glyph = font.get_glyph(ch);
+        const Font_glyph &glyph = font.get_glyph(ch);
         const std::vector<std::string> &lines = glyph.get_lines();
         // Render each line of the glyph
         for (size_t j = 0; j < lines.size(); j++)
@@ -798,17 +798,17 @@ void Renderer::print()
     _window.draw(print_buffer);
 }
 
-Sprite Renderer::load_sprite(const std::string &sprite_path)
+Glyph Renderer::load_glyph(const std::string &glyph_path)
 {
-    Sprite sprite;
-    if (sprite.load_from_file(sprite_path))
-        return sprite;
-    return Sprite();
+    Glyph glyph;
+    if (glyph.load_from_file(glyph_path))
+        return glyph;
+    return Glyph();
 }
 
-void Renderer::draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Color color /* WHITE */)
+void Renderer::draw_glyph(utl::Vec<int, 2> start_pos, const Glyph &glyph, Color color /* WHITE */)
 {
-    auto lines = sprite.get_data();
+    auto lines = glyph.get_data();
     int px = 0;
     int py = 0;
     int x = start_pos.x();

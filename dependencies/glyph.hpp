@@ -7,7 +7,7 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
 
-class Sprite
+class Glyph
 {
 private:
     std::vector<std::string> data;
@@ -15,15 +15,15 @@ private:
     int height = 0;
 
 public:
-    Sprite() = default;
-    Sprite(const std::string &filename) { load_from_file(filename); }
-    Sprite(int width, int height, char fill = ' ')
+    Glyph() = default;
+    Glyph(const std::string &filename) { load_from_file(filename); }
+    Glyph(int width, int height, char fill = ' ')
     {
         data = std::vector<std::string>(height, std::string(width, fill));
         this->width = width;
         this->height = height;
     }
-    Sprite(std::vector<std::string> data) : data(data)
+    Glyph(std::vector<std::string> data) : data(data)
     {
         height = data.size();
         width = 0;
@@ -32,8 +32,8 @@ public:
                 width = line.length();
         pad_lines_to_width();
     }
-    Sprite(const Sprite &other) : data(other.data) {}
-    ~Sprite() = default;
+    Glyph(const Glyph &other) : data(other.data) {}
+    ~Glyph() = default;
     char get_char(int x, int y) const
     {
         if (x < 0 || x >= width || y < 0 || y >= height)
@@ -77,7 +77,7 @@ public:
                 line.append(width - line.length(), ' ');  // Pad with spaces
     }
 
-    Sprite rotate(float angle, utl::Vec<int, 2> start_pos) const
+    Glyph rotate(float angle, utl::Vec<int, 2> start_pos) const
     {
         int width = get_width();
         int height = get_height();
@@ -115,7 +115,7 @@ public:
             }
         }
 
-        return Sprite(new_data);
+        return Glyph(new_data);
     }
 
     utl::Vec<int, 4> get_bounds() const
@@ -140,7 +140,7 @@ public:
         return {min_x, min_y, max_x, max_y};
     }
 
-    Sprite scale(float scale_x, float scale_y)
+    Glyph scale(float scale_x, float scale_y)
     {
         int new_width = static_cast<int>(width * scale_x);
         int new_height = static_cast<int>(height * scale_y);
@@ -156,13 +156,13 @@ public:
             }
         }
 
-        return Sprite(new_data);
+        return Glyph(new_data);
     }
 };
 
 class Animated_sprite
 {
-    std::vector<Sprite> frames;
+    std::vector<Glyph> frames;
     int current_frame;
     float frame_time;
     float frame_duration;
@@ -172,7 +172,7 @@ class Animated_sprite
 
 public:
     Animated_sprite() : current_frame(0), frame_time(0), frame_duration(0), scale_x(1.0f), scale_y(1.0f), FPS(1) {}
-    Animated_sprite(const std::vector<Sprite> &frames, float frame_duration, float scale_x = 1.0f, float scale_y = 1.0f, int FPS = 1)
+    Animated_sprite(const std::vector<Glyph> &frames, float frame_duration, float scale_x = 1.0f, float scale_y = 1.0f, int FPS = 1)
         : frames(frames), current_frame(0), frame_time(0), frame_duration(frame_duration), scale_x(scale_x), scale_y(scale_y), FPS(FPS)
     {
     }
@@ -253,9 +253,9 @@ public:
         file.close();
     }
 
-    Sprite get_current_frame() const { return frames[current_frame]; }
-    Sprite get_frame(int index) const { return frames[index]; }
-    Sprite update(float dt)
+    Glyph get_current_frame() const { return frames[current_frame]; }
+    Glyph get_frame(int index) const { return frames[index]; }
+    Glyph update(float dt)
     {
         frame_time += dt;
         if (frame_time >= frame_duration)
