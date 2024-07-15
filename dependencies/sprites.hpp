@@ -28,12 +28,8 @@ public:
         height = data.size();
         width = 0;
         for (const auto &line : data)
-        {
             if (line.length() > width)
-            {
                 width = line.length();
-            }
-        }
         pad_lines_to_width();
     }
     Sprite(const Sprite &other) : data(other.data) {}
@@ -41,9 +37,7 @@ public:
     char get_char(int x, int y) const
     {
         if (x < 0 || x >= width || y < 0 || y >= height)
-        {
             return ' ';  // Return space if out of bounds
-        }
         return data[y][x];
     }
     int get_width() const { return width; }
@@ -64,14 +58,10 @@ public:
         while (std::getline(file, line))
         {
             if (line.empty() || line[0] == '#')
-            {
                 continue;  // Skip empty lines
-            }
             data.push_back(line);
             if (line.length() > width)
-            {
                 width = line.length();  // Update width to the maximum line length
-            }
         }
         height = data.size();  // Update height to the number of lines
         file.close();
@@ -83,12 +73,8 @@ public:
     void pad_lines_to_width()
     {
         for (auto &line : data)
-        {
             if (line.length() < width)
-            {
                 line.append(width - line.length(), ' ');  // Pad with spaces
-            }
-        }
     }
 
     Sprite rotate(float angle, utl::Vec<int, 2> start_pos) const
@@ -125,9 +111,7 @@ public:
 
                 // Copy pixel if it's within the original sprite bounds
                 if (src_x >= 0 && src_x < width && src_y >= 0 && src_y < height)
-                {
                     new_data[y][x] = data[src_y][src_x];
-                }
             }
         }
 
@@ -230,9 +214,7 @@ public:
             }
 
             if (line[0] == '#')  // Skip comments
-            {
                 continue;
-            }
 
             if (line.empty())  // End of current frame
             {
@@ -257,14 +239,8 @@ public:
                 if (!current_frame_data.empty())
                 {
                     size_t max_width = 0;
-                    for (const auto &row : current_frame_data)
-                    {
-                        max_width = std::max(max_width, row.size());
-                    }
-                    for (auto &row : current_frame_data)
-                    {
-                        row.resize(max_width, ' ');
-                    }
+                    for (const auto &row : current_frame_data) max_width = std::max(max_width, row.size());
+                    for (auto &row : current_frame_data) row.resize(max_width, ' ');
                 }
                 current_frame_data.push_back(line);
             }
@@ -272,9 +248,7 @@ public:
 
         // Add the last frame if any
         if (!current_frame_data.empty())
-        {
             frames.emplace_back(current_frame_data);
-        }
 
         file.close();
     }

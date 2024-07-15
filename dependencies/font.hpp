@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-class Glyph
+class Font_glyph
 {
 public:
     std::vector<std::string> lines;
@@ -14,15 +14,15 @@ public:
     int height;
 
     // Default constructor
-    Glyph() : lines(), width(0), height(0) {}
+    Font_glyph() : lines(), width(0), height(0) {}
 
-    Glyph(const std::vector<std::string> &_lines) : lines(_lines)
+    Font_glyph(const std::vector<std::string> &_lines) : lines(_lines)
     {
         height = lines.size();
         width = lines.empty() ? 0 : lines[0].length();
     }
 
-    Glyph(const Glyph &other) : lines(other.lines), width(other.width), height(other.height) {}
+    Font_glyph(const Font_glyph &other) : lines(other.lines), width(other.width), height(other.height) {}
 
     int get_width() const { return width; }
     int get_height() const { return height; }
@@ -36,26 +36,20 @@ public:
 class Font
 {
 private:
-    std::unordered_map<char, Glyph> glyphs;
+    std::unordered_map<char, Font_glyph> glyphs;
 
 public:
-    Font() : glyphs(std::unordered_map<char, Glyph>()) {}
+    Font() : glyphs(std::unordered_map<char, Font_glyph>()) {}
     Font(const std::string &filename) { load_from_file(filename); }
-    Font(std::unordered_map<char, Glyph> _glyphs) : glyphs(_glyphs) {}
-    Font(std::unordered_map<char, Glyph> &_glyphs) : glyphs(_glyphs) {}
+    Font(std::unordered_map<char, Font_glyph> _glyphs) : glyphs(_glyphs) {}
+    Font(std::unordered_map<char, Font_glyph> &_glyphs) : glyphs(_glyphs) {}
     Font(std::unordered_map<char, std::vector<std::string>> _glyphs)
     {
-        for (auto &[c, lines] : _glyphs)
-        {
-            glyphs[c] = Glyph(lines);
-        }
+        for (auto &[c, lines] : _glyphs) glyphs[c] = Font_glyph(lines);
     }
     Font(std::vector<std::pair<char, std::vector<std::string>>> _glyphs)
     {
-        for (auto &[c, lines] : _glyphs)
-        {
-            glyphs[c] = Glyph(lines);
-        }
+        for (auto &[c, lines] : _glyphs) glyphs[c] = Font_glyph(lines);
     }
     Font(const Font &other) : glyphs(other.glyphs) {}
     Font(Font &&other) : glyphs(std::move(other.glyphs)) {}
@@ -95,15 +89,13 @@ public:
         }
 
         // Find the start of the sprites
-        while (std::getline(file, line) && line != "Sprites")
-        {
-            continue;  // ignore lines until we reach "Sprites"
-        }
+        while (std::getline(file, line) && line != "Sprites") continue;  // ignore lines until we reach "Sprites"
 
         // Read the sprites
         while (std::getline(file, line))
         {
-            if (line.empty() || line[0] == '#') continue;  // skip empty lines and comments
+            if (line.empty() || line[0] == '#')
+                continue;  // skip empty lines and comments
 
             char sprite_char = line[0];
             std::vector<std::string> sprite_lines;
@@ -116,29 +108,25 @@ public:
                     return false;
                 }
                 if (line.size() < static_cast<size_t>(width))
-                {
                     line += std::string(width - line.size(), ' ');  // pad line if it's too short
-                }
-                sprite_lines.push_back(line.substr(0, width));  // trim line if it's too long
+                sprite_lines.push_back(line.substr(0, width));      // trim line if it's too long
             }
 
-            glyphs[sprite_char] = Glyph(sprite_lines);
+            glyphs[sprite_char] = Font_glyph(sprite_lines);
         }
 
-        glyphs[' '] = Glyph(std::vector<std::string>(height, std::string(((width < 4) ? width : width - 2), ' ')));
+        glyphs[' '] = Font_glyph(std::vector<std::string>(height, std::string(((width < 4) ? width : width - 2), ' ')));
 
         file.close();
         return true;
     }
 
-    const Glyph &get_glyph(char c) const
+    const Font_glyph &get_glyph(char c) const
     {
-        static const Glyph default_glyph({" "});  // Default glyph representation
+        static const Font_glyph default_glyph({" "});  // Default glyph representation
         auto it = glyphs.find(c);
         if (it != glyphs.end())
-        {
             return it->second;
-        }
         // Print a warning message
         std::cerr << "Warning: Glyph for character '" << c << "' not found. Using default glyph." << std::endl;
         return default_glyph;
@@ -147,33 +135,26 @@ public:
     Font &operator=(const Font &other)
     {
         if (this != &other)
-        {
             glyphs = other.glyphs;
-        }
         return *this;
     }
 
     Font &operator=(Font &&other) noexcept
     {
         if (this != &other)
-        {
             glyphs = std::move(other.glyphs);
-        }
         return *this;
     }
 
     bool has_glyph(char c) const { return glyphs.find(c) != glyphs.end(); }
 
-    void add_glyph(char c, const std::vector<std::string> &lines) { glyphs[c] = Glyph(lines); }
+    void add_glyph(char c, const std::vector<std::string> &lines) { glyphs[c] = Font_glyph(lines); }
 
     std::vector<char> get_available_chars() const
     {
         std::vector<char> chars;
         chars.reserve(glyphs.size());
-        for (const auto &[c, _] : glyphs)
-        {
-            chars.push_back(c);
-        }
+        for (const auto &[c, _] : glyphs) chars.push_back(c);
         return chars;
     }
 };
