@@ -46,7 +46,7 @@ public:
     size_t get_width() const;
     size_t get_height() const;
     void Init();
-
+    void end() { _window.cleanup_terminal(); }
     // TODO: Implement draw methods using shapes and caching for all the shapes bruv..
     bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
     bool draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color = Color(WHITE));
@@ -145,7 +145,7 @@ private:
 #include <thread>
 
 // Renderer definitions
-Renderer::Renderer() : _buffer(std::make_shared<Buffer>()), _pixels(nullptr) {}
+Renderer::Renderer() : _buffer(std::make_shared<Buffer>()) {}
 
 Renderer::Renderer(size_t width, size_t height) : _buffer(std::make_shared<Buffer>(width, height)) { Init(); }
 

@@ -1,12 +1,15 @@
 #pragma once
+#include <errno.h>
+#include <fcntl.h>
 
+#include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <unordered_map>
-
 #define L_GEBRA_IMPLEMENTATION
-#include "keys.hpp"
 #include "../l_gebra/l_gebra.hpp"
+#include "keys.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -85,7 +88,7 @@ public:
         struct termios raw = orig_termios;
         raw.c_lflag &= ~(ECHO | ICANON);
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-        std::cout << "\033[?1003h";  // Enable mouse tracking
+        std::cout << "\033[?1003h";  // Enable SGR mouse mode
         system("clear");             // or "cls" on Windows
 #endif
     }
@@ -125,9 +128,12 @@ public:
      */
     static int parse_key(int key)
     {
-        if (key >= 'a' && key <= 'z') return KEY_a + (key - 'a');  // Lowercase letters
-        if (key >= 'A' && key <= 'Z') return KEY_A + (key - 'A');  // Uppercase letters
-        if (key >= '0' && key <= '9') return KEY_0 + (key - '0');  // Numbers
+        if (key >= 'a' && key <= 'z')
+            return KEY_a + (key - 'a');  // Lowercase letters
+        if (key >= 'A' && key <= 'Z')
+            return KEY_A + (key - 'A');  // Uppercase letters
+        if (key >= '0' && key <= '9')
+            return KEY_0 + (key - '0');  // Numbers
 
         switch (key)
         {
@@ -142,9 +148,12 @@ public:
             case 127:
                 return KEY_BACKSPACE;  // Backspace key
             default:
-                if (key >= 1 && key <= 26) return KEY_a + (key - 1);       // Ctrl + [a-z]
-                if (key >= 129 && key <= 154) return KEY_A + (key - 129);  // Ctrl + [A-Z]
-                if (key >= 59 && key <= 68) return KEY_F1 + (key - 59);    // F1-F10
+                if (key >= 1 && key <= 26)
+                    return KEY_a + (key - 1);  // Ctrl + [a-z]
+                if (key >= 129 && key <= 154)
+                    return KEY_A + (key - 129);  // Ctrl + [A-Z]
+                if (key >= 59 && key <= 68)
+                    return KEY_F1 + (key - 59);  // F1-F10
                 return KEY_UNKNOWN;
         }
     }
@@ -259,27 +268,17 @@ public:
         fcntl(STDIN_FILENO, F_SETFL, oldf);
 
         if (ch != EOF)
-        {
             return (parse_key(static_cast<int>(ch)));
-        }
         else
-        {
             return 0;
-        }
 #endif
     }
 
-    /**
-     * Update the states of all keys and the mouse position.
-     */
-    static void update_input_states()
+    static void update_mouse_and_key_states()
     {
 #ifdef _WIN32
-        for (int key = 0; key < 256; ++key)
-        {
-            SHORT state = GetAsyncKeyState(key);
-            key_states[static_cast<Keys>(key)] = (state & 0x8000) != 0;
-        }
+        // Windows implementation for mouse input
+        // You'll need to implement this based on Windows API
 #else
         fd_set readfds;
         struct timeval tv;
@@ -287,13 +286,7 @@ public:
         tv.tv_usec = 0;
         FD_ZERO(&readfds);
         FD_SET(STDIN_FILENO, &readfds);
-
-        // Reset all key states to false at the start of each frame
-        for (auto &pair : key_states)
-        {
-            pair.second = false;
-        }
-
+        for (auto &pair : key_states) pair.second = false;
         if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv) > 0)
         {
             char buf[1024];
@@ -304,31 +297,31 @@ public:
                 {
                     if (buf[i] == '\033' && i + 2 < nread && buf[i + 1] == '[' && buf[i + 2] == '<')
                     {
-                        // SGR mouse event
+                        // SGR mouse event detected
                         int button = 0, x = 0, y = 0;
                         char eventType = 0;
-                        int parsed = 0;
                         int j = i + 3;  // Start after "<"
 
                         // Parse button
-                        while (j < nread && buf[j] >= '0' && buf[j] <= '9')
+                        while (j < nread && isdigit(buf[j]))
                         {
                             button = button * 10 + (buf[j] - '0');
                             j++;
                         }
-                        if (j < nread && buf[j] == ';') j++;
+                        if (j < nread && buf[j] == ';')
+                            j++;  // Move past ';' if present
 
-                        // Parse x
-                        while (j < nread && buf[j] >= '0' && buf[j] <= '9')
+                        // Parse x coordinate
+                        while (j < nread && isdigit(buf[j]))
                         {
                             x = x * 10 + (buf[j] - '0');
                             j++;
                         }
-                        x /= 2;
-                        if (j < nread && buf[j] == ';') j++;
+                        if (j < nread && buf[j] == ';')
+                            j++;  // Move past ';' if present
 
-                        // Parse y
-                        while (j < nread && buf[j] >= '0' && buf[j] <= '9')
+                        // Parse y coordinate
+                        while (j < nread && isdigit(buf[j]))
                         {
                             y = y * 10 + (buf[j] - '0');
                             j++;
@@ -336,22 +329,17 @@ public:
 
                         // Get event type
                         if (j < nread)
-                        {
                             eventType = buf[j];
-                            parsed = j - i + 1;
-                        }
 
-                        if (parsed > 0 && (eventType == 'M' || eventType == 'm'))
+                        // Check if it's a valid mouse event
+                        if (eventType == 'M' || eventType == 'm')
                         {
                             mouse_pos = {x - 1, y - 1};  // SGR reports 1-based coordinates
-                            mouse_event.x = x - 1;
+                            mouse_event.x = (x - 1) / 2; // Fix for double width characters
                             mouse_event.y = y - 1;
+                            mouse_moved = true;  // Set mouse moved flag
 
-                            if (mouse_pos[0] != x - 1 || mouse_pos[1] != y - 1)
-                            {
-                                mouse_moved = true;
-                            }
-
+                            // Determine the event type based on button
                             switch (button)
                             {
                                 case 0:
@@ -369,29 +357,30 @@ public:
                                 case 65:
                                     mouse_event.event = Event_type::SCROLL_DOWN;
                                     break;
-                                case 32:
-                                    mouse_event.event = Event_type::MOUSE_MOVE;
-                                    break;
                                 default:
-                                    if (eventType == 'm')
-                                        mouse_event.event = Event_type::RELEASE;
-                                    else
-                                        mouse_event.event = Event_type::MOUSE_MOVE;
+                                    mouse_event.event = Event_type::MOUSE_MOVE;
                                     break;
                             }
 
-                            i += parsed - 1;  // Move i to the end of the parsed sequence
+                            i = j - 1;  // Move i to the end of the parsed sequence
                         }
                     }
                     else
                     {
+                        // Handle other keyboard inputs (not mouse)
                         Keys k = static_cast<Keys>(parse_key(buf[i]));
-                        key_states[k] = true;
+                        if (k != KEY_UNKNOWN)
+                            key_states[k] = true;
                     }
                 }
             }
         }
 #endif
+    }
+
+    static void update_input_states()
+    {
+        update_mouse_and_key_states();
     }
 };
 

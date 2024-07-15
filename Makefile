@@ -9,3 +9,6 @@ debug: main.cpp
 
 color: color.cpp
 	$(cc) color.cpp -o color $(flags) && ./color
+
+example_1: Examples/sum_of_sines.cpp
+	$(cc) Examples/sum_of_sines.cpp -o example1 $(flags) && ./example1
