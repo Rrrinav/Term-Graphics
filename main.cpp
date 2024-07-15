@@ -1,4 +1,4 @@
-//#include <algorithm>
+//#incl:waude <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -38,56 +38,10 @@ int main()
     float flight_coeff = 0.5;
     utl::Vec<int, 2> v = {0, 4};
     //    renderer.draw_fill_circle({20, 20}, 10, 'o', BRIGHT_BLUE, true);
-    External_cache cache = renderer.create_user_cache();
-    Triangle triangle({10, 10}, {20, 20}, {30, 10}, 'o', BLUE);
-    renderer.user_cache_shape(cache, triangle, "triangle1");
-    renderer.user_cache_shape(cache, triangle, "triangle2");
-    renderer.user_cache_shape(cache, triangle, "triangle3");
-    renderer.user_cache_shape(cache, triangle, "triangle4");
-    renderer.user_cache_shape(cache, triangle, "triangle5");
-    renderer.user_cache_shape(cache, triangle, "triangle6");
-    renderer.user_cache_shape(cache, triangle, "triangle7");
-    renderer.user_cache_shape(cache, triangle, "triangle8");
-    renderer.user_cache_shape(cache, triangle, "triangle9");
-    renderer.user_cache_shape(cache, triangle, "triangle10");
-    renderer.user_cache_shape(cache, triangle, "triangle11");
-    renderer.user_cache_shape(cache, triangle, "triangle12");
-    renderer.user_cache_shape(cache, triangle, "triangle13");
-    renderer.user_cache_shape(cache, triangle, "triangle14");
-    renderer.user_cache_shape(cache, triangle, "triangle15");
-    renderer.user_cache_shape(cache, triangle, "triangle16");
-    renderer.user_cache_shape(cache, triangle, "triangle17");
-    renderer.user_cache_shape(cache, triangle, "triangle18");
-    renderer.user_cache_shape(cache, triangle, "triangle19");
-    renderer.user_cache_shape(cache, triangle, "triangle20");
-    renderer.user_cache_shape(cache, triangle, "triangle21");
-    renderer.user_cache_shape(cache, triangle, "triangle22");
-    renderer.user_cache_shape(cache, triangle, "triangle23");
-    renderer.user_cache_shape(cache, triangle, "triangle24");
-    renderer.user_cache_shape(cache, triangle, "triangle25");
-    renderer.user_cache_shape(cache, triangle, "triangle26");
-    renderer.user_cache_shape(cache, triangle, "triangle27");
-    Triangle t1({0, 0}, {10, 10}, {1, 20}, 'o', BLUE);
-    renderer.draw_text({3, 8}, "NOT GETTING CALCULATED EVERY FRAME BTW", BRIGHT_PURPLE, true);
     // Now we will check fps for performance
-    int frames = 0;
-    auto lastFpsUpdate = std::chrono::high_resolution_clock::now();
-    auto start = std::chrono::high_resolution_clock::now();
-    std::string fps_str = "FPS: 0";
 
     for (;;)
     {
-        auto now = std::chrono::high_resolution_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastFpsUpdate).count();
-
-        if (elapsed >= 1000)
-        {
-            double fps = frames * 1000.0 / elapsed;
-            fps_str = "FPS: " + std::to_string(static_cast<int>(std::round(fps)));
-            //     std::cout << "Debug: " << frames << " frames in " << elapsed << "ms, FPS: " << fps << std::endl;
-            frames = 0;
-            lastFpsUpdate = now;
-        }
         Window::update_input_states();
         renderer.empty();
         renderer.reset_screen();
@@ -106,7 +60,7 @@ int main()
         }
         std::string amp_str = "AMP:" + std::to_string(amp);
         renderer.draw_text_with_font({1, 1}, amp_str, BRIGHT_RED, font1);
-        renderer.draw_text({1, 60}, fps_str, BRIGHT_RED);
+        // renderer.draw_text({1, 60}, fps_str, BRIGHT_RED);
         renderer.draw_text({3, 8}, "NOT GETTING CALCULATED EVERY FRAME BTW", BRIGHT_PURPLE);
         // renderer.draw_triangle({10, 10}, {20, 20}, {30, 10}, 'o', BLUE);
         // renderer.draw_triangle({10, 10}, {20, 20}, {30, 10}, 'o', BLUE);
@@ -136,13 +90,13 @@ int main()
         // renderer.draw_triangle({10, 10}, {20, 20}, {30, 10}, 'o', BLUE);
         // renderer.draw_triangle({10, 10}, {20, 20}, {30, 10}, 'o', BLUE);
         // renderer.draw_triangle({10, 10}, {20, 20}, {30, 10}, 'o', BLUE);
-        renderer.draw_user_cache(cache);
+
         renderer.print();
         // phase1 += delta_t;
         // phase2 += delta_t;
         // phase3 += delta_t;
         delta_t += 0.3;
-        frames++;
+
         //std::cout << "Frame: " << frames << std::endl;
         //renderer.sleep(1000 / 500);
     }

@@ -30,13 +30,17 @@ class Renderer
 {
     std::shared_ptr<Buffer> _buffer;
     Color _bg_color = Color(TRANSPARENT);
-    Pixel *_pixels;
     Window _window;
 
 public:
     Renderer();
     Renderer(size_t width, size_t height);
     Renderer(std::shared_ptr<Buffer> buffer);
+    Renderer(size_t width, size_t height, Color bg_color) : _buffer(std::make_shared<Buffer>(width, height)), _bg_color(bg_color)
+    {
+        Init();
+    }
+    ~Renderer() { _window.cleanup_terminal(); }
 
     const Buffer &get_buffer() const;
     size_t get_width() const;
@@ -117,6 +121,7 @@ public:
     static Font load_font(const std::string &font_path);
     Sprite load_sprite(const std::string &sprite_path);
     void draw_sprite(utl::Vec<int, 2> start_pos, const Sprite &sprite, Color color = WHITE);
+    void sync_fps() {}
     void print();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
     void empty();
@@ -142,9 +147,9 @@ private:
 // Renderer definitions
 Renderer::Renderer() : _buffer(std::make_shared<Buffer>()), _pixels(nullptr) {}
 
-Renderer::Renderer(size_t width, size_t height) : _buffer(std::make_shared<Buffer>(width, height)) {}
+Renderer::Renderer(size_t width, size_t height) : _buffer(std::make_shared<Buffer>(width, height)) { Init(); }
 
-Renderer::Renderer(std::shared_ptr<Buffer> buffer) : _buffer(buffer) {}
+Renderer::Renderer(std::shared_ptr<Buffer> buffer) : _buffer(buffer) { Init(); }
 
 const Buffer &Renderer::get_buffer() const { return *_buffer; }
 
