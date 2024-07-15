@@ -18,6 +18,7 @@
 #include "../dependencies/font.hpp"
 #include "../dependencies/glyph.hpp"
 #include "../dependencies/shapes.hpp"
+#include "../dependencies/sprites.hpp"
 #include "../l_gebra/l_gebra.hpp"
 #include "../window/window.hpp"
 #include "basic_units.hpp"
@@ -121,6 +122,31 @@ public:
     static Font load_font(const std::string &font_path);
     Glyph load_glyph(const std::string &glyph_path);
     void draw_glyph(utl::Vec<int, 2> start_pos, const Glyph &glyph, Color color = WHITE);
+    void draw_sprite(const utl::Vec<int, 2> start_pos, const Sprite &sprite)
+    {
+        auto characters = sprite.characters();
+        auto colors = sprite.colors();
+        size_t width = sprite.width();
+        int x1 = 0, x2 = 0;
+        for (size_t y = 0; y < sprite.height(); y++)
+            for (size_t x = 0; x < sprite.width() / 2; x++)
+            {
+                x1 = 2 * x;
+                x2 = 2 * x + 1;
+                _buffer->set({(int)(start_pos.x() + x1), (int)(start_pos.y() + y)},
+                             characters[y * width + x1],
+                             characters[y * width + x2],
+                             colors[y * width + x1],
+                             colors[y * width + x2]);
+            }
+        if (sprite.width() % 2)
+            for (size_t y = 0; y < sprite.height(); y++)
+                _buffer->set({(int)(start_pos.x() + x2), (int)(start_pos.y() + y)},
+                            characters[y * width + (width - 1)],
+                             ' ',
+                            colors[y * width + width - 1],
+                             Color());
+    }
     void sync_fps() {}
     void print();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
@@ -777,7 +803,7 @@ void Renderer::print()
         {
             // Implement anti-aliasing when drawing the buffer too
             //std::cout << (*_buffer)(x, y)._color.to_ansii_fg_str() << (*_buffer)(x, y)._ch;
-            print_buffer += (*_buffer)(x, y)._color.to_ansii_fg_str();
+            print_buffer += (*_buffer)(x, y)._color1.to_ansii_fg_str();
             // BUG: This uses ch1 and ch2
             if ((*_buffer)(x, y)._ch1 == ' ' && (*_buffer)(x, y)._ch2 == ' ')
             {
@@ -786,6 +812,7 @@ void Renderer::print()
                 continue;
             }
             print_buffer += (*_buffer)(x, y)._ch1;
+            print_buffer += (*_buffer)(x, y)._color2.to_ansii_fg_str();
             print_buffer += (*_buffer)(x, y)._ch2;
         }
         // // fprintf(stdout, "%.*s\n", static_cast<int>(_buffer->width), print);

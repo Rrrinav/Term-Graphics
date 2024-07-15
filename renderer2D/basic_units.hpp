@@ -14,26 +14,38 @@ class Pixel
 public:
     char _ch1;
     char _ch2;
-    Color _color;
+    Color _color1;
+    Color _color2;
     bool _is_empty = true;
 
     Pixel() = default;
-    Pixel(char ch, Color color) : _ch1(ch), _ch2(ch), _color(color)
+    Pixel(char ch, Color color) : _ch1(ch), _ch2(ch), _color1(color), _color2(color)
     {
         if (ch == ' ')
             _is_empty = true;
         else
             _is_empty = false;
     }
-    Pixel(char ch1, char ch2, Color color) : _ch1(ch1), _ch2(ch2), _color(color)
+    Pixel(char ch1, char ch2, Color color) : _ch1(ch1), _ch2(ch2), _color1(color), _color2(color)
     {
         if (ch1 == ' ' && ch2 == ' ')
             _is_empty = true;
         else
             _is_empty = false;
     }
+    Pixel(char ch1, char ch2, Color color1, Color color2) : _ch1(ch1), _ch2(ch2), _color1(color1), _color2(color2)
+    {
+      if (ch1 == ' ' && ch2 == ' ')
+          _is_empty = true;
+      else
+          _is_empty = false;
+    }
     ~Pixel() = default;
-    void set_color(Color color) { _color = color; }
+    void set_color(Color color)
+    {
+        _color1 = color;
+        _color2 = color;
+    }
     void set_char(char ch)
     {
         _ch1 = ch;
@@ -56,7 +68,8 @@ public:
     {
         _ch1 = ch;
         _ch2 = ch;
-        _color = color;
+        _color1 = color;
+        _color2 = color;
         if (ch == ' ')
             _is_empty = true;
         else
@@ -66,12 +79,14 @@ public:
     {
         _ch1 = ch1;
         _ch2 = ch2;
-        _color = color;
+        _color1 = color;
+        _color2 = color;
         if (ch1 == ' ' && ch2 == ' ')
             _is_empty = true;
         else
             _is_empty = false;
     }
+    void set_color2(Color color) { _color2 = color; }
     bool is_empty() { return _is_empty; }
 };
 
@@ -127,7 +142,13 @@ public:
         if (x >= 0 && x < width && y >= 0 && y < height)
             data[y * width + x] = Pixel(ch1, ch2, color);
     }
-
+    void set(utl::Vec<int, 2> point, char ch1, char ch2, Color color1, Color color2)
+    {
+        size_t x = point.x();
+        size_t y = point.y();
+        if (x >= 0 && x < width && y >= 0 && y < height)
+            data[y * width + x] = Pixel(ch1, ch2, color1, color2);
+    }
     Pixel &operator()(size_t x, size_t y) { return data[y * width + x]; }
     const Pixel &operator()(size_t x, size_t y) const { return data[y * width + x]; }
     void fill(char ch, Color color)
