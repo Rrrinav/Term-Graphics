@@ -160,7 +160,7 @@ public:
     }
 };
 
-class Animated_sprite
+class Animated_glyph
 {
     std::vector<Glyph> frames;
     int current_frame;
@@ -171,8 +171,8 @@ class Animated_sprite
     int FPS;
 
 public:
-    Animated_sprite() : current_frame(0), frame_time(0), frame_duration(0), scale_x(1.0f), scale_y(1.0f), FPS(1) {}
-    Animated_sprite(const std::vector<Glyph> &frames, float frame_duration, float scale_x = 1.0f, float scale_y = 1.0f, int FPS = 1)
+    Animated_glyph() : current_frame(0), frame_time(0), frame_duration(0), scale_x(1.0f), scale_y(1.0f), FPS(1) {}
+    Animated_glyph(const std::vector<Glyph> &frames, float frame_duration, float scale_x = 1.0f, float scale_y = 1.0f, int FPS = 1)
         : frames(frames), current_frame(0), frame_time(0), frame_duration(frame_duration), scale_x(scale_x), scale_y(scale_y), FPS(FPS)
     {
     }
