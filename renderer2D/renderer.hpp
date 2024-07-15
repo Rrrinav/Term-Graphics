@@ -133,7 +133,7 @@ public:
             {
                 x1 = 2 * x;
                 x2 = 2 * x + 1;
-                _buffer->set({(int)(start_pos.x() + x1), (int)(start_pos.y() + y)},
+                _buffer->set({(int)(start_pos.x() + x), (int)(start_pos.y() + y)},
                              characters[y * width + x1],
                              characters[y * width + x2],
                              colors[y * width + x1],
@@ -142,9 +142,9 @@ public:
         if (sprite.width() % 2)
             for (size_t y = 0; y < sprite.height(); y++)
                 _buffer->set({(int)(start_pos.x() + x2), (int)(start_pos.y() + y)},
-                            characters[y * width + (width - 1)],
+                             characters[y * width + (width - 1)],
                              ' ',
-                            colors[y * width + width - 1],
+                             colors[y * width + width - 1],
                              Color());
     }
     void sync_fps() {}

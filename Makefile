@@ -12,3 +12,7 @@ color: color.cpp
 
 example_1: Examples/sum_of_sines.cpp
 	$(cc) Examples/sum_of_sines.cpp -o example1 $(flags) && ./example1
+
+
+engine: sprite_engine.cpp
+	$(cc) sprite_engine.cpp -o engine $(flags) && ./engine
