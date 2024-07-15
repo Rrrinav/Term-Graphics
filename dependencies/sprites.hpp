@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <sstream>
@@ -29,6 +30,7 @@ public:
     // ...
     void load_from_file(const std::string &filename)
     {
+        // Skip comments or empty lines
         _characters.clear();
         _colors.clear();
 
@@ -94,5 +96,33 @@ public:
 
         if (index != _width * _height)
             std::cerr << "Error: Data read mismatch with sprite dimensions." << std::endl;
+        file.close();
     }
+
+    void save_to_file(const std::string &filename)
+    {
+        std::ofstream file(filename);
+        if (!file.is_open())
+        {
+            std::cerr << "Error: Unable to open sprite file for writing: " + filename << std::endl;
+            return;
+        }
+
+        file << _width << " " << _height << "\n";
+        for (size_t i = 0; i < _characters.size(); ++i)
+        {
+            char character = _characters[i];
+            uint32_t color = Color::to_hex(_colors[i]);
+
+            // Format color to a 6-digit hex string
+            file << character << " " << std::setw(6) << std::setfill('0') << std::hex << color << "\n";
+        }
+
+        file.close();
+    }
+    size_t width() const { return _width; }
+    size_t height() const { return _height; }
+
+    std::vector<char> characters() const { return _characters; }
+    std::vector<Color> colors() const { return _colors; }
 };
