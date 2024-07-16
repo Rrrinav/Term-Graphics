@@ -107,12 +107,14 @@ void change_color(Color &brush_color, Renderer &rend)
 
 int main()
 {
-    Renderer rend(40, 40);
+    const int rend_width = 60;
+    const int rend_height = 40;
+    Renderer rend(rend_width, rend_height);
     rend.set_bg_color(GRAY_5);
     std::vector<char> sprite_chars;
     std::vector<Color> sprite_colors;
-    int sprite_width = 10;
-    int sprite_height = 10;
+    int sprite_width = 16;
+    int sprite_height = 6;
     const int canvas_begin_x = 2;
     const int canvas_begin_y = 7;
     const int canvas_width = 40 - 4;
@@ -194,12 +196,22 @@ int main()
             brush_r = ' ';
             brush_l = '^';
         }
+        else if (Window::is_pressed(Keys::KEY_e))
+        {
+            brush_r = 'O';
+            brush_l = ' ';
+        }
+        else if (Window::is_pressed(Keys::KEY_f))
+        {
+            brush_r = ' ';
+            brush_l = 'O';
+        }
 
         if (Window::is_pressed(Keys::KEY_r))
         {
             points.clear();
-            sprite_chars.clear();
-            sprite_colors.clear();
+            for (auto &sc : sprite_chars) sc = ' ';
+            for (auto &sc : sprite_colors) sc = Color();
         }
         for (auto &point : points) rend.draw_half_point(point);
         if (Window::is_pressed(Keys::KEY_o))
@@ -212,17 +224,30 @@ int main()
         //         }
         // }
         for (auto &point : points) rend.draw_half_point(point);
+        // Scan the chracters
         for (int y = 0; y < sprite_height; y++)
         {
-            for (int x = 0; x < sprite_width / 2; x++)
+            for (int x = 0; x <= (sprite_width / 2); x++)
             {
                 int buffer_x = canvas_begin_x + x;
-                sprite_chars[y * sprite_width + 2 * x] = rend.get_buffer().data[(canvas_begin_y + y) * 40 + buffer_x]._ch1;
-                sprite_chars[y * sprite_width + 2 * x + 1] = rend.get_buffer().data[(canvas_begin_y + y) * 40 + buffer_x]._ch2;
-                sprite_colors[y * sprite_width + 2 * x] = rend.get_buffer().data[(canvas_begin_y + y) * 40 + buffer_x]._color1;
-                sprite_colors[y * sprite_width + 2 * x + 1] = rend.get_buffer().data[(canvas_begin_y + y) * 40 + buffer_x]._color2;
+                sprite_chars[y * sprite_width + 2 * x] = rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._ch1;
+                sprite_chars[y * sprite_width + 2 * x + 1] = rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._ch2;
+                sprite_colors[y * sprite_width + 2 * x] = rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._color1;
+                sprite_colors[y * sprite_width + 2 * x + 1] = rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._color2;
             }
         }
+        // if width is even we read one last line
+        // for (int y = 0; y < sprite_height; y++)
+        // {
+        //     int buffer_x = canvas_begin_x / 2 + 10;
+        //     sprite_chars[(y * sprite_width) + sprite_width] = rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._ch1;
+        //     sprite_colors[(y * sprite_width) + sprite_width + 1] =
+        //         rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._ch2;
+        //     sprite_colors[(y * sprite_width) + sprite_width] = rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._color1;
+        //     sprite_colors[(y * sprite_width) + sprite_width + 1] =
+        //         rend.get_buffer().data[(canvas_begin_y + y) * rend_width + buffer_x]._color2;
+        // }
+        // on remaining line
         Sprite s(sprite_width, sprite_height, sprite_chars, sprite_colors);
         if (Window::is_pressed(Keys::KEY_s))
             s.save_to_file("new_shit.txt");
