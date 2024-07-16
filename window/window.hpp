@@ -22,7 +22,7 @@
 /**
  * Enum representing different types of mouse events.
  */
-enum Event_type
+enum Mouse_event_type
 {
     RIGHT_CLICK,
     LEFT_CLICK,
@@ -38,9 +38,9 @@ enum Event_type
  */
 struct Mouse_event
 {
-    int x;             ///< X position of the mouse event
-    int y;             ///< Y position of the mouse event
-    Event_type event;  ///< Type of the mouse event
+    int x;                   ///< X position of the mouse event
+    int y;                   ///< Y position of the mouse event
+    Mouse_event_type event;  ///< Type of the mouse event
 };
 
 /**
@@ -67,7 +67,7 @@ public:
      */
     Window() { init_terminal(); }
 
-    /**
+    /**e. If you'd like to tell me about your library, I'd be happy to discuss it or help with any questions you have.
      * Destructor to cleanup the terminal.
      */
     ~Window() { cleanup_terminal(); }
@@ -88,6 +88,11 @@ public:
         struct termios raw = orig_termios;
         raw.c_lflag &= ~(ECHO | ICANON);
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+        std::cout << "\033[?1000h";  // Enable xterm mouse reporting
+        std::cout << "\033[?1002h";  // Enable UTF-8 mouse
+        std::cout << "\033[?1005h";  // Enable urxvt mouse
+        std::cout << "\033[?1015h";  // Enable utf8 ext mode
+        std::cout << "\033[?1003h";  // Enable all mouse tracking
         std::cout << "\033[?1006h";  // Enable SGR mouse mode
         system("clear");             // or "cls" on Windows
 #endif
@@ -102,6 +107,12 @@ public:
         CloseHandle(hConsole);
 #else
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+
+        std::cout << "\033[?1000l";  // Enable xterm mouse reporting
+        std::cout << "\033[?1002l";  // Enable UTF-8 mouse
+        std::cout << "\033[?1005l";  // Enable urxvt mouse
+        std::cout << "\033[?1015l";  // Enable utf8 ext mode
+        std::cout << "\033[?1003l";  // Enable all mouse tracking
         std::cout << "\033[?1006l";  // Disable mouse tracking
 #endif
         system("clear");  // or "cls" on Windows
@@ -203,7 +214,7 @@ public:
     static utl::Vec<int, 2> get_mouse_pos() { return mouse_pos; }
 
     /**
-     * Check if the mouse has moved.
+     * Check if the mouse has moved.e. If you'd like to tell me about your library, I'd be happy to discuss it or help with any questions you have.
      * @return True if the mouse has moved, otherwise false.
      */
     static bool has_mouse_moved() { return mouse_moved; }
@@ -343,22 +354,22 @@ public:
                             switch (button)
                             {
                                 case 0:
-                                    mouse_event.event = Event_type::LEFT_CLICK;
+                                    mouse_event.event = Mouse_event_type::LEFT_CLICK;
                                     break;
                                 case 1:
-                                    mouse_event.event = Event_type::MIDDLE_CLICK;
+                                    mouse_event.event = Mouse_event_type::MIDDLE_CLICK;
                                     break;
                                 case 2:
-                                    mouse_event.event = Event_type::RIGHT_CLICK;
+                                    mouse_event.event = Mouse_event_type::RIGHT_CLICK;
                                     break;
                                 case 64:
-                                    mouse_event.event = Event_type::SCROLL_UP;
+                                    mouse_event.event = Mouse_event_type::SCROLL_UP;
                                     break;
                                 case 65:
-                                    mouse_event.event = Event_type::SCROLL_DOWN;
+                                    mouse_event.event = Mouse_event_type::SCROLL_DOWN;
                                     break;
                                 default:
-                                    mouse_event.event = Event_type::MOUSE_MOVE;
+                                    mouse_event.event = Mouse_event_type::MOUSE_MOVE;
                                     break;
                             }
 

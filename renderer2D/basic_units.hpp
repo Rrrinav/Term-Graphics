@@ -35,10 +35,10 @@ public:
     }
     Pixel(char ch1, char ch2, Color color1, Color color2) : _ch1(ch1), _ch2(ch2), _color1(color1), _color2(color2)
     {
-      if (ch1 == ' ' && ch2 == ' ')
-          _is_empty = true;
-      else
-          _is_empty = false;
+        if (ch1 == ' ' && ch2 == ' ')
+            _is_empty = true;
+        else
+            _is_empty = false;
     }
     ~Pixel() = default;
     void set_color(Color color)
@@ -154,5 +154,23 @@ public:
     void fill(char ch, Color color)
     {
         for (size_t i = 0; i < width * height; ++i) data[i] = Pixel(ch, color);
+    }
+    void set_absolute(utl::Vec<int, 2> point, char ch, bool left, Color color)
+    {
+        size_t x = point.x();
+        size_t y = point.y();
+        if (x >= 0 && x < width && y >= 0 && y < height)
+        {
+            if (left)
+            {
+                data[y * width + x]._ch1 = ch;
+                data[y * width + x]._color1 = color;
+            }
+            else
+            {
+                data[y * width + x]._ch2 = ch;
+                data[y * width + x]._color2 = color;
+            }
+        }
     }
 };

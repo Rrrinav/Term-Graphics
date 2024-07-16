@@ -53,8 +53,18 @@ public:
     bool draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color = Color(WHITE));
     bool draw_point(const Point &point)
     {
-        bool i = draw_point(point.get_pos(), point.get_char(), point.get_color());
+        bool i = draw_point2(point.get_pos(), point.get_char(), point.get_char2(), point.get_color());
         return i;
+    }
+    bool draw_half_point(utl::Vec<int, 2> point, char c, bool left, Color color = Color(WHITE))
+    {
+        _buffer->set_absolute(point, c, left, color);
+        return true;
+    }
+    bool draw_half_point(const half_point &point)
+    {
+        _buffer->set_absolute(point.get_pos(), point.get_char(), point.is_left(), point.get_color());
+        return true;
     }
     void draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
     void draw_line(const Line &line) { draw_line(line.get_start(), line.get_end(), line.get_char(), line.get_color()); }
@@ -192,10 +202,6 @@ bool Renderer::draw_point(utl::Vec<int, 2> point, char c, Color color)
 
     int x = point.x();
     int y = point.y();
-
-    // Ensure y is even for rendering
-    y = (y % 2 == 0) ? y : y - 1;
-    y = (y < 0) ? 0 : y;
 
     if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
     {

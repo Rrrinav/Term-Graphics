@@ -24,25 +24,52 @@ public:
     Color get_color() const { return _color; }
 };
 
+class half_point : public Shape
+{
+    utl::Vec<int, 2> _pos;
+    bool _left = true;
+    char _ch = '*';
+
+public:
+    half_point() : _pos({0, 0}), _ch('*'), Shape(), _left(true) {}
+    half_point(utl::Vec<int, 2> pos, char ch, bool left, Color color) : _pos(pos), _ch(ch), _left(left), Shape(color) {} 
+    half_point(const half_point &point) : _pos(point._pos), _ch(point._ch), _left(point._left), Shape(point._color) {}
+    void set_pos(utl::Vec<int, 2> pos) { _pos = pos; }
+    void set_char(char ch) { _ch = ch; }
+    utl::Vec<int, 2> get_pos() const { return _pos; }
+    char get_char() const { return _ch; }
+    bool is_left() const { return _left; }
+};
+
 class Point : public Shape
 {
     utl::Vec<int, 2> _pos;
     char _ch = '*';
     char _ch2 = '*';
+    Color _color2;
 
 public:
-    Point() : _pos({0, 0}), _ch('*'), Shape() {}
-    Point(utl::Vec<int, 2> pos, char ch, Color color) : _pos(pos), _ch(ch), _ch2(ch), Shape(color) {}
-    Point(utl::Vec<int, 2> pos, char ch1, char ch2, Color color) : _pos(pos), _ch(ch1), _ch2(ch2), Shape(color) {}
-    Point(int x, int y, char ch, Color color) : _pos({x, y}), _ch(ch), _ch2(ch), Shape(color) {}
-    Point(const Point &point) : _pos(point._pos), _ch(point._ch), _ch2(point._ch2) ,Shape(point._color) {}
+    Point() : _pos({0, 0}), _ch('*'), Shape() { _color2 = _color; }
+    Point(utl::Vec<int, 2> pos, char ch, Color color) : _pos(pos), _ch(ch), _ch2(ch), Shape(color) { _color2 = color; }
+    Point(utl::Vec<int, 2> pos, char ch1, char ch2, Color color) : _pos(pos), _ch(ch1), _ch2(ch2), Shape(color) { _color2 = color; }
+    Point(int x, int y, char ch, Color color) : _pos({x, y}), _ch(ch), _ch2(ch), Shape(color) { _color2 = color; }
+    Point(const Point &point) : _pos(point._pos), _ch(point._ch), _ch2(point._ch2), Shape(point._color) { _color2 = point._color2; }
+    Point(utl::Vec<int, 2> pos, char ch, Color color, char ch2, Color color2) : _pos(pos), _ch(ch), _ch2(ch2), Shape(color)
+    {
+        _color2 = color2;
+    }
     // void draw(Renderer &renderer) override { renderer.draw_point(_pos, _ch, _color); }
     void set_pos(utl::Vec<int, 2> pos) { _pos = pos; }
     void set_char(char ch) { _ch = ch; }
-    void set_char(char ch1, char ch2) { _ch = ch1; _ch2 = ch2; }
+    void set_char(char ch1, char ch2)
+    {
+        _ch = ch1;
+        _ch2 = ch2;
+    }
     utl::Vec<int, 2> get_pos() const { return _pos; }
     char get_char() const { return _ch; }
     char get_char2() const { return _ch2; }
+    Color get_color2() const { return _color2; }
 };
 
 class Line : public Shape
