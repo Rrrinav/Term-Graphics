@@ -193,6 +193,11 @@ public:
     {
       return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b);
     }
+    
+    Color get_random()
+    {
+      return Color(rand() % 256, rand() % 256, rand() % 256);
+    }
 };
 
 #endif  // SIXTEEN_BIT_COLOR

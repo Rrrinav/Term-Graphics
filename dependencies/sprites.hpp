@@ -42,7 +42,8 @@ public:
 
         if (!(file >> _width >> _height))
             std::cerr << "Error: Unable to read sprite dimensions from file: " + filename << std::endl;
-
+        
+        
         _characters.resize(_width * _height, ' ');
         _colors.resize(_width * _height, Color());  // Initialize with default Color
 
@@ -127,4 +128,5 @@ public:
 
     std::vector<char> characters() const { return _characters; }
     std::vector<Color> colors() const { return _colors; }
+    void set_colors(const std::vector<Color> &colors) { _colors = colors; }
 };

@@ -16,3 +16,7 @@ example_1: Examples/sum_of_sines.cpp
 
 engine: sprite_engine.cpp
 	$(cc) sprite_engine.cpp -o engine $(flags) && ./engine
+
+
+example_2: Examples/wall.cpp
+	cd Examples && $(cc) wall.cpp -o example2 $(flags) && example2
