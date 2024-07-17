@@ -203,19 +203,14 @@ bool Renderer::draw_point(utl::Vec<int, 2> point, char c, Color color)
     int x = point.x();
     int y = point.y();
 
-    if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
-    {
-        _buffer->set({x, y}, c, color);
-        return true;
-    }
+    _buffer->set({x, y}, c, color);
+    return true;
+
     return false;
 }
 
 bool Renderer::draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color)
 {
-    if (point.x() < 0 || point.x() >= static_cast<int>(_buffer->width) || point.y() < 0 || point.y() >= static_cast<int>(_buffer->height))
-        return false;
-
     int x = point.x();
     int y = point.y();
 
@@ -889,7 +884,7 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
-// TODO: line clipping, Texture Mapping, double buffering
-//       Camera system, merging buffers, gradient fill, 3D rendering,
+// TODO: Texture Mapping, double buffering
+//       Camera system, gradient fill, 3D rendering,
 //       key frames, procedural generation filter-effects, Noise
 #endif  // RENDERER_IMPLEMENTATION

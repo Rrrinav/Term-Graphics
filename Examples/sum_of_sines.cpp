@@ -18,6 +18,7 @@ int main()
     int amp_factor = 2;
     float time = 0;
     int x;
+    int e_t = 0;
     while (1)
     {
         fps.start_frame();
@@ -38,8 +39,7 @@ int main()
                               std::exp(std::sin((float)x / 4 + 0.5 * fps.get_elapsed_time())) +
                               std::exp(std::sin((float)x / 3 + 9 * fps.get_elapsed_time())));
             ascii.draw_line({x % 120, 80}, {x, y}, ':', BLUE);
-            ascii.draw_point({x % 120, y}, 'o', RED);
-            time = time + fps.get_delta_time() * 30;
+            ascii.draw_point({x % 120, y - 1}, 'o', RED);
         }
         auto mouse = Window::get_mouse_event();
         ascii.draw_text({1, 1}, "FPS: " + std::to_string(fps.get_actual_fps()) + " Traget_fps: " + std::to_string(target_fps), WHITE);

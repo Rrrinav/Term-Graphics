@@ -46,7 +46,7 @@ int main() {
 
 ## Advanced Usage
 
-### Sprite animation
+### Glyph animation
 
 ```cpp
 sprite.load_from_file("animation.txt");
