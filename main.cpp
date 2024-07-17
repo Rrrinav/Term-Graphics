@@ -1,20 +1,32 @@
+#include "window/keys.hpp"
 #define RENDERER_IMPLEMENTATION
-#include "./renderer2D/renderer.hpp"
+#include <iostream>
+
+#include "renderer2D/ascii.hpp"
 
 int main()
 {
-    Renderer rend(20, 20);
-    rend.set_bg_color(GRAY_5);
-    Sprite s("assets/wall_texture.txt");
-    auto characters = s.characters();
-    auto colors = s.colors();
-    size_t width = s.width();
-    while (true)
+    Renderer r(40, 40);
+    while (1)
     {
-        rend.empty();
-        rend.reset_screen();
-        rend.draw_sprite({0, 0}, s);
-        rend.print();
+        r.empty();
+        r.reset_screen();
+        Window::update_input_states();
+        if (Window::is_pressed(Keys::KEY_F5))
+            r.draw_text({1, 1}, "F5 PRESSED");
+        if (Window::is_pressed(KEY_a))
+            r.draw_text({1, 1}, "a pressed");
+        if (Window::is_pressed(KEY_ENTER))
+            r.draw_text({1, 1}, "ENTER pressed");
+        if (Window::is_pressed(KEY_E))
+            r.draw_text({1, 1}, "E pressed");
+        if (Window::is_pressed(KEY_Ctrl_W))
+            r.draw_text({1, 1}, "Ct + w pressed");
+        if (Window::is_pressed(KEY_UP))
+            r.draw_text({1, 1}, "up pressed");
+        auto mouse = Window::get_mouse_event();
+        r.draw_text({1, 2}, "Mouse X: " + std::to_string(mouse.x) + ", Mouse Y: " + std::to_string(mouse.y));
+        r.print();
+        r.sleep(1000 / 2);
     }
-    return 0;
 }

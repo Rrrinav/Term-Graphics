@@ -85,6 +85,11 @@ enum Keys
     KEY_F8,
     KEY_F9,
     KEY_F10,
+    // Arrow keys
+    KEY_UP,
+    KEY_DOWN,
+    KEY_RIGHT,
+    KEY_LEFT,
     // Ctrl + Uppercase letters
     KEY_Ctrl_A,
     KEY_Ctrl_B,

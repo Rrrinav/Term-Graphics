@@ -889,7 +889,7 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
-// TODO: Frame rate control, line clipping, Texture Mapping, double buffering
-//       Camera system, merging buffers, gradient fill, 3D rendering, key frames, procedural generation
-//       filter-effects, Noise
+// TODO: line clipping, Texture Mapping, double buffering
+//       Camera system, merging buffers, gradient fill, 3D rendering,
+//       key frames, procedural generation filter-effects, Noise
 #endif  // RENDERER_IMPLEMENTATION

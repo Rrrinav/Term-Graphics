@@ -1,7 +1,7 @@
 #include <cmath>
 #include <string>
 #define RENDERER_IMPLEMENTATION
-#include "../renderer2D/renderer.hpp"
+#include "../renderer2D/ascii.hpp"
 #include "../time/frame_rate.hpp"
 
 int main()

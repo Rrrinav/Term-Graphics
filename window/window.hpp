@@ -145,7 +145,13 @@ public:
             return KEY_A + (key - 'A');  // Uppercase letters
         if (key >= '0' && key <= '9')
             return KEY_0 + (key - '0');  // Numbers
-
+        else if (key < 27)               // Ctrl+A to Ctrl+Z or Ctrl+a to Ctrl+z
+        {
+            Keys k_upper = static_cast<Keys>(KEY_Ctrl_A + (key - 1));
+            Keys k_lower = static_cast<Keys>(KEY_Ctrl_a + (key - 1));
+            // key_states[k_upper] = true;
+            // key_states[k_lower] = true;  // Set both upper and lower case
+        }
         switch (key)
         {
             case '\n':
@@ -288,8 +294,60 @@ public:
     static void update_mouse_and_key_states()
     {
 #ifdef _WIN32
-        // Windows implementation for mouse input
-        // You'll need to implement this based on Windows API
+        DWORD numRead;
+        INPUT_RECORD inputRecord;
+        while (true)
+        {
+            // Check if there are any input events
+            if (!GetNumberOfConsoleInputEvents(hConsoleInput, &numRead) || numRead == 0)
+                break;
+
+            // Read the input event
+            ReadConsoleInput(hConsoleInput, &inputRecord, 1, &numRead);
+            if (inputRecord.EventType == KEY_EVENT)
+            {
+                char key = inputRecord.Event.KeyEvent.uChar.AsciiChar;
+                Keys parsedKey = static_cast<Keys>(parse_key(key));
+                key_states[parsedKey] = inputRecord.Event.KeyEvent.bKeyDown;
+            }
+            else if (inputRecord.EventType == MOUSE_EVENT)
+            {
+                MOUSE_EVENT_RECORD mouseEvent = inputRecord.Event.MouseEvent;
+                // Update mouse position
+                mouse_pos[0] = mouseEvent.dwMousePosition.X;
+                mouse_pos[1] = mouseEvent.dwMousePosition.Y;
+
+                // Update mouse event type
+                if (mouseEvent.dwEventFlags & MOUSE_MOVED)
+                {
+                    mouse_event.event = MOUSE_MOVE;
+                }
+                else if (mouseEvent.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
+                {
+                    mouse_event.event = LEFT_CLICK;
+                }
+                else if (mouseEvent.dwButtonState & RIGHTMOST_BUTTON_PRESSED)
+                {
+                    mouse_event.event = RIGHT_CLICK;
+                }
+                else if (mouseEvent.dwEventFlags & MOUSE_WHEELED)
+                {
+                    if (mouseEvent.dwButtonState & 0xFF000000)
+                        mouse_event.event = SCROLL_UP;
+                    else
+                        mouse_event.event = SCROLL_DOWN;
+                }
+                else if (mouseEvent.dwEventFlags & MOUSE_HWHEELED)
+                {
+                    // Handle horizontal scroll if necessary
+                }
+                else
+                {
+                    mouse_event.event = RELEASE;
+                }
+            }
+        }
+
 #else
         fd_set readfds;
         struct timeval tv;
@@ -376,12 +434,97 @@ public:
                             i = j - 1;  // Move i to the end of the parsed sequence
                         }
                     }
+                    else if (buf[i] == '\033')
+                    {  // Escape sequence for special keys
+                        if (i + 1 < nread)
+                        {
+                            if (buf[i + 1] == '[')
+                            {
+                                // Handle arrow keys
+                                // Handle arrow keys and function keys
+                                if (i + 3 < nread)
+                                {
+                                    if (isdigit(buf[i + 2]))
+                                    {
+                                        int code = (buf[i + 2] - '0') * 10 + (buf[i + 3] - '0');
+                                        switch (code)
+                                        {
+                                            case 11:
+                                                key_states[KEY_F1] = true;
+                                                break;
+                                            case 12:
+                                                key_states[KEY_F2] = true;
+                                                break;
+                                            case 13:
+                                                key_states[KEY_F3] = true;
+                                                break;
+                                            case 14:
+                                                key_states[KEY_F4] = true;
+                                                break;
+                                            case 15:
+                                                key_states[KEY_F5] = true;
+                                                break;
+                                            case 16:
+                                                key_states[KEY_F6] = true;
+                                                break;
+                                            case 17:
+                                                key_states[KEY_F7] = true;
+                                                break;
+                                            case 18:
+                                                key_states[KEY_F8] = true;
+                                                break;
+                                            case 19:
+                                                key_states[KEY_F9] = true;
+                                                break;
+                                            case 20:
+                                                key_states[KEY_F10] = true;
+                                                break;
+                                        }
+                                        i += 3;  // Skip the sequence
+                                    }
+                                    else
+                                    {
+                                        // Handle arrow keys (existing code)
+                                        switch (buf[i + 2])
+                                        {
+                                            case 'A':
+                                                key_states[KEY_UP] = true;
+                                                break;
+                                            case 'B':
+                                                key_states[KEY_DOWN] = true;
+                                                break;
+                                            case 'C':
+                                                key_states[KEY_RIGHT] = true;
+                                                break;
+                                            case 'D':
+                                                key_states[KEY_LEFT] = true;
+                                                break;
+                                        }
+                                        i += 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (buf[i] >= 1 && buf[i] <= 26)
+                    {  // Control + [A-Z] or [a-z]
+                        // Control key handling
+                        Keys k = static_cast<Keys>(KEY_Ctrl_A + (buf[i] - 1));  // Ctrl + 'A' to 'Z'
+                        Keys k_lower = static_cast<Keys>(KEY_Ctrl_a + (buf[i] - 1));
+                        if (k >= KEY_Ctrl_A && k <= KEY_Ctrl_Z || k >= KEY_Ctrl_a && k <= KEY_Ctrl_z)
+                        {
+                            key_states[k_lower] = true;
+                            key_states[k] = true;
+                        }
+                        Keys k2 = static_cast<Keys>(parse_key(buf[i]));
+                        if (k2 != KEY_UNKNOWN)
+                            key_states[k2] = true;
+                    }
                     else
                     {
-                        // Handle other keyboard inputs (not mouse)
-                        Keys k = static_cast<Keys>(parse_key(buf[i]));
-                        if (k != KEY_UNKNOWN)
-                            key_states[k] = true;
+                        Keys k2 = static_cast<Keys>(parse_key(buf[i]));
+                        if (k2 != KEY_UNKNOWN)
+                            key_states[k2] = true;
                     }
                 }
             }

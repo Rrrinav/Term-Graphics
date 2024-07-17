@@ -3,7 +3,7 @@
 #include "dependencies/shapes.hpp"
 #include "window/window.hpp"
 #define RENDERER_IMPLEMENTATION
-#include "renderer2D/renderer.hpp"
+#include "renderer2D/ascii.hpp"
 #include "time/frame_rate.hpp"
 
 void change_color(Color &brush_color, Renderer &rend)
@@ -249,8 +249,17 @@ int main()
         // }
         // on remaining line
         Sprite s(sprite_width, sprite_height, sprite_chars, sprite_colors);
+        bool exit;
         if (Window::is_pressed(Keys::KEY_s))
+        {
+            rend.empty();
+            rend.reset_screen();
+            rend.draw_text({1, 1}, "SAVING...");
             s.save_to_file("new_shit.txt");
+            rend.draw_text({1, 1}, "SAVED!");
+            break;
+        }
+
         rend.draw_sprite({canvas_begin_x + sprite_width + 2, canvas_begin_y + sprite_height + 2}, s);
         rend.draw_half_point({mouse.x, mouse.y}, brush_l == ' ' ? brush_r : brush_l, brush_l == ' ' ? false : true, brush_color);
         rend.draw_rectangle({canvas_begin_x - 1, canvas_begin_y - 1}, canvas_width, canvas_height, '-', '|', WHITE);
