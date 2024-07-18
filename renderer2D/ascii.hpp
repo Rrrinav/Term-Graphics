@@ -107,6 +107,46 @@ public:
         }
     }
 
+    // Utility function to rotate coordinates
+    std::pair<float, float> rotate_point(float x, float y, float angle)
+    {
+        float cos_theta = std::cos(angle);
+        float sin_theta = std::sin(angle);
+        float rotated_x = x * cos_theta - y * sin_theta;
+        float rotated_y = x * sin_theta + y * cos_theta;
+        return {rotated_x, rotated_y};
+    }
+
+    void draw_rect_rotated_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, float angle)
+    {
+        // Convert angle to radians
+
+        // Determine the direction of the gradient
+        float gradient_direction_x = std::cos(angle);
+        float gradient_direction_y = std::sin(angle);
+        float max_distance = std::sqrt(width * width + height * height);
+        // Iterate over each pixel in the rectangle
+        for (int i = 0; i < width; ++i)
+        {
+            for (int j = 0; j < height; ++j)
+            {
+                // Calculate the pixel position relative to the start of the rectangle
+                float px = start.x() + i;
+                float py = start.y() + j;
+
+                // Rotate the pixel position to align with the gradient direction
+                auto [rotated_x, rotated_y] = rotate_point(px - start.x() - width / 2.0f, py - start.y() - height / 2.0f, -angle);
+
+                // Map rotated coordinates to gradient progress
+                float t = (rotated_x + width / 2.0f) / width;
+                // Get the color at the normalized position
+                Color color = gradient.get_color_at(t);
+
+                // Set the pixel in the buffer
+                _buffer->set({start.x() + i, start.y() + j}, ch, color);
+            }
+        }
+    }
     void draw_rect_radial_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient)
     {
         float half_width = width / 2.0f;

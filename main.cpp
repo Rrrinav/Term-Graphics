@@ -22,11 +22,11 @@ int main()
         r.reset_screen();
 
         // Fill with linear gradient
-        r.draw_rect_linear_gradient({10, 10}, 60, 20, '#', linear_gradient, false);
+        r.draw_rect_linear_gradient({10, 1}, 80, 20, '#', radial_gradient, false);
 
         // Fill with radial gradient
-        r.draw_rect_radial_gradient({10, 40}, 80, 30, '#', radial_gradient);
-
+        r.draw_rect_rotated_gradient({10, 22}, 80, 20, '#', radial_gradient, M_PI / 1.5);
+        r.draw_rect_radial_gradient({10, 43}, 80, 20, '#', radial_gradient);
         r.print();
     }
 
