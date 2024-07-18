@@ -109,11 +109,13 @@ public:
 
     void draw_rect_radial_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient)
     {
+        float half_width = width / 2.0f;
+        float half_height = height / 2.0f;
         // Calculate the center of the rectangle
-        float centerX = start.x() + width / 2.0f;
-        float centerY = start.y() + height / 2.0f;
-        float maxDistance = std::sqrt(centerX * centerX + centerY * centerY);
+        float centerX = start.x() + half_width;
+        float centerY = start.y() + half_height;
 
+        float max_distance = std::sqrt(half_width * half_width + half_height * half_height);
         // Iterate over each pixel in the rectangle
         for (int i = 0; i < width; ++i)
         {
@@ -125,7 +127,7 @@ public:
                 float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
 
                 // Normalize the distance to get a value between 0 and 1
-                float t = distance / maxDistance;
+                float t = distance / max_distance;
 
                 // Get the color at the normalized distance
                 Color color = gradient.get_color_at(t);
@@ -836,36 +838,41 @@ void Renderer::print()
 {
     std::string print_buffer;
 
-    if (_bg_color != Color(TRANSPARENT))
-    {
-        print_buffer += _bg_color.to_ansii_bg_str();
-        // std::cout << _bg_color.to_ansii_bg_str();
-    }
+    // Set the background color if it is not transparent
+    print_buffer += _bg_color.to_ansii_bg_str();
+
     for (size_t y = 0; y < _buffer->height; y++)
     {
         for (size_t x = 0; x < _buffer->width; x++)
         {
-            // Implement anti-aliasing when drawing the buffer too
-            //std::cout << (*_buffer)(x, y)._color.to_ansii_fg_str() << (*_buffer)(x, y)._ch;
+            // // Check if both characters are spaces
+            // if ((*_buffer)(x, y)._ch1 == ' ' && (*_buffer)(x, y)._ch2 == ' ')
+            // {
+            //     // Add the background color for the first space
+            //     print_buffer += (*_buffer)(x, y)._color1.to_ansii_bg_str();
+            //     print_buffer += ' ';
+            //     // Add the background color for the second space
+            //     print_buffer += (*_buffer)(x, y)._color2.to_ansii_bg_str();
+            //     print_buffer += ' ';
+            //     // Reset background color after each double space to the initial background color
+            //     if (_bg_color != Color(TRANSPARENT))
+            //         print_buffer += _bg_color.to_ansii_bg_str();
+            //     continue;
+            // }
+            // Add the foreground color and character for _ch1
             print_buffer += (*_buffer)(x, y)._color1.to_ansii_fg_str();
-            // BUG: This uses ch1 and ch2
-            if ((*_buffer)(x, y)._ch1 == ' ' && (*_buffer)(x, y)._ch2 == ' ')
-            {
-                print_buffer += ' ';
-                print_buffer += ' ';
-                continue;
-            }
             print_buffer += (*_buffer)(x, y)._ch1;
+            // Add the foreground color and character for _ch2
             print_buffer += (*_buffer)(x, y)._color2.to_ansii_fg_str();
             print_buffer += (*_buffer)(x, y)._ch2;
         }
-        // // fprintf(stdout, "%.*s\n", static_cast<int>(_buffer->width), print);
-        // std::cout.write(print, _buffer->width);
-        //std::cout << '\n';
+        // Add a newline at the end of each row
         print_buffer += '\n';
     }
-    //    std::cout << ANSII_BG_RESET;
+    // Reset background color at the end of the entire buffer
     print_buffer += ANSII_BG_RESET;
+
+    // Draw the buffer to the window
     _window.draw(print_buffer);
 }
 
