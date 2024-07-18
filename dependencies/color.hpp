@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include <string>
 
 #define RESET "\u001b[0m"
@@ -69,7 +69,8 @@ std::string to_ansii_fg_str(Color c)
 
 std::string to_ansii_bg_str(Color c)
 {
-    if (c > Color::White) c = static_cast<Color>(static_cast<int>(c) - 8);
+    if (c > Color::White)
+        c = static_cast<Color>(static_cast<int>(c) - 8);
     switch (c)
     {
         case Color::Black:
@@ -155,11 +156,14 @@ public:
     const uint8_t &a() const { return _a; }
     int to_ansii() const
     {
-        if (_r == 0 && _g == 0 && _b == 0) return 16;
+        if (_r == 0 && _g == 0 && _b == 0)
+            return 16;
         if (_r == _g && _g == _b)
         {
-            if (_r < 8) return 16;
-            if (_r > 248) return 231;
+            if (_r < 8)
+                return 16;
+            if (_r > 248)
+                return 231;
             return 232 + (_r - 8) / 10;
         }
         return 16 + 36 * (_r / 51) + 6 * (_g / 51) + (_b / 51);
@@ -188,15 +192,22 @@ public:
     Color invert() const { return Color(255 - _r, 255 - _g, 255 - _b); }
 
     Color blend(const Color &c) const { return Color((_r + c.r()) / 2, (_g + c.g()) / 2, (_b + c.b()) / 2); }
-    
+    Color blend(const Color &c, float blend){return Color(static_cast<uint8_t>(_r * (1 - blend) + c.r() * blend),
+                                                          static_cast<uint8_t>(_g * (1 - blend) + c.g() * blend),
+                                                          static_cast<uint8_t>(_b * (1 - blend) + c.b() * blend));}
+
     std::string get_rgb_string() const
     {
-      return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b);
+        return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b);
     }
-    
-    Color get_random()
+
+    Color get_random() { return Color(rand() % 256, rand() % 256, rand() % 256); }
+
+    Color lerped(const Color &c, float t) const { return Color(_r + (c.r() - _r) * t, _g + (c.g() - _g) * t, _b + (c.b() - _b) * t); }
+
+    static Color lerp(const Color &a, const Color &b, float t)
     {
-      return Color(rand() % 256, rand() % 256, rand() % 256);
+        return Color(a.r() + (b.r() - a.r()) * t, a.g() + (b.g() - a.g()) * t, a.b() + (b.b() - a.b()) * t);
     }
 };
 

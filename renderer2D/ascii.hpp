@@ -17,6 +17,7 @@
 #include "../dependencies/color.hpp"
 #include "../dependencies/font.hpp"
 #include "../dependencies/glyph.hpp"
+#include "../dependencies/gradient.hpp"
 #include "../dependencies/shapes.hpp"
 #include "../dependencies/sprites.hpp"
 #include "../l_gebra/l_gebra.hpp"
@@ -91,6 +92,48 @@ public:
     {
         draw_fill_rectangle(
             rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(), rectangle.get_color());
+    }
+    void draw_rect_linear_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, bool horizontal = true)
+    {
+        for (int i = 0; i < (horizontal ? width : height); i++)
+        {
+            float t = static_cast<float>(i) / (horizontal ? width : height);
+            Color color = gradient.get_color_at(t);
+            for (int j = 0; j < (horizontal ? height : width); j++)
+                if (horizontal)
+                    _buffer->set({start.x() + i, start.y() + j}, ch, color);
+                else
+                    _buffer->set({start.x() + j, start.y() + i}, ch, color);
+        }
+    }
+
+    void draw_rect_radial_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient)
+    {
+        // Calculate the center of the rectangle
+        float centerX = start.x() + width / 2.0f;
+        float centerY = start.y() + height / 2.0f;
+        float maxDistance = std::sqrt(centerX * centerX + centerY * centerY);
+
+        // Iterate over each pixel in the rectangle
+        for (int i = 0; i < width; ++i)
+        {
+            for (int j = 0; j < height; ++j)
+            {
+                // Calculate the distance of the current pixel from the center
+                float distanceX = start.x() + i - centerX;
+                float distanceY = start.y() + j - centerY;
+                float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                // Normalize the distance to get a value between 0 and 1
+                float t = distance / maxDistance;
+
+                // Get the color at the normalized distance
+                Color color = gradient.get_color_at(t);
+
+                // Set the pixel in the buffer
+                _buffer->set({start.x() + i, start.y() + j}, ch, color);
+            }
+        }
     }
     void draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
     void draw_triangle(const Triangle &triangle)
@@ -884,7 +927,7 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
-// TODO: Texture Mapping, double buffering
+// TODO: Texture Mapping, animations
 //       Camera system, gradient fill, 3D rendering,
-//       key frames, procedural generation filter-effects, Noise
+//       key frames, procedural generation
 #endif  // RENDERER_IMPLEMENTATION
