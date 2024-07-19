@@ -20,6 +20,7 @@
 #include "../dependencies/gradient.hpp"
 #include "../dependencies/shapes.hpp"
 #include "../dependencies/sprites.hpp"
+#include "../dependencies/ui_elements.hpp"
 #include "../l_gebra/l_gebra.hpp"
 #include "../window/window.hpp"
 #include "basic_units.hpp"
@@ -242,7 +243,17 @@ public:
                              colors[y * width + width - 1],
                              Color());
     }
-    void sync_fps() {}
+
+    void draw_button(std::shared_ptr<Button> button)
+    {
+        draw_fill_rectangle(button->position(), button->width(), button->height(), button->fill_char(), button->bg_color());
+        draw_rectangle(button->position(), button->width(), button->height(), '-', '|', button->bg_color());
+        draw_text(
+            button->position() + utl::Vec<int, 2>{(int)(button->width() / 2 - button->label().size() / 4), (int)(button->height() / 2)},
+            button->label(),
+            button->fg_color());
+    }
+
     void print();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
     void empty();

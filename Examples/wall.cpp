@@ -29,7 +29,7 @@ int main()
         }
         if (Window::is_pressed(KEY_r))
         {
-            for (auto &c : colors) c = c.get_random();
+            for (auto &c : colors) c = Color::get_random();
             s.set_colors(colors);
         }
         if (Window::is_pressed(KEY_b))

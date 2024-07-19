@@ -228,7 +228,7 @@ public:
 
     std::string get_rgb_string() const { return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b); }
 
-    Color get_random() { return Color(rand() % 256, rand() % 256, rand() % 256); }
+    static Color get_random() { return Color(rand() % 256, rand() % 256, rand() % 256); }
 
     Color lerped(const Color &c, float t) const { return Color(_r + (c.r() - _r) * t, _g + (c.g() - _g) * t, _b + (c.b() - _b) * t); }
 
