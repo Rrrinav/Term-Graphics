@@ -68,8 +68,17 @@ public:
     {
         _ch1 = ch;
         _ch2 = ch;
-        _color1 = color;
-        _color2 = color;
+        if (!is_empty())
+        {
+            _color1 = _color1.blend(color);
+            _color2 = _color2.blend(color);
+        }
+        else
+        {
+            _color1 = color;
+            _color2 = color;
+        }
+
         if (ch == ' ')
             _is_empty = true;
         else

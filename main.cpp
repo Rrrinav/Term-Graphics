@@ -20,14 +20,16 @@ int main()
         Window::update_input_states();
         r.empty();
         r.reset_screen();
-
+        r.draw_fill_circle({50, 40}, 20, '#', RED);
+        r.draw_anti_aliased_line({0, 10}, {100, 70}, 'o', BLUE);
         // Fill with linear gradient
-        r.draw_rect_linear_gradient({10, 1}, 80, 20, '#', radial_gradient, false);
-
-        // Fill with radial gradient
-        r.draw_rect_rotated_gradient({10, 22}, 80, 20, '#', radial_gradient, M_PI / 1.5);
-        r.draw_rect_radial_gradient({10, 43}, 80, 20, '#', radial_gradient);
+        // r.draw_rect_linear_gradient({10, 1}, 80, 20, '#', radial_gradient, false);
+        //
+        // // Fill with radial gradient
+        // r.draw_rect_rotated_gradient({10, 22}, 80, 20, '#', radial_gradient, M_PI / 1.5);
+        // r.draw_rect_radial_gradient({10, 43}, 80, 20, '#', radial_gradient);
         r.print();
+        r.sleep(1000 / 60);
     }
 
     return 0;

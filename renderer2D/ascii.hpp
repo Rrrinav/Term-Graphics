@@ -377,56 +377,58 @@ void Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> e
     int dy = y1 - y0;
     float gradient = (dx == 0) ? 1.0f : static_cast<float>(dy) / dx;
 
+    // Characters of different densities
+    const char density_chars[] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
+
+    auto blend_color = [](const Color &c1, const Color &c2, float t) -> Color
+    {
+        return Color(static_cast<uint8_t>(c1.r() * (1 - t) + c2.r() * t),
+                     static_cast<uint8_t>(c1.g() * (1 - t) + c2.g() * t),
+                     static_cast<uint8_t>(c1.b() * (1 - t) + c2.b() * t));
+    };
+
     // Handle first endpoint
     int xend = std::round(x0);
     int yend = y0 + gradient * (xend - x0);
     float xgap = 1 - (x0 + 0.5f - std::floor(x0 + 0.5f));
-    int xpxl1 = xend;  //this will be used in the main loop
+    int xpxl1 = xend;  // this will be used in the main loop
     int ypxl1 = std::floor(yend);
     if (steep)
     {
-        if (draw_point({ypxl1, xpxl1}, c) && draw_point({ypxl1 + 1, xpxl1}, c))
-        {
-            _buffer->set({ypxl1, xpxl1}, c, color);
-            _buffer->set({ypxl1 + 1, xpxl1}, c, color);
-        }
-        xpxl1 = xend + 1;
+        _buffer->set(
+            {ypxl1, xpxl1}, density_chars[int((1.0f - (yend - ypxl1) * xgap) * 10)], blend_color(color, Color(), (yend - ypxl1) * xgap));
+        _buffer->set(
+            {ypxl1 + 1, xpxl1}, density_chars[int(((yend - ypxl1) * xgap) * 10)], blend_color(color, Color(), 1 - (yend - ypxl1) * xgap));
     }
     else
     {
-        if (draw_point({xpxl1, ypxl1}, c) && draw_point({xpxl1, ypxl1 + 1}, c))
-        {
-            _buffer->set({xpxl1, ypxl1}, c, color);
-            _buffer->set({xpxl1, ypxl1 + 1}, c, color);
-        }
-        xpxl1 = xend + 1;
+        _buffer->set(
+            {xpxl1, ypxl1}, density_chars[int((1.0f - (yend - ypxl1) * xgap) * 10)], blend_color(color, Color(), (yend - ypxl1) * xgap));
+        _buffer->set(
+            {xpxl1, ypxl1 + 1}, density_chars[int(((yend - ypxl1) * xgap) * 10)], blend_color(color, Color(), 1 - (yend - ypxl1) * xgap));
     }
 
-    float intery = yend + gradient;  //first y-intersection for the main loop
+    float intery = yend + gradient;  // first y-intersection for the main loop
 
     // Handle second endpoint
     xend = std::round(x1);
     yend = y1 + gradient * (xend - x1);
     xgap = x0 + 0.5f - std::floor(x0 + 0.5f);
-    int xpxl2 = xend;  //this will be used in the main loop
+    int xpxl2 = xend;  // this will be used in the main loop
     int ypxl2 = std::floor(yend);
     if (steep)
     {
-        if (draw_point({ypxl2, xpxl2}, c) && draw_point({ypxl2 + 1, xpxl2}, c))
-        {
-            _buffer->set({ypxl2, xpxl2}, c, color);
-            _buffer->set({ypxl2 + 1, xpxl2}, c, color);
-        }
-        xpxl2 = xend + 1;
+        _buffer->set(
+            {ypxl2, xpxl2}, density_chars[int((1.0f - (yend - ypxl2) * xgap) * 10)], blend_color(color, Color(), (yend - ypxl2) * xgap));
+        _buffer->set(
+            {ypxl2 + 1, xpxl2}, density_chars[int(((yend - ypxl2) * xgap) * 10)], blend_color(color, Color(), 1 - (yend - ypxl2) * xgap));
     }
     else
     {
-        if (draw_point({xpxl2, ypxl2}, c) && draw_point({xpxl2, ypxl2 + 1}, c))
-        {
-            _buffer->set({xpxl2, ypxl2}, c, color);
-            _buffer->set({xpxl2, ypxl2 + 1}, c, color);
-        }
-        xpxl2 = xend + 1;
+        _buffer->set(
+            {xpxl2, ypxl2}, density_chars[int((1.0f - (yend - ypxl2) * xgap) * 10)], blend_color(color, Color(), (yend - ypxl2) * xgap));
+        _buffer->set(
+            {xpxl2, ypxl2 + 1}, density_chars[int(((yend - ypxl2) * xgap) * 10)], blend_color(color, Color(), 1 - (yend - ypxl2) * xgap));
     }
 
     // Main loop
@@ -434,34 +436,15 @@ void Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> e
     {
         if (steep)
         {
-            if (draw_point({static_cast<int>(intery), x}, c) && draw_point({static_cast<int>(intery) + 1, x}, c))
-            {
-                float alpha = intery - std::floor(intery);
-                if (alpha <= 0.5)
-                {
-                    _buffer->set({static_cast<int>(intery), x}, anti_aliasing[0][0], color);
-                    _buffer->set({static_cast<int>(intery) + 1, x}, anti_aliasing[0][1], color);
-                }
-                else
-                {
-                    _buffer->set({static_cast<int>(intery), x}, anti_aliasing[1][0], color);
-                    _buffer->set({static_cast<int>(intery) + 1, x}, anti_aliasing[1][1], color);
-                }
-            }
+            float alpha = intery - std::floor(intery);
+            _buffer->set({static_cast<int>(intery), x}, density_chars[int((1.0f - alpha) * 10)], blend_color(color, Color(), alpha));
+            _buffer->set({static_cast<int>(intery) + 1, x}, density_chars[int(alpha * 10)], blend_color(color, Color(), 1 - alpha));
         }
-        else if (draw_point({x, static_cast<int>(intery)}, c) && draw_point({x, static_cast<int>(intery) + 1}, c))
+        else
         {
             float alpha = intery - std::floor(intery);
-            if (alpha <= 0.5)
-            {
-                _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[0][0], color);
-                _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[0][1], color);
-            }
-            else
-            {
-                _buffer->set({x, static_cast<int>(intery)}, anti_aliasing[1][0], color);
-                _buffer->set({x, static_cast<int>(intery) + 1}, anti_aliasing[1][1], color);
-            }
+            _buffer->set({x, static_cast<int>(intery)}, density_chars[int((1.0f - alpha) * 10)], blend_color(color, Color(), alpha));
+            _buffer->set({x, static_cast<int>(intery) + 1}, density_chars[int(alpha * 10)], blend_color(color, Color(), 1 - alpha));
         }
         intery += gradient;  // Increment y intersection
     }
@@ -481,17 +464,17 @@ void Renderer::draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<in
     draw_line(c, a, ch, color);
 }
 
-// TODO: Make anti-aliasing better now that we have proper pixel class
 void Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color)
 {
-    std::vector<Point> points;
+    // Define the anti-aliasing shades
+    char anti_aliasing[] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
+    int shades = sizeof(anti_aliasing) / sizeof(anti_aliasing[0]);
 
-    // We will implement anti-aliasing now for the circle
+    // Define the start and end points for the drawing loop
     utl::Vec<int, 2> begin = center + (-1 * radius);
     utl::Vec<int, 2> end = center + radius;
 
-    if (radius % 2 == 0 && begin[1] - 1 > 0 && begin[1] - 1 < _buffer->height)
-        begin[1] = begin[1] - 1;
+    // Loop through the pixels in the bounding box
     for (int y = begin.y(); y <= end.y(); ++y)
     {
         for (int x = begin.x(); x <= end.x(); ++x)
@@ -500,29 +483,16 @@ void Renderer::draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Co
 
             if (distance <= radius)
             {
-                _buffer->set({x, y}, ch, color);  // Drawing character
-            }  // calculate the anti-aliasing
+                // Fully inside the circle, draw the character with full opacity
+                _buffer->set({x, y}, ch, color);
+            }
             else if (distance < radius + 1)
             {
-                float alpha = std::abs((float)distance - radius);
-                //Case 1: Top of pixel i.e. y is above the center
-                if (y > center.y())
-                {
-                    // next criteria is coverage
-                    if (alpha <= 0.5)
-                        _buffer->set({x, y}, anti_aliasing[0][0], '/', color);
-                    else
-                        _buffer->set({x, y}, anti_aliasing[0][1], color);
-                }
-                else  //Case 2: Bottom of pixel i.e. y is below the center
-                    if (alpha <= 0.5)
-                    {
-                        _buffer->set({x, y}, anti_aliasing[1][0], '\"', color);
-                    }
-                    else
-                    {
-                        _buffer->set({x, y}, anti_aliasing[1][1], color);
-                    }
+                // On the boundary, calculate the coverage for anti-aliasing
+                float alpha = radius + 1 - distance;
+                int shade_index = std::min((int)(alpha * shades), shades - 1);
+                char shade_char = anti_aliasing[shade_index];
+                _buffer->set({x, y}, shade_char, color);
             }
         }
     }
@@ -975,6 +945,6 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
 // TODO: Texture Mapping, animations
-//       Camera system, gradient fill, 3D rendering,
+//       Camera system, 3D rendering,
 //       key frames, procedural generation
 #endif  // RENDERER_IMPLEMENTATION

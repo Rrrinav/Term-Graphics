@@ -114,7 +114,21 @@ class Color
 public:
     // Constructors 1. Default 2. RGB 3. Hex 4. ansii terminal code
     Color() : _r(0), _g(0), _b(0) {}
-    Color(uint8_t r, uint8_t g, uint8_t b) : _r(r), _g(g), _b(b) {}
+    Color(uint8_t r, uint8_t g, uint8_t b) : _r(r), _g(g), _b(b)
+    {
+        if (_r > 255)
+            _r = 255;
+        if (_g > 255)
+            _g = 255;
+        if (_b > 255)
+            _b = 255;
+        if (_r < 0)
+            _r = 0;
+        if (_g < 0)
+            _g = 0;
+        if (_b < 0)
+            _b = 0;
+    }
     Color(const uint32_t &hex_val)
     {
         if (hex_val == TRANSPARENT)
@@ -127,6 +141,19 @@ public:
         _r = (hex_val >> 16) & 0xFF;
         _g = (hex_val >> 8) & 0xFF;
         _b = (hex_val >> 0) & 0xFF;
+
+        if (_r > 255)
+            _r = 255;
+        if (_g > 255)
+            _g = 255;
+        if (_b > 255)
+            _b = 255;
+        if (_r < 0)
+            _r = 0;
+        if (_g < 0)
+            _g = 0;
+        if (_b < 0)
+            _b = 0;
     }
     Color const operator=(const uint32_t &hex_val)
     {
@@ -192,14 +219,14 @@ public:
     Color invert() const { return Color(255 - _r, 255 - _g, 255 - _b); }
 
     Color blend(const Color &c) const { return Color((_r + c.r()) / 2, (_g + c.g()) / 2, (_b + c.b()) / 2); }
-    Color blend(const Color &c, float blend){return Color(static_cast<uint8_t>(_r * (1 - blend) + c.r() * blend),
-                                                          static_cast<uint8_t>(_g * (1 - blend) + c.g() * blend),
-                                                          static_cast<uint8_t>(_b * (1 - blend) + c.b() * blend));}
-
-    std::string get_rgb_string() const
+    Color blend(const Color &c, float blend)
     {
-        return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b);
+        return Color(static_cast<uint8_t>(_r * (1 - blend) + c.r() * blend),
+                     static_cast<uint8_t>(_g * (1 - blend) + c.g() * blend),
+                     static_cast<uint8_t>(_b * (1 - blend) + c.b() * blend));
     }
+
+    std::string get_rgb_string() const { return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b); }
 
     Color get_random() { return Color(rand() % 256, rand() % 256, rand() % 256); }
 
@@ -209,6 +236,8 @@ public:
     {
         return Color(a.r() + (b.r() - a.r()) * t, a.g() + (b.g() - a.g()) * t, a.b() + (b.b() - a.b()) * t);
     }
+
+    bool is_valid() { return _r >= 0 && _r <= 255 && _g >= 0 && _g <= 255 && _b >= 0 && _b <= 255; }
 };
 
 #endif  // SIXTEEN_BIT_COLOR
