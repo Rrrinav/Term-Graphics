@@ -77,6 +77,7 @@ public:
 
 class Slider : public UI_element
 {
+    // BUG: width changing when clicking on the slider probably renderer issue
     float _min_value;
     float _max_value;
     float _value;
