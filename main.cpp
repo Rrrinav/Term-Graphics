@@ -20,6 +20,8 @@ int main()
     float angle = 0.0f;
     auto button1 = std::make_shared<Button>(utl::Vec<int, 2>{10, 10}, 10, 2, ':', BLUE, RED, "Angle++", [&]() { angle += 0.1; });
     auto button2 = std::make_shared<Button>(utl::Vec<int, 2>{22, 10}, 10, 2, ':', BLUE, RED, "Angle--", [&]() { angle -= 0.1; });
+    auto slider1 =
+        std::make_shared<Slider>(utl::Vec<int, 2>{10, 14}, 10, '0', BLUE, RED, 0.0f, 1.0f, 0.0f, [&](float value) { angle = value; });
     UI_manager manager;
     manager.add_element(button1);
     manager.add_element(button2);
@@ -30,10 +32,14 @@ int main()
         r.reset_screen();
         r.draw_button(button1);
         r.draw_button(button2);
+        r.draw_slider(slider1);
         if (Window::has_mouse_moved())
         {
             Mouse_event mouse = Window::get_mouse_event();
             manager.handle_events();
+            if (mouse.event == Mouse_event_type::RIGHT_RELEASE)
+                r.draw_text({10, 2}, "Mouse released");
+            slider1->handle_event(mouse);
         }
         r.draw_rect_rotated_gradient({10, 30}, 80, 30, 'o', radial_gradient, angle);
         r.print();

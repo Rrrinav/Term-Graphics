@@ -254,6 +254,14 @@ public:
             button->fg_color());
     }
 
+    void draw_slider(std::shared_ptr<Slider> slider)
+    {
+        draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{(int)slider->width(), 0}, '=', slider->bg_color());
+        int x = slider->position().x() + (int)(slider->value() * slider->width());
+        draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{x, 0}, '=', slider->fg_color());
+        draw_point(slider->position(), slider->fill_char(), slider->fg_color());
+    }
+
     void print();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
     void empty();

@@ -49,17 +49,9 @@ public:
     }
     ~Button() = default;
 
-    //getters
-    bool is_pressed() const { return _is_pressed; }
-    bool is_hovered() const { return _is_hovered; }
-    utl::Vec<int, 2> position() const override { return _position; }
-    size_t width() const override { return _width; }
-    size_t height() const override { return _height; }
-    char fill_char() const override { return _fill_char; }
-    Color bg_color() const override { return _bg_color; }
-    Color fg_color() const override { return _fg_color; }
     std::string label() const { return _label; }
-
+    std::function<void()> callback() const { return _callback; }
+    bool is_pressed() const { return _is_pressed; }
     void handle_event(const Mouse_event &event) override
     {
         if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
@@ -70,10 +62,59 @@ public:
                 _is_pressed = true;
                 _callback();
             }
-            else if (event.event == Mouse_event_type::RELEASE)
+            else if (event.event == Mouse_event_type::LEFT_RELEASE)
                 _is_pressed = false;
             else
                 _is_pressed = false;
+        }
+        else
+        {
+            _is_hovered = false;
+            _is_pressed = false;
+        }
+    }
+};
+
+class Slider : public UI_element
+{
+    float _min_value;
+    float _max_value;
+    float _value;
+    std::function<void(float)> _callback;
+    bool _is_pressed = false;
+    bool _is_hovered = false;
+    bool _is_toggle_hovered = false;
+
+public:
+    Slider() = default;
+    Slider(utl::Vec<int, 2> pos, size_t w, char ch, Color bg, Color fg, float min_val, float max_val, float init_val,
+           std::function<void(float)> cb)
+        : UI_element(pos, w, 1, ch, bg, fg),
+
+          _min_value(min_val),
+          _max_value(max_val),
+          _value(init_val),
+          _callback(cb)
+    {
+    }
+
+    float value() const { return _value; }
+
+    void handle_event(const Mouse_event &event) override
+    {
+        if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
+        {
+            _is_hovered = true;
+            if (event.event == Mouse_event_type::LEFT_CLICK)
+            {
+                _is_pressed = true;
+                _value = _min_value + (static_cast<float>(event.x - _position[0]) / _width) * (_max_value - _min_value);
+                _callback(_value);
+            }
+            else if (event.event == Mouse_event_type::LEFT_RELEASE)
+            {
+                _is_pressed = false;
+            }
         }
         else
         {

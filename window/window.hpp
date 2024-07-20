@@ -1,5 +1,4 @@
 #pragma once
-#include <errno.h>
 #include <fcntl.h>
 
 #include <cstdio>
@@ -26,10 +25,12 @@ enum Mouse_event_type
 {
     RIGHT_CLICK,
     LEFT_CLICK,
-    RELEASE,
-    SCROLL_UP,
-    SCROLL_DOWN,
     MIDDLE_CLICK,
+    RIGHT_RELEASE,
+    LEFT_RELEASE,
+    MIDDLE_RELEASE,
+    SCROLL_UP,
+    SCROLL_DOWN, 
     MOUSE_MOVE,
 };
 
@@ -411,24 +412,24 @@ public:
                             // Determine the event type based on button
                             switch (button)
                             {
-                                case 0:
-                                    mouse_event.event = Mouse_event_type::LEFT_CLICK;
-                                    break;
-                                case 1:
-                                    mouse_event.event = Mouse_event_type::MIDDLE_CLICK;
-                                    break;
-                                case 2:
-                                    mouse_event.event = Mouse_event_type::RIGHT_CLICK;
-                                    break;
-                                case 64:
-                                    mouse_event.event = Mouse_event_type::SCROLL_UP;
-                                    break;
-                                case 65:
-                                    mouse_event.event = Mouse_event_type::SCROLL_DOWN;
-                                    break;
-                                default:
-                                    mouse_event.event = Mouse_event_type::MOUSE_MOVE;
-                                    break;
+ case 0:
+                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::LEFT_CLICK : Mouse_event_type::LEFT_RELEASE;
+                            break;
+                        case 1:
+                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::MIDDLE_CLICK : Mouse_event_type::MIDDLE_RELEASE;
+                            break;
+                        case 2:
+                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::RIGHT_CLICK : Mouse_event_type::RIGHT_RELEASE;
+                            break;
+                        case 64:
+                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_UP : Mouse_event_type::MOUSE_MOVE;
+                            break;
+                        case 65:
+                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_DOWN : Mouse_event_type::MOUSE_MOVE;
+                            break;
+                        default:
+                            mouse_event.event = Mouse_event_type::MOUSE_MOVE;
+                            break;
                             }
 
                             i = j - 1;  // Move i to the end of the parsed sequence
