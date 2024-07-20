@@ -9,6 +9,7 @@ A powerful and flexible ASCII graphics rendering engine with advanced features f
 - **Anti-aliasing**: Smooth line and shape rendering for improved visual quality
 - **Color support**: Full RGB color capabilities with transparency
 - **Text rendering**: Custom font support with shadowing effects
+- **Glyphs and glyphs animation**: Load and render custom glyphs and animations
 - **Sprite system**: Load and render sprite animations
 - **Input handling**: Keyboard and mouse input support
 - **Window management**: Easy-to-use window controls
