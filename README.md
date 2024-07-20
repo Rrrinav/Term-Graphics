@@ -12,7 +12,6 @@ A powerful and flexible ASCII graphics rendering engine with advanced features f
 - **Sprite system**: Load and render sprite animations
 - **Input handling**: Keyboard and mouse input support
 - **Window management**: Easy-to-use window controls
-- **Caching system**: Improved performance for repetitive rendering tasks
 
 ## Quick Start
 

@@ -1,6 +1,6 @@
-#include "window/window.hpp"
+
 #define RENDERER_IMPLEMENTATION
-#include "renderer2D/ascii.hpp"
+#include "../renderer2D/ascii.hpp"
 
 void cb(Renderer &r) { r.set_bg_color(RED); }
 
@@ -15,8 +15,9 @@ int main()
     linear_gradient.add_color_stop(1.0f, CYAN);
 
     Gradient radial_gradient;
-    radial_gradient.add_color_stop(0.0f, CYAN);
-    radial_gradient.add_color_stop(1.0f, PURPLE);
+    radial_gradient.add_color_stop(0.0f, BLUE);
+    radial_gradient.add_color_stop(1.0f, RED);
+    radial_gradient.add_color_stop(0.5f, GREEN);
     float angle = 0.0f;
     auto button1 = std::make_shared<Button>(utl::Vec<int, 2>{10, 10}, 10, 2, ':', BLUE, RED, "Angle++", [&]() { angle += 0.1; });
     auto button2 = std::make_shared<Button>(utl::Vec<int, 2>{22, 10}, 10, 2, ':', BLUE, RED, "Angle--", [&]() { angle -= 0.1; });
