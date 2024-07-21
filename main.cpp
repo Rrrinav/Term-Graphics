@@ -1,8 +1,25 @@
+#include <cctype>
+
 #include "window/window.hpp"
 #define RENDERER_IMPLEMENTATION
 #include "renderer2D/ascii.hpp"
 
 void cb(Renderer &r) { r.set_bg_color(RED); }
+void handle(std::shared_ptr<Textbox> text1, float &angle)
+{
+    std::string str;
+    for (auto &ch : text1->text())
+    {
+        if (std::isalpha(ch))
+        {
+            std::cerr << ch << " is not a number";
+            return;
+        }
+        if (std::isdigit(ch))
+            str += ch;
+    }
+    angle = std::stof(str);
+}
 
 int main()
 {
@@ -20,21 +37,14 @@ int main()
     float angle = 0.0f;
     auto button1 = std::make_shared<Button>(utl::Vec<int, 2>{10, 10}, 10, 2, ':', BLUE, RED, "Angle++", [&]() { angle += 0.1; });
     auto button2 = std::make_shared<Button>(utl::Vec<int, 2>{22, 10}, 10, 2, ':', BLUE, RED, "Angle--", [&]() { angle -= 0.1; });
-    auto slider1 = std::make_shared<Slider>(utl::Vec<int, 2>{10, 14},
-                                            15,
-                                            '0',
-                                            BLUE,
-                                            RED,
-                                            [&](float value)
-                                            {
-                                                // float x = angle * value;
-                                                angle = value * 2 * M_PI;
-                                            });
-    auto text1 = std::make_shared<Textbox>(utl::Vec<int, 2>{10, 18}, 20, 5, ':', BLUE, RED, "Hello, World!");
+    auto slider1 = std::make_shared<Slider>(utl::Vec<int, 2>{10, 14}, 15, '0', BLUE, RED, [&](float value) { angle = value * 2 * M_PI; });
+    auto text1 = std::make_shared<Textbox>(utl::Vec<int, 2>{10, 18}, 20, 5, ' ', BLUE, RED, "Angle (radians)");
+    auto button3 = std::make_shared<Button>(utl::Vec<int, 2>{35, 18}, 10, 2, ':', BLUE, RED, "Change", [&]() { handle(text1, angle); });
     UI_manager manager;
     manager.add_element(button1);
     manager.add_element(button2);
     manager.add_element(slider1);
+    manager.add_element(button3);
     while (true)
     {
         Window::update_input_states();
@@ -44,6 +54,7 @@ int main()
         r.draw_button(button2);
         r.draw_slider(slider1);
         r.draw_textbox(text1);
+        r.draw_button(button3);
         if (Window::has_mouse_moved())
         {
             Mouse_event mouse = Window::get_mouse_event();
@@ -58,6 +69,10 @@ int main()
                 button2->set_bg_color(GREEN);
             else
                 button2->set_bg_color(BLUE);
+            if (button3->is_hovered())
+                button3->set_bg_color(GREEN);
+            else
+                button3->set_bg_color(BLUE);
             if (Window::check_input() == Keys::KEY_SPACE)
                 r.draw_text({10, 2}, "Space pressed");
         }

@@ -299,6 +299,7 @@ public:
         // Draw the cursor if the textbox is active
         if (textbox->is_active())
         {
+            // PERF: WTF did I even jsut write, it works tho :) Hehe !
             int xp = (int)(pos[0] + 2 + (text.size() > width - 1 ? (text.size() / 2) % (width - 1) : text.size() / 2));
             int yp = (int)(pos[1] + 1 + text.size() / std::ceil((2 * (width - 1))));
             draw_point({xp, yp}, '-', fg_color);
