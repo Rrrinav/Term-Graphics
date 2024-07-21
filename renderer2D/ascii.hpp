@@ -262,6 +262,26 @@ public:
         draw_point(slider->position() + utl::Vec<int, 2>{l, 0}, slider->fill_char(), slider->fg_color());
     }
 
+    void draw_textbox(std::shared_ptr<Textbox> textbox)
+    {
+        utl::Vec<int, 2> pos = textbox->position();
+        size_t width = textbox->width();
+        size_t height = textbox->height();
+        Color bg_color = textbox->bg_color();
+        Color fg_color = textbox->fg_color();
+        std::string text = textbox->text();
+
+        // Draw the background of the textbox
+        draw_fill_rectangle(pos, width, height, textbox->fill_char(), bg_color);
+        draw_rectangle(pos, width, height, '-', '|', bg_color);
+        // Draw the text inside the textbox
+        draw_text(pos + utl::Vec<int, 2>{1, 1}, text, fg_color);
+
+        // Draw the cursor if the textbox is active
+        if (textbox->is_active())
+            draw_point(pos + utl::Vec<int, 2>{(int)text.size()/2 + 1, 1}, '_', fg_color);
+    }
+
     void print();
     static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
     void empty();

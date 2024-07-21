@@ -8,6 +8,8 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
 
+// TODO: Implement all the getters and setters...!
+
 class UI_element
 {
 protected:
@@ -52,6 +54,8 @@ public:
     std::string label() const { return _label; }
     std::function<void()> callback() const { return _callback; }
     bool is_pressed() const { return _is_pressed; }
+    bool is_hovered() const { return _is_hovered; }
+    void set_bg_color(Color bg) { _bg_color = bg; }
     void handle_event(const Mouse_event &event) override
     {
         if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
@@ -130,7 +134,54 @@ public:
         {
             float new_value = _min_value + (static_cast<float>(event.x - _position[0]) / _width) * (_max_value - _min_value);
             _value = new_value;
-          _callback(_value);
+            _callback(_value);
+        }
+    }
+};
+
+class Textbox : public UI_element
+{
+    std::string _text;
+    bool _is_active = false;
+
+public:
+    Textbox() = default;
+    Textbox(utl::Vec<int, 2> position, size_t w, size_t h, char ch, Color bg, Color fg, std::string txt)
+        : UI_element(position, w, h, ch, bg, fg), _text(txt)
+    {
+    }
+    std::string text() const { return _text; }
+    void set_text(std::string txt) { _text = txt; }
+    bool is_active() const { return _is_active; }
+    void handle_event(const Mouse_event &event) override
+    {
+        if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
+        {
+            if (event.event == Mouse_event_type::LEFT_CLICK)
+                _is_active = true;
+        }
+        else if (event.event == Mouse_event_type::LEFT_CLICK)
+            _is_active = false;
+
+        handle_key_event();
+    }
+
+    void handle_key_event()
+    {
+        if (_is_active)
+        {
+            Keys key = Window::check_input();
+            if (key == Keys::KEY_BACKSPACE)
+            {
+                if (_text.size() > 0)
+                    _text.pop_back();
+            }
+            else if (key == Keys::KEY_ENTER)
+                _text += '\n';
+            else if (key == Keys::KEY_SPACE)
+                _text += ' ';
+            else
+                _text += Window::to_char(key);
         }
     }
 };

@@ -30,7 +30,7 @@ enum Mouse_event_type
     LEFT_RELEASE,
     MIDDLE_RELEASE,
     SCROLL_UP,
-    SCROLL_DOWN, 
+    SCROLL_DOWN,
     MOUSE_MOVE,
 };
 
@@ -173,6 +173,36 @@ public:
                 if (key >= 59 && key <= 68)
                     return KEY_F1 + (key - 59);  // F1-F10
                 return KEY_UNKNOWN;
+        }
+    }
+
+    /**
+     * Take the Key and return corresponding ascii value (char)
+     * @param key The key to parse.
+     * @return The correspoding ascii value (char KEY_w => 'w')
+     */
+    static char to_char(Keys key)
+    {
+        if (key >= KEY_a && key <= KEY_z)
+            return 'a' + (key - KEY_a);
+        if (key >= KEY_A && key <= KEY_Z)
+            return 'A' + (key - KEY_A);
+        if (key >= KEY_0 && key <= KEY_9)
+            return '0' + (key - KEY_0);
+        switch (key)
+        {
+            case KEY_ENTER:
+                return '\n';
+            case KEY_SPACE:
+                return ' ';
+            case KEY_TAB:
+                return '\t';
+            case KEY_ESC:
+                return 27;
+            case KEY_BACKSPACE:
+                return 127;
+            default:
+                return '\0';
         }
     }
 
@@ -412,24 +442,26 @@ public:
                             // Determine the event type based on button
                             switch (button)
                             {
- case 0:
-                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::LEFT_CLICK : Mouse_event_type::LEFT_RELEASE;
-                            break;
-                        case 1:
-                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::MIDDLE_CLICK : Mouse_event_type::MIDDLE_RELEASE;
-                            break;
-                        case 2:
-                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::RIGHT_CLICK : Mouse_event_type::RIGHT_RELEASE;
-                            break;
-                        case 64:
-                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_UP : Mouse_event_type::MOUSE_MOVE;
-                            break;
-                        case 65:
-                            mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_DOWN : Mouse_event_type::MOUSE_MOVE;
-                            break;
-                        default:
-                            mouse_event.event = Mouse_event_type::MOUSE_MOVE;
-                            break;
+                                case 0:
+                                    mouse_event.event = (eventType == 'M') ? Mouse_event_type::LEFT_CLICK : Mouse_event_type::LEFT_RELEASE;
+                                    break;
+                                case 1:
+                                    mouse_event.event =
+                                        (eventType == 'M') ? Mouse_event_type::MIDDLE_CLICK : Mouse_event_type::MIDDLE_RELEASE;
+                                    break;
+                                case 2:
+                                    mouse_event.event =
+                                        (eventType == 'M') ? Mouse_event_type::RIGHT_CLICK : Mouse_event_type::RIGHT_RELEASE;
+                                    break;
+                                case 64:
+                                    mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_UP : Mouse_event_type::MOUSE_MOVE;
+                                    break;
+                                case 65:
+                                    mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_DOWN : Mouse_event_type::MOUSE_MOVE;
+                                    break;
+                                default:
+                                    mouse_event.event = Mouse_event_type::MOUSE_MOVE;
+                                    break;
                             }
 
                             i = j - 1;  // Move i to the end of the parsed sequence
