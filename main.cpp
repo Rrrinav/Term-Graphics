@@ -30,7 +30,7 @@ int main()
                                                 // float x = angle * value;
                                                 angle = value * 2 * M_PI;
                                             });
-    auto text1 = std::make_shared<Textbox>(utl::Vec<int, 2>{10, 18}, 20, 5, ' ', BLUE, RED, "Hello, World!");
+    auto text1 = std::make_shared<Textbox>(utl::Vec<int, 2>{10, 18}, 20, 5, ':', BLUE, RED, "Hello, World!");
     UI_manager manager;
     manager.add_element(button1);
     manager.add_element(button2);

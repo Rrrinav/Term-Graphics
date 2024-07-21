@@ -228,18 +228,9 @@ public:
             }
         }
 #else
-        struct pollfd fds[1];
-        fds[0].fd = STDIN_FILENO;
-        fds[0].events = POLLIN;
-
-        int ret = poll(fds, 1, 0);  // Timeout of 0 for non-blocking
-
-        if (ret > 0 && (fds[0].revents & POLLIN))
-        {
-            char key;
-            read(STDIN_FILENO, &key, 1);
-            return static_cast<Keys>(parse_key(key));
-        }
+        for (auto &pair : key_states)
+            if (pair.second)
+                return pair.first;
 #endif
         return Keys::KEY_UNKNOWN;
     }

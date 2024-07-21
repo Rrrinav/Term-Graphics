@@ -9,7 +9,6 @@
 
 // PERF: We need to make this faster, super faster
 // TODO: Testing on windows
-// BUG: Anti-aliasing in circle sucks
 // TODO: More and better error handling and exception handling (even though we dont need much of it)
 
 #define L_GEBRA_IMPLEMENTATION
@@ -212,6 +211,26 @@ public:
     void draw_polygon(const Polygon &polygon) { draw_polygon(polygon.get_vertices(), polygon.get_char(), polygon.get_color()); }
     void draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f, Color color = WHITE);
     void draw_text(utl::Vec<int, 2> start, const std::string &text, Color color = WHITE);
+    void draw_text_constraints(utl::Vec<int, 2> start, const std::string &text, Color color, size_t width, size_t height)
+    {
+        int x = start.x();
+        int y = start.y();
+        for (size_t i = 0; i < text.size() / 2; i++)
+        {
+            if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
+                _buffer->set({x, y}, text[i * 2], text[i * 2 + 1], color);
+            x++;
+            if (x >= start.x() + width)
+            {
+                x = start.x();
+                y++;
+            }
+            if (y >= start.y() + height)
+                break;
+        }
+        if (text.size() % 2 == 1)
+            _buffer->set({x, y}, text[(int)(text.length() - 1)], ' ', color);
+    }
     void draw_text_with_font(utl::Vec<int, 2> start, const std::string &text, Color color, const Font &font);
     void draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &text, Color color, Color shadow_color, const Font &font,
                                int shadow_offset_x = 1, int shadow_offset_y = 1);
@@ -272,14 +291,18 @@ public:
         std::string text = textbox->text();
 
         // Draw the background of the textbox
-        draw_fill_rectangle(pos, width, height, textbox->fill_char(), bg_color);
+        draw_fill_rectangle(pos, width, height - 1, textbox->fill_char(), bg_color);
         draw_rectangle(pos, width, height, '-', '|', bg_color);
         // Draw the text inside the textbox
-        draw_text(pos + utl::Vec<int, 2>{1, 1}, text, fg_color);
+        draw_text_constraints(pos + utl::Vec<int, 2>{1, 1}, text, fg_color, width - 1, height - 2);
 
         // Draw the cursor if the textbox is active
         if (textbox->is_active())
-            draw_point(pos + utl::Vec<int, 2>{(int)text.size()/2 + 1, 1}, '_', fg_color);
+        {
+            int xp = (int)(pos[0] + 2 + (text.size() > width - 1 ? (text.size() / 2) % (width - 1) : text.size() / 2));
+            int yp = (int)(pos[1] + 1 + text.size() / std::ceil((2 * (width - 1))));
+            draw_point({xp, yp}, '-', fg_color);
+        }
     }
 
     void print();
@@ -751,7 +774,6 @@ void Renderer::draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_
 
 void Renderer::draw_text(utl::Vec<int, 2> start, const std::string &text, Color color)
 {
-    std::vector<Point> points;
     int x = start.x();
     int y = start.y();
     for (size_t i = 0; i < text.size() / 2; i++)

@@ -180,6 +180,8 @@ public:
                 _text += '\n';
             else if (key == Keys::KEY_SPACE)
                 _text += ' ';
+            else if (key == Keys::KEY_UNKNOWN)
+                return;
             else
                 _text += Window::to_char(key);
         }
