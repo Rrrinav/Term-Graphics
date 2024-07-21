@@ -254,13 +254,12 @@ public:
             button->fg_color());
     }
 
- // BUG: Width changing on clicking
     void draw_slider(std::shared_ptr<Slider> slider)
     {
         draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{(int)slider->width(), 0}, '=', slider->bg_color());
         int l = (int)(slider->value() * slider->width());
         draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{l, 0}, '=', slider->fg_color());
-        draw_point(slider->position() + utl::Vec<int, 2>{l , 0}, slider->fill_char(), slider->fg_color());
+        draw_point(slider->position() + utl::Vec<int, 2>{l, 0}, slider->fill_char(), slider->fg_color());
     }
 
     void print();

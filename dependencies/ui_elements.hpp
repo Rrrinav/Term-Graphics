@@ -77,10 +77,9 @@ public:
 
 class Slider : public UI_element
 {
-    // BUG: width changing when clicking on the slider probably renderer issue
-    float _min_value;
-    float _max_value;
-    float _value;
+    float _min_value = 0.0f;
+    float _max_value = 1.0f;
+    float _value = 0.0f;
     std::function<void(float)> _callback;
     bool _is_pressed = false;
     bool _is_hovered = false;
@@ -88,24 +87,27 @@ class Slider : public UI_element
 
 public:
     Slider() = default;
-    Slider(utl::Vec<int, 2> pos, size_t w, char ch, Color bg, Color fg, float min_val, float max_val, float init_val,
-           std::function<void(float)> cb)
-        : UI_element(pos, w, 1, ch, bg, fg),
-
-          _min_value(min_val),
-          _max_value(max_val),
-          _value(init_val),
-          _callback(cb)
+    Slider(utl::Vec<int, 2> pos, size_t w, char ch, Color bg, Color fg, std::function<void(float)> cb)
+        : UI_element(pos, w, 1, ch, bg, fg), _callback(cb)
     {
     }
 
     float value() const { return _value; }
+    void set_value(float val) { _value = val; }
 
     void handle_event(const Mouse_event &event) override
     {
+        utl::Vec<int, 2> toggle_pos = {static_cast<int>(_position[0] + _value * _width), _position[1]};
         if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
         {
             _is_hovered = true;
+            if (event.x == toggle_pos[0] && event.y == toggle_pos[1])
+            {
+                _is_toggle_hovered = true;
+                if (event.event == Mouse_event_type::LEFT_CLICK)
+                    _is_pressed = true;
+            }
+
             if (event.event == Mouse_event_type::LEFT_CLICK)
             {
                 _is_pressed = true;
@@ -121,6 +123,14 @@ public:
         {
             _is_hovered = false;
             _is_pressed = false;
+        }
+
+        // Handle dragging
+        if (_is_pressed && event.event == Mouse_event_type::MOUSE_MOVE)
+        {
+            float new_value = _min_value + (static_cast<float>(event.x - _position[0]) / _width) * (_max_value - _min_value);
+            _value = new_value;
+          _callback(_value);
         }
     }
 };
