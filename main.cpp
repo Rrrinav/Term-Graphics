@@ -15,7 +15,7 @@ void handle(std::shared_ptr<Textbox> text1, float &angle)
             std::cerr << ch << " is not a number";
             return;
         }
-        if (std::isdigit(ch))
+        if (std::isdigit(ch) || ch == '.')
             str += ch;
     }
     angle = std::stof(str);
@@ -48,8 +48,8 @@ int main()
     while (true)
     {
         Window::update_input_states();
-        r.empty();
-        r.reset_screen();
+        // r.empty();
+        // r.reset_screen();
         r.draw_button(button1);
         r.draw_button(button2);
         r.draw_slider(slider1);
@@ -78,7 +78,7 @@ int main()
         }
         text1->handle_event(Window::get_mouse_event());
         r.draw_rect_rotated_gradient({10, 30}, 80, 30, 'o', radial_gradient, angle);
-        r.print();
+        // r.print();
         r.sleep(1000 / 60);
     }
 

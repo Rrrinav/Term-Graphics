@@ -3,12 +3,13 @@
 #include <uchar.h>
 
 #include <cmath>
+#include <vector>
 
 #include "color.hpp"
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
-// Base class for all shapes
 
+// Base class for all shapes
 class Shape
 {
 protected:
@@ -18,7 +19,6 @@ public:
     Shape() : _color(WHITE) {}
     Shape(Color color) : _color(color) {}
     virtual ~Shape() = default;
-    // virtual void draw(Renderer &renderer) = 0;
 
     void set_color(Color color) { _color = color; }
     Color get_color() const { return _color; }
@@ -27,13 +27,14 @@ public:
 class half_point : public Shape
 {
     utl::Vec<int, 2> _pos;
-    bool _left = true;
-    char _ch = '*';
+    bool _left;
+    char _ch;
 
 public:
-    half_point() : _pos({0, 0}), _ch('*'), Shape(), _left(true) {}
-    half_point(utl::Vec<int, 2> pos, char ch, bool left, Color color) : _pos(pos), _ch(ch), _left(left), Shape(color) {} 
-    half_point(const half_point &point) : _pos(point._pos), _ch(point._ch), _left(point._left), Shape(point._color) {}
+    half_point() : Shape(), _pos({0, 0}), _left(true), _ch('*') {}
+    half_point(utl::Vec<int, 2> pos, char ch, bool left, Color color) : Shape(color), _pos(pos), _left(left), _ch(ch) {}
+    half_point(const half_point &point) : Shape(point._color), _pos(point._pos), _left(point._left), _ch(point._ch) {}
+
     void set_pos(utl::Vec<int, 2> pos) { _pos = pos; }
     void set_char(char ch) { _ch = ch; }
     utl::Vec<int, 2> get_pos() const { return _pos; }
@@ -44,21 +45,20 @@ public:
 class Point : public Shape
 {
     utl::Vec<int, 2> _pos;
-    char _ch = '*';
-    char _ch2 = '*';
+    char _ch;
+    char _ch2;
     Color _color2;
 
 public:
-    Point() : _pos({0, 0}), _ch('*'), Shape() { _color2 = _color; }
-    Point(utl::Vec<int, 2> pos, char ch, Color color) : _pos(pos), _ch(ch), _ch2(ch), Shape(color) { _color2 = color; }
-    Point(utl::Vec<int, 2> pos, char ch1, char ch2, Color color) : _pos(pos), _ch(ch1), _ch2(ch2), Shape(color) { _color2 = color; }
-    Point(int x, int y, char ch, Color color) : _pos({x, y}), _ch(ch), _ch2(ch), Shape(color) { _color2 = color; }
-    Point(const Point &point) : _pos(point._pos), _ch(point._ch), _ch2(point._ch2), Shape(point._color) { _color2 = point._color2; }
-    Point(utl::Vec<int, 2> pos, char ch, Color color, char ch2, Color color2) : _pos(pos), _ch(ch), _ch2(ch2), Shape(color)
+    Point() : Shape(), _pos({0, 0}), _ch('*'), _ch2('*'), _color2(_color) {}
+    Point(utl::Vec<int, 2> pos, char ch, Color color) : Shape(color), _pos(pos), _ch(ch), _ch2(ch), _color2(color) {}
+    Point(utl::Vec<int, 2> pos, char ch1, char ch2, Color color) : Shape(color), _pos(pos), _ch(ch1), _ch2(ch2), _color2(color) {}
+    Point(int x, int y, char ch, Color color) : Shape(color), _pos({x, y}), _ch(ch), _ch2(ch), _color2(color) {}
+    Point(const Point &point) : Shape(point._color), _pos(point._pos), _ch(point._ch), _ch2(point._ch2), _color2(point._color2) {}
+    Point(utl::Vec<int, 2> pos, char ch, Color color, char ch2, Color color2) : Shape(color), _pos(pos), _ch(ch), _ch2(ch2), _color2(color2)
     {
-        _color2 = color2;
     }
-    // void draw(Renderer &renderer) override { renderer.draw_point(_pos, _ch, _color); }
+
     void set_pos(utl::Vec<int, 2> pos) { _pos = pos; }
     void set_char(char ch) { _ch = ch; }
     void set_char(char ch1, char ch2)
@@ -76,16 +76,14 @@ class Line : public Shape
 {
     utl::Vec<int, 2> _start;
     utl::Vec<int, 2> _end;
-    char _ch = '*';
+    char _ch;
 
 public:
-    Line() : _start({0, 0}), _end({0, 0}), _ch('*'), Shape() {}
-    Line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char ch, Color color) : _start(start), _end(end), _ch(ch), Shape(color) {}
-    Line(int x1, int y1, int x2, int y2, char ch, Color color = WHITE) : _start({x1, y1}), _end({x2, y2}), _ch(ch), Shape(color) {}
-    Line(const Line &line) : _start(line._start), _end(line._end), _ch(line._ch), Shape(line._color) {}
-    // void draw(Renderer &renderer) override { renderer.draw_line(_start, _end, _ch, _color); }
-    // void draw_anti_alias(Renderer &renderer) { renderer.draw_anti_aliased_line(_start, _end, _ch, _color); }
-    // void draw_xaolin_wu(Renderer &renderer) { renderer.draw_xaolin_wu_line(_start, _end, _ch, _color); }
+    Line() : Shape(), _start({0, 0}), _end({0, 0}), _ch('*') {}
+    Line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char ch, Color color) : Shape(color), _start(start), _end(end), _ch(ch) {}
+    Line(int x1, int y1, int x2, int y2, char ch, Color color = WHITE) : Shape(color), _start({x1, y1}), _end({x2, y2}), _ch(ch) {}
+    Line(const Line &line) : Shape(line._color), _start(line._start), _end(line._end), _ch(line._ch) {}
+
     void set_start(utl::Vec<int, 2> start) { _start = start; }
     void set_end(utl::Vec<int, 2> end) { _end = end; }
     void set_char(char ch) { _ch = ch; }
@@ -99,14 +97,13 @@ class Circle : public Shape
 {
     utl::Vec<int, 2> _center;
     int _radius;
-    char _ch = '*';
+    char _ch;
 
 public:
-    Circle(utl::Vec<int, 2> center, int radius, char ch) : _center(center), _radius(radius), _ch(ch) {}
-    Circle(int x, int y, int radius, char ch) : _center({x, y}), _radius(radius), _ch(ch) {}
-    Circle(const Circle &circle) : _center(circle._center), _radius(circle._radius), _ch(circle._ch) {}
-    // void draw(Renderer &renderer) override { renderer.draw_circle(_center, _radius, _ch); }
-    // void fill(Renderer &renderer) { renderer.draw_fill_circle(_center, _radius, _ch); }
+    Circle(utl::Vec<int, 2> center, int radius, char ch) : Shape(), _center(center), _radius(radius), _ch(ch) {}
+    Circle(int x, int y, int radius, char ch) : Shape(), _center({x, y}), _radius(radius), _ch(ch) {}
+    Circle(const Circle &circle) : Shape(circle._color), _center(circle._center), _radius(circle._radius), _ch(circle._ch) {}
+
     void set_center(utl::Vec<int, 2> center) { _center = center; }
     void set_radius(int radius) { _radius = radius; }
     void set_char(char ch) { _ch = ch; }
@@ -124,33 +121,35 @@ class Rectangle : public Shape
     utl::Vec<int, 2> _bottom_right;
     int _width;
     int _height;
-    char _ch = '*';
+    char _ch;
 
 public:
-    Rectangle() : _top_left({0, 0}), _bottom_right({0, 0}), _width(0), _height(0), _ch('*'), Shape() {}
+    Rectangle() : Shape(), _top_left({0, 0}), _bottom_right({0, 0}), _width(0), _height(0), _ch('*') {}
     Rectangle(utl::Vec<int, 2> top_left, utl::Vec<int, 2> bottom_right, char ch, Color color)
-        : _top_left(top_left), _bottom_right(bottom_right), _ch(ch), Shape(color)
+        : Shape(color),
+          _top_left(top_left),
+          _bottom_right(bottom_right),
+          _width(bottom_right[0] - top_left[0]),
+          _height(bottom_right[1] - top_left[1]),
+          _ch(ch)
     {
-        _width = _bottom_right[0] - _top_left[0];
-        _height = _bottom_right[1] - _top_left[1];
     }
     Rectangle(utl::Vec<int, 2> top_left, int width, int height, char ch, Color color)
-        : _top_left(top_left), _width(width), _height(height), _ch(ch), Shape(color)
+        : Shape(color), _top_left(top_left), _width(width), _height(height), _ch(ch)
     {
         _bottom_right[0] = _top_left[0] + _width;
         _bottom_right[1] = _top_left[1] + _height;
     }
     Rectangle(const Rectangle &rect)
-        : _top_left(rect._top_left),
+        : Shape(rect._color),
+          _top_left(rect._top_left),
           _bottom_right(rect._bottom_right),
           _width(rect._width),
           _height(rect._height),
-          _ch(rect._ch),
-          Shape(rect._color)
+          _ch(rect._ch)
     {
     }
-    // void draw(Renderer &renderer) override { renderer.draw_rectangle(_top_left, _width, _height, _ch, '@', _color); }
-    // void draw_fill(Renderer &renderer) { renderer.draw_fill_rectangle(_top_left, _width, _height, _ch, _color); }
+
     void set_top_left(utl::Vec<int, 2> top_left) { _top_left = top_left; }
     void set_bottom_right(utl::Vec<int, 2> bottom_right) { _bottom_right = bottom_right; }
     void set_char(char ch) { _ch = ch; }
@@ -172,72 +171,76 @@ public:
 
 class Triangle : public Shape
 {
-    utl::Vec<int, 2> _p1;
-    utl::Vec<int, 2> _p2;
-    utl::Vec<int, 2> _p3;
-    char _ch = '*';
+    utl::Vec<int, 2> _v1;
+    utl::Vec<int, 2> _v2;
+    utl::Vec<int, 2> _v3;
+    char _ch;
 
 public:
-    Triangle() : _p1({0, 0}), _p2({0, 0}), _p3({0, 0}), _ch('*'), Shape() {}
-    Triangle(utl::Vec<int, 2> p1, utl::Vec<int, 2> p2, utl::Vec<int, 2> p3, char ch, Color color)
-        : _p1(p1), _p2(p2), _p3(p3), _ch(ch), Shape(color)
+    Triangle() : Shape(), _v1({0, 0}), _v2({0, 0}), _v3({0, 0}), _ch('*') {}
+    Triangle(utl::Vec<int, 2> v1, utl::Vec<int, 2> v2, utl::Vec<int, 2> v3, char ch, Color color)
+        : Shape(color), _v1(v1), _v2(v2), _v3(v3), _ch(ch)
     {
     }
     Triangle(int x1, int y1, int x2, int y2, int x3, int y3, char ch, Color color)
-        : _p1({x1, y1}), _p2({x2, y2}), _p3({x3, y3}), _ch(ch), Shape(color)
+        : Shape(color), _v1({x1, y1}), _v2({x2, y2}), _v3({x3, y3}), _ch(ch)
     {
     }
-    Triangle(const Triangle &triangle) : _p1(triangle._p1), _p2(triangle._p2), _p3(triangle._p3), _ch(triangle._ch), Shape(triangle._color)
+    Triangle(const Triangle &triangle) : Shape(triangle._color), _v1(triangle._v1), _v2(triangle._v2), _v3(triangle._v3), _ch(triangle._ch)
     {
     }
-    // void draw(Renderer &renderer) override { renderer.draw_triangle(_p1, _p2, _p3, _ch, _color); }
-    // void draw_fill(Renderer &renderer) { renderer.draw_fill_triangle(_p1, _p2, _p3, _ch, _color); }
-    // void draw_anti_alias(Renderer &renderer) { renderer.draw_antialias_triangle(_p1, _p2, _p3, _ch, _color); }
-    // void draw_fill_anti_alias(Renderer &renderer) { renderer.draw_fill_antialias_triangle(_p1, _p2, _p3, _ch, _color); }
-    // void draw_xaolin_wu(Renderer &renderer) { renderer.draw_xaolin_wu_triangle(_p1, _p2, _p3, _ch, _color); }
-    std::vector<utl::Vec<int, 2>> get_vertices() const { return {_p1, _p2, _p3}; }
-    void set_p1(utl::Vec<int, 2> p1) { _p1 = p1; }
-    void set_p2(utl::Vec<int, 2> p2) { _p2 = p2; }
-    void set_p3(utl::Vec<int, 2> p3) { _p3 = p3; }
+
+    void set_v1(utl::Vec<int, 2> v1) { _v1 = v1; }
+    void set_v2(utl::Vec<int, 2> v2) { _v2 = v2; }
+    void set_v3(utl::Vec<int, 2> v3) { _v3 = v3; }
     void set_char(char ch) { _ch = ch; }
-    utl::Vec<int, 2> get_p1() const { return _p1; }
-    utl::Vec<int, 2> get_p2() const { return _p2; }
-    utl::Vec<int, 2> get_p3() const { return _p3; }
+    utl::Vec<int, 2> get_v1() const { return _v1; }
+    utl::Vec<int, 2> get_v2() const { return _v2; }
+    utl::Vec<int, 2> get_v3() const { return _v3; }
+    std::vector<utl::Vec<int, 2>> get_vertices() const { return {_v1, _v2, _v3}; }
     char get_char() const { return _ch; }
-    float get_area() const { return 0.5f * std::abs((_p1[0] - _p3[0]) * (_p2[1] - _p1[1]) - (_p1[0] - _p2[0]) * (_p3[1] - _p1[1])); }
-    float get_perimeter() const
+    float get_area() const
     {
-        return std::sqrt(std::pow(_p1[0] - _p2[0], 2) + std::pow(_p1[1] - _p2[1], 2)) +
-               std::sqrt(std::pow(_p2[0] - _p3[0], 2) + std::pow(_p2[1] - _p3[1], 2)) +
-               std::sqrt(std::pow(_p3[0] - _p1[0], 2) + std::pow(_p3[1] - _p1[1], 2));
+        return std::abs((_v1[0] * (_v2[1] - _v3[1]) + _v2[0] * (_v3[1] - _v1[1]) + _v3[0] * (_v1[1] - _v2[1])) / 2.0f);
     }
     Triangle rotate(float angle, utl::Vec<int, 2> center, char8_t axis = 'z')
     {
-        utl::Vec<int, 2> p1 = _p1.rotate_about_center(center, angle, axis);
-        utl::Vec<int, 2> p2 = _p2.rotate_about_center(center, angle, axis);
-        utl::Vec<int, 2> p3 = _p3.rotate_about_center(center, angle, axis);
+        utl::Vec<int, 2> p1 = _v1.rotate_about_center(center, angle, axis);
+        utl::Vec<int, 2> p2 = _v2.rotate_about_center(center, angle, axis);
+        utl::Vec<int, 2> p3 = _v3.rotate_about_center(center, angle, axis);
         return Triangle(p1, p2, p3, _ch, _color);
     }
-
     void scale(float factor)
     {
-        utl::Vec<int, 2> center = (_p1 + _p2 + _p3) * (1 / 3);
-        _p1 = center + (_p1 - center) * factor;
-        _p2 = center + (_p2 - center) * factor;
-        _p3 = center + (_p3 - center) * factor;
+        utl::Vec<int, 2> center = (_v1 + _v2 + _v3) * (1 / 3);
+        _v1 = center + (_v1 - center) * factor;
+        _v2 = center + (_v2 - center) * factor;
+        _v3 = center + (_v3 - center) * factor;
     }
 };
 
 class Polygon : public Shape
 {
     std::vector<utl::Vec<int, 2>> _vertices;
-    char _ch = '*';
+    char _ch;
 
 public:
-    Polygon() : _vertices(), _ch('*'), Shape() {}
-    Polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color) : _vertices(vertices), _ch(ch), Shape(color) {}
-    Polygon(const Polygon &polygon) : _vertices(polygon._vertices), _ch(polygon._ch), Shape(polygon._color) {}
-    // void draw(Renderer &renderer) override { renderer.draw_polygon(_vertices, _ch, _color); }
+    Polygon() : Shape(), _ch('*') {}
+    Polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color) : Shape(color), _vertices(std::move(vertices)), _ch(ch) {}
+    Polygon(const Polygon &polygon) : Shape(polygon._color), _vertices(polygon._vertices), _ch(polygon._ch) {}
+
+    void add_vertex(utl::Vec<int, 2> vertex) { _vertices.push_back(vertex); }
+    void set_vertex(size_t index, utl::Vec<int, 2> vertex) { _vertices[index] = vertex; }
+    void set_char(char ch) { _ch = ch; }
     std::vector<utl::Vec<int, 2>> get_vertices() const { return _vertices; }
     char get_char() const { return _ch; }
+
+    float get_area() const
+    {
+        float area = 0;
+        size_t n = _vertices.size();
+        for (size_t i = 0; i < n; ++i)
+            area += (_vertices[i][0] * _vertices[(i + 1) % n][1]) - (_vertices[(i + 1) % n][0] * _vertices[i][1]);
+        return std::abs(area) / 2.0f;
+    }
 };

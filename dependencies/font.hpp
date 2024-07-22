@@ -23,6 +23,15 @@ public:
     }
 
     Font_glyph(const Font_glyph &other) : lines(other.lines), width(other.width), height(other.height) {}
+    Font_glyph &operator=(const Font_glyph &other)
+    {
+        if (this == &other)
+            return *this;
+        lines = other.lines;
+        width = other.width;
+        height = other.height;
+        return *this;
+    }
 
     int get_width() const { return width; }
     int get_height() const { return height; }

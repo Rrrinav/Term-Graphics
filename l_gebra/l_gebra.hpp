@@ -111,18 +111,11 @@ namespace utl
             {
                 size += row.size();
                 if (row.size() != rowSize)
-                {
                     throw std::invalid_argument("Initializer list rows have different sizes");
-                }
             }
             data.reserve(size);
             for (const auto &row : initList)
-            {
-                for (const auto &val : row)
-                {
-                    data.push_back(val);
-                }
-            }
+                for (const auto &val : row) data.push_back(val);
         }
         // Constructor to create a row matrix of size rows x 1 and initialize with initList
         IL Matrix(std::initializer_list<T> init_list) : _rows(1), _cols(init_list.size()), data(init_list) {}
@@ -135,21 +128,16 @@ namespace utl
         }
 
         // Constructor to create a matrix of size rows x cols and initialize all elements with val
-        Matrix<T>(size_t rows, size_t cols, T val) : _rows(rows), _cols(cols), data(rows * cols, val) {}
+        Matrix(size_t rows, size_t cols, T val) : _rows(rows), _cols(cols), data(rows * cols, val) {}
         // Constructor to create a column matrix of size rows x 1 and initialize with initList
         Matrix(size_t rows, std::initializer_list<T> initList) : Matrix(rows, 1, initList) {}
 
         // Copy Constructor
         template <typename Y>
-        IL Matrix<T>(const std::vector<Y> &other) : _rows(other.size()), _cols(other.empty() ? 0 : other.size() / _rows)
+        IL Matrix(const std::vector<Y> &other) : _rows(other.size()), _cols(other.empty() ? 0 : other.size() / _rows)
         {
             for (const auto &row : other)
-            {
-                for (const auto &val : row)
-                {
-                    data.push_back(val);
-                }
-            }
+                for (const auto &val : row) data.push_back(static_cast<T>(val));
         }
 
         // Destructor
@@ -169,18 +157,14 @@ namespace utl
         IL T &operator()(size_t row, size_t col)
         {
             if (row >= _rows || col >= _cols)
-            {
                 throw std::out_of_range("Index out of range");
-            }
             return data[row * _cols + col];
         }
 
         IL const T &operator()(size_t row, size_t col) const
         {
             if (row >= rows() || col >= cols())
-            {
                 throw std::out_of_range("Index out of range");
-            }
             return data[row * _cols + col];
         }
 
@@ -330,7 +314,8 @@ namespace utl
         // Constructor with coloumn matrix
         Vec(const Matrix<T> &matrix) : Matrix<T>(matrix)
         {
-            if (matrix.rows() != _size || matrix.cols() != 1) throw std::invalid_argument("Invalid matrix dimensions for Vec construction");
+            if (matrix.rows() != _size || matrix.cols() != 1)
+                throw std::invalid_argument("Invalid matrix dimensions for Vec construction");
         }
         // Copy Constructor
         template <typename Y>
@@ -348,10 +333,7 @@ namespace utl
         IL Vec(const Vec<Y, _size> &other) : Matrix<T>(_size, 1)
         {
             // Copy each element, performing necessary conversions
-            for (size_t i = 0; i < _size; ++i)
-            {
-                (*this)[i] = static_cast<T>(other[i]);
-            }
+            for (size_t i = 0; i < _size; ++i) (*this)[i] = static_cast<T>(other[i]);
         }
 
         // Destructor
@@ -368,27 +350,21 @@ namespace utl
             if (_size >= 1)
                 return (*this)[0];
             else
-            {
                 std::invalid_argument("Can't get x of 0 vector");
-            }
         }
         IL T y() const
         {
             if (_size >= 2)
                 return (*this)[1];
             else
-            {
                 std::invalid_argument("Can't get y of vector size <= 1");
-            }
         }
         IL T z() const
         {
             if (_size >= 3)
                 return (*this)[2];
             else
-            {
                 std::invalid_argument("Can't get z of vector size <= 2");
-            }
         }
 
         IL size_t size() const { return _size; }
@@ -484,14 +460,14 @@ namespace utl
     template <typename T>
     bool Matrix<T>::operator==(const Matrix<T> &rhs)
     {
-        if ((*this).rows() != rhs.rows() || (*this).cols() != rhs.cols()) return false;
+        if ((*this).rows() != rhs.rows() || (*this).cols() != rhs.cols())
+            return false;
 
         for (size_t i = 0; i < (*this).rows(); ++i)
         {
             for (size_t j = 0; j < (*this).cols(); ++j)
-            {
-                if ((*this)(i, j) != rhs(i, j)) return false;
-            }
+                if ((*this)(i, j) != rhs(i, j))
+                    return false;
         }
 
         return true;
@@ -506,7 +482,8 @@ namespace utl
             for (size_t i = 0; i < _rows; ++i)
             {
                 size_t width = std::to_string((*this)(i, j)).size();
-                if (width > col_widths[j]) col_widths[j] = width;
+                if (width > col_widths[j])
+                    col_widths[j] = width;
             }
         }
 
@@ -514,10 +491,7 @@ namespace utl
         for (size_t i = 0; i < _rows; ++i)
         {
             std::cout << "[ ";
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                std::cout << std::setw(col_widths[j]) << (*this)(i, j) << " ";
-            }
+            for (size_t j = 0; j < _cols; ++j) std::cout << std::setw(col_widths[j]) << (*this)(i, j) << " ";
             std::cout << "]\n";
         }
     }
@@ -527,18 +501,11 @@ namespace utl
     IL Matrix<T> Matrix<T>::operator+(const Matrix<Y> &other) const
     {
         if (_rows != other.rows() || _cols != other.cols())
-        {
             throw std::invalid_argument("Matrix dimensions must match for addition");
-        }
 
         Matrix<T> result(_rows, _cols);
         for (size_t i = 0; i < _rows; ++i)
-        {
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                result(i, j) = (*this)(i, j) + static_cast<T>(other(i, j));
-            }
-        }
+            for (size_t j = 0; j < _cols; ++j) result(i, j) = (*this)(i, j) + static_cast<T>(other(i, j));
         return result;
     }
 
@@ -548,12 +515,7 @@ namespace utl
     {
         Matrix<T> result = *this;
         for (size_t i = 0; i < _rows; ++i)
-        {
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                result(i, j) = result(i, j) + static_cast<T>(scalar);
-            }
-        }
+            for (size_t j = 0; j < _cols; ++j) result(i, j) = result(i, j) + static_cast<T>(scalar);
         return result;
     }
 
@@ -562,18 +524,11 @@ namespace utl
     IL Matrix<T> Matrix<T>::operator-(const Matrix<Y> &other) const
     {
         if (_rows != other.rows() || _cols != other.cols())
-        {
             throw std::invalid_argument("Matrix dimensions must match for subtraction");
-        }
 
         Matrix<T> result(_rows, _cols);
         for (size_t i = 0; i < _rows; ++i)
-        {
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                result(i, j) = (*this)(i, j) - static_cast<T>(other(i, j));
-            }
-        }
+            for (size_t j = 0; j < _cols; ++j) result(i, j) = (*this)(i, j) - static_cast<T>(other(i, j));
         return result;
     }
 
@@ -582,12 +537,7 @@ namespace utl
     {
         Matrix<T> result(_rows, _cols);
         for (size_t i = 0; i < _rows; ++i)
-        {
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                result(i, j) = (*this)(i, j) * scalar;
-            }
-        }
+            for (size_t j = 0; j < _cols; ++j) result(i, j) = (*this)(i, j) * scalar;
         return result;
     }
 
@@ -596,9 +546,7 @@ namespace utl
     IL Matrix<T> Matrix<T>::operator*(const Matrix<Y> &other) const
     {
         if (_cols != other.rows())
-        {
             throw std::invalid_argument("Matrix dimensions do not match for multiplication");
-        }
 
         Matrix<T> result(_rows, other.cols());
         for (size_t i = 0; i < _rows; ++i)
@@ -606,10 +554,7 @@ namespace utl
             for (size_t j = 0; j < other.cols(); ++j)
             {
                 T sum = static_cast<T>(0);
-                for (size_t k = 0; k < _cols; ++k)
-                {
-                    sum += (*this)(i, k) * static_cast<T>(other(k, j));
-                }
+                for (size_t k = 0; k < _cols; ++k) sum += (*this)(i, k) * static_cast<T>(other(k, j));
                 result(i, j) = sum;
             }
         }
@@ -621,9 +566,7 @@ namespace utl
     IL Matrix<T> Matrix<T>::operator/(const Matrix<Y> &other) const
     {
         if (_rows != other.rows() || _cols != other.cols())
-        {
             throw std::invalid_argument("Matrix dimensions must match for element-wise division");
-        }
 
         Matrix<T> result(_rows, _cols);
         for (size_t i = 0; i < _rows; ++i)
@@ -631,9 +574,7 @@ namespace utl
             for (size_t j = 0; j < _cols; ++j)
             {
                 if (other(i, j) == 0)
-                {
                     throw std::runtime_error("Division by zero");
-                }
                 result(i, j) = (*this)(i, j) / (T)other(i, j);
             }
         }
@@ -643,19 +584,13 @@ namespace utl
     template <typename T>
     IL void Matrix<T>::sin()
     {
-        for (auto &val : data)
-        {
-            val = std::sin(val);
-        }
+        for (auto &val : data) val = std::sin(val);
     }
 
     template <typename T>
     IL void Matrix<T>::cos()
     {
-        for (auto &val : data)
-        {
-            val = std::cos(val);
-        }
+        for (auto &val : data) val = std::cos(val);
     }
 
     template <typename T>
@@ -663,12 +598,7 @@ namespace utl
     {
         Matrix<T> result(_cols, _rows);
         for (size_t i = 0; i < _rows; ++i)
-        {
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                result(j, i) = (*this)(i, j);
-            }
-        }
+            for (size_t j = 0; j < _cols; ++j) result(j, i) = (*this)(i, j);
         return result;
     }
 
@@ -676,9 +606,7 @@ namespace utl
     double Matrix<T>::determinant() const
     {
         if (_rows != _cols)
-        {
             throw std::invalid_argument("Matrix must be square to compute determinant");
-        }
 
         if (_rows == 1)
         {
@@ -705,22 +633,23 @@ namespace utl
     Matrix<T> Matrix<T>::minor(size_t row, size_t col) const
     {
         if (_rows <= 1 || _cols <= 1)
-        {
             throw std::invalid_argument("Matrix must have dimensions greater than 1 to compute minor");
-        }
 
         Matrix<T> result(_rows - 1, _cols - 1);
         size_t m = 0, n = 0;
         for (size_t i = 0; i < _rows; ++i)
         {
-            if (i == row) continue;
+            if (i == row)
+                continue;
             n = 0;
             for (size_t j = 0; j < _cols; ++j)
             {
-                if (j == col) continue;
+                if (j == col)
+                    continue;
                 result(m, n++) = (*this)(i, j);
             }
-            if (i != row) ++m;
+            if (i != row)
+                ++m;
         }
         return result;
     }
@@ -738,15 +667,11 @@ namespace utl
         Matrix<T> m = *this;
 
         if (m.rows() != m.cols())
-        {
             throw std::invalid_argument("Matrix must be square to compute inverse");
-        }
 
         const double det = m.determinant();
         if (std::abs(det) < std::numeric_limits<double>::epsilon())
-        {
             throw std::runtime_error("Matrix is singular and has no inverse");
-        }
 
         // Check for singularity before creating the result matrix
         if (m.rows() == 1)
@@ -764,12 +689,7 @@ namespace utl
 
         Matrix<T> result(m.rows(), m.cols());
         for (size_t i = 0; i < m.rows(); ++i)
-        {
-            for (size_t j = 0; j < m.cols(); ++j)
-            {
-                result(i, j) = m.cofactor(i, j) / det;
-            }
-        }
+            for (size_t j = 0; j < m.cols(); ++j) result(i, j) = m.cofactor(i, j) / det;
 
         return result.transpose();
     }
@@ -778,28 +698,19 @@ namespace utl
     Matrix<T> Matrix<T>::power(int n)
     {
         if (_rows != _cols)
-        {
             throw std::invalid_argument("Matrix must be square to compute power");
-        }
 
         if (n < 0)
-        {
             return inverse(*this).power(-n);
-        }
 
         Matrix<T> result(_rows, _cols);
-        for (size_t i = 0; i < _rows; ++i)
-        {
-            result(i, i) = 1;
-        }
+        for (size_t i = 0; i < _rows; ++i) result(i, i) = 1;
 
         Matrix<T> x = *this;
         while (n)
         {
             if (n & 1)
-            {
                 result = result * x;
-            }
             x = x * x;
             n >>= 1;
         }
@@ -822,7 +733,8 @@ namespace utl
                     break;
                 }
             }
-            if (!is_zero_row) ++rank;
+            if (!is_zero_row)
+                ++rank;
         }
         return rank;
     }
@@ -830,15 +742,10 @@ namespace utl
     T Matrix<T>::trace() const
     {
         if (_rows != _cols)
-        {
             throw std::invalid_argument("Matrix must be square to compute trace");
-        }
 
         T result = 0;
-        for (size_t i = 0; i < _rows; ++i)
-        {
-            result += (*this)(i, i);
-        }
+        for (size_t i = 0; i < _rows; ++i) result += (*this)(i, i);
         return result;
     }
     template <typename T>
@@ -846,26 +753,16 @@ namespace utl
     {
         T result = 0;
         for (size_t i = 0; i < _rows; ++i)
-        {
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                result += (*this)(i, j) * (*this)(i, j);
-            }
-        }
+            for (size_t j = 0; j < _cols; ++j) result += (*this)(i, j) * (*this)(i, j);
         return std::sqrt(result);
     }
     template <typename T>
     void Matrix<T>::swap_rows(size_t r1, size_t r2)
     {
         if (r1 >= _rows || r2 >= _rows)
-        {
             throw std::out_of_range("Row index out of range");
-        }
 
-        for (size_t j = 0; j < _cols; ++j)
-        {
-            std::swap((*this)(r1, j), (*this)(r2, j));
-        }
+        for (size_t j = 0; j < _cols; ++j) std::swap((*this)(r1, j), (*this)(r2, j));
     }
 
     // Multiply a row by a scalar value
@@ -873,14 +770,9 @@ namespace utl
     void Matrix<T>::multiply_row(size_t r, float scalar)
     {
         if (r >= _rows)
-        {
             throw std::out_of_range("Row index out of range");
-        }
 
-        for (size_t j = 0; j < _cols; ++j)
-        {
-            (*this)(r, j) *= scalar;
-        }
+        for (size_t j = 0; j < _cols; ++j) (*this)(r, j) *= scalar;
     }
 
     // Add a scalar multiple of one row to another row
@@ -888,14 +780,9 @@ namespace utl
     void Matrix<T>::add_scaled_row(size_t r1, size_t r2, float scalar)
     {
         if (r1 >= _rows || r2 >= _rows)
-        {
             throw std::out_of_range("Row index out of range");
-        }
 
-        for (size_t j = 0; j < _cols; ++j)
-        {
-            (*this)(r1, j) += scalar * (*this)(r2, j);
-        }
+        for (size_t j = 0; j < _cols; ++j) (*this)(r1, j) += scalar * (*this)(r2, j);
     }
 
     template <typename T>
@@ -932,16 +819,11 @@ namespace utl
                 }
             }
             if (converged)
-            {
                 break;
-            }
         }
 
         std::vector<float> eigenvalues;
-        for (size_t i = 0; i < A.rows(); ++i)
-        {
-            eigenvalues.push_back(A(i, i));
-        }
+        for (size_t i = 0; i < A.rows(); ++i) eigenvalues.push_back(A(i, i));
 
         return eigenvalues;
     }
@@ -1014,10 +896,7 @@ namespace utl
         for (size_t i = 0; i < _cols; ++i)
         {
             std::vector<T> eigenvector(_rows);
-            for (size_t j = 0; j < _rows; ++j)
-            {
-                eigenvector[j] = pQ(j, i);
-            }
+            for (size_t j = 0; j < _rows; ++j) eigenvector[j] = pQ(j, i);
 
             // Normalize eigenvector
             /*  T norm = std::sqrt(std::inner_product(eigenvector.begin(), eigenvector.end(), eigenvector.begin(),
@@ -1036,9 +915,7 @@ namespace utl
     std::pair<Matrix<T>, Matrix<T>> Matrix<T>::qr_decomposition()
     {
         if (_rows != _cols)
-        {
             throw std::invalid_argument("QR decomposition requires a square matrix");
-        }
 
         Matrix<T> Q(*this);  // Start with Q as a copy of the input matrix
         Matrix<T> R(_rows, _cols, 0);
@@ -1049,42 +926,25 @@ namespace utl
             for (size_t i = 0; i < k; ++i)
             {
                 T dotProduct = 0;
-                for (size_t j = 0; j < _rows; ++j)
-                {
-                    dotProduct += Q(j, k) * Q(j, i);
-                }
-                for (size_t j = 0; j < _rows; ++j)
-                {
-                    Q(j, k) -= dotProduct * Q(j, i);
-                }
+                for (size_t j = 0; j < _rows; ++j) dotProduct += Q(j, k) * Q(j, i);
+                for (size_t j = 0; j < _rows; ++j) Q(j, k) -= dotProduct * Q(j, i);
             }
 
             // Compute the norm and normalize the kth column of Q
             T norm = 0;
-            for (size_t j = 0; j < _rows; ++j)
-            {
-                norm += Q(j, k) * Q(j, k);
-            }
+            for (size_t j = 0; j < _rows; ++j) norm += Q(j, k) * Q(j, k);
             norm = std::sqrt(norm);
 
             if (norm < 1e-10)
-            {
                 throw std::runtime_error("Matrix is singular or nearly singular");
-            }
 
-            for (size_t j = 0; j < _rows; ++j)
-            {
-                Q(j, k) /= norm;
-            }
+            for (size_t j = 0; j < _rows; ++j) Q(j, k) /= norm;
 
             // Compute the kth row of R
             for (size_t i = k; i < _cols; ++i)
             {
                 T dotProduct = 0;
-                for (size_t j = 0; j < _rows; ++j)
-                {
-                    dotProduct += Q(j, k) * (*this)(j, i);
-                }
+                for (size_t j = 0; j < _rows; ++j) dotProduct += Q(j, k) * (*this)(j, i);
                 R(k, i) = dotProduct;
             }
         }
@@ -1096,21 +956,13 @@ namespace utl
     Matrix<T> Matrix<T>::augment(const Matrix<T> &other) const
     {
         if (_rows != other._rows)
-        {
             throw std::invalid_argument("Matrix dimensions must match for augmentation");
-        }
 
         Matrix<T> augmented(_rows, _cols + other._cols);
         for (size_t i = 0; i < _rows; ++i)
         {
-            for (size_t j = 0; j < _cols; ++j)
-            {
-                augmented(i, j) = (*this)(i, j);
-            }
-            for (size_t j = 0; j < other._cols; ++j)
-            {
-                augmented(i, _cols + j) = other(i, j);
-            }
+            for (size_t j = 0; j < _cols; ++j) augmented(i, j) = (*this)(i, j);
+            for (size_t j = 0; j < other._cols; ++j) augmented(i, _cols + j) = other(i, j);
         }
         return augmented;
     }
@@ -1134,9 +986,7 @@ namespace utl
                 if (r == lead)
                     result.multiply_row(r, divisor);
                 else
-                {
                     result.add_scaled_row(r, lead, multiplier);
-                }
             }
             lead++;
         }
@@ -1158,44 +1008,33 @@ namespace utl
                     break;
                 }
             }
-            if (!is_zero_row) ++non_zero_rows;
+            if (!is_zero_row)
+                ++non_zero_rows;
         }
 
         if (non_zero_rows == reduced_matrix.cols())
-        {
             return sol_type::Unique;
-        }
         else if (non_zero_rows < reduced_matrix.cols())
-        {
             return sol_type::Infinite;
-        }
         else
-        {
             return sol_type::NoSolution;
-        }
     }
 
     template <typename T>
     Matrix<T> Matrix<T>::solve_linear_system(const Matrix<T> &b) const
     {
         if (_rows != _cols || _rows != b.rows())
-        {
             throw std::invalid_argument("Invalid matrix and vector dimensions");
-        }
 
         Matrix<T> augmented = augment(b);
         Matrix<T> reduced_matrix = augmented.gauss_elimination();
         sol_type solution_type = has_solution(*this);
 
         if (solution_type == sol_type::NoSolution)
-        {
             throw std::runtime_error("No solution exists for the linear system");
-        }
 
         if (solution_type == sol_type::Infinite)
-        {
             throw std::runtime_error("Infinite solutions exist for the linear system");
-        }
 
         Matrix<T> x(_cols, 1);
         if (solution_type == sol_type::Unique)
@@ -1203,10 +1042,7 @@ namespace utl
             for (int i = _rows - 1; i >= 0; --i)
             {
                 T sum = reduced_matrix(i, _cols);
-                for (size_t j = i + 1; j < _cols; ++j)
-                {
-                    sum -= reduced_matrix(i, j) * x(j, 0);
-                }
+                for (size_t j = i + 1; j < _cols; ++j) sum -= reduced_matrix(i, j) * x(j, 0);
 
                 x(i, 0) = sum / reduced_matrix(i, i);
             }
@@ -1218,10 +1054,7 @@ namespace utl
     IL Matrix<T> Matrix<T>::identity_matrix(size_t n)
     {
         Matrix<T> result(n, n);
-        for (size_t i = 0; i < n; ++i)
-        {
-            result(i, i) = static_cast<T>(1);
-        }
+        for (size_t i = 0; i < n; ++i) result(i, i) = static_cast<T>(1);
         return result;
     }
 
@@ -1230,9 +1063,7 @@ namespace utl
     {
         Matrix<T> result(n, n);
         for (size_t i = 0; i < n; ++i)
-        {
             for (size_t j = 0; j < n; ++j) result(i, j) = static_cast<T>(0);
-        }
         return result;
     }
 
@@ -1241,9 +1072,7 @@ namespace utl
     {
         Matrix<T> result(n, n);
         for (size_t i = 0; i < n; ++i)
-        {
             for (size_t j = 0; j < n; ++j) result(i, j) = static_cast<T>(1);
-        }
         return result;
     }
 
@@ -1252,30 +1081,19 @@ namespace utl
     {
         Matrix<T> result(rows, cols);
         for (size_t i = 0; i < rows; ++i)
-        {
-            for (size_t j = 0; j < cols; ++j)
-            {
-                result(i, j) = min + static_cast<T>(rand()) / (static_cast<T>(RAND_MAX / (max - min)));
-            }
-        }
+            for (size_t j = 0; j < cols; ++j) result(i, j) = min + static_cast<T>(rand()) / (static_cast<T>(RAND_MAX / (max - min)));
         return result;
     }
     template <typename T>
     IL Matrix<T> Matrix<T>::min(const Matrix<T> &m1, const Matrix<T> &m2)
     {
         if (m1.rows() != m2.rows() || m1.cols() != m2.cols())
-        {
             throw std::invalid_argument("Matrix dimensions must match for element-wise minimum");
-        }
         Matrix<T> result(m1.rows(), m1.cols());
         if (m1.magnitude() > m2.magnitude())
-        {
             result = m2;
-        }
         else
-        {
             result = m1;
-        }
         return result;
     }
 
@@ -1283,18 +1101,12 @@ namespace utl
     IL Matrix<T> Matrix<T>::max(const Matrix<T> &m1, const Matrix<T> &m2)
     {
         if (m1.rows() != m2.rows() || m1.cols() != m2.cols())
-        {
             throw std::invalid_argument("Matrix dimensions must match for comparison");
-        }
         Matrix<T> result(m1.rows(), m1.cols());
         if (m1.magnitude() > m2.magnitude())
-        {
             result = m1;
-        }
         else
-        {
             result = m2;
-        }
         return result;
     }
 
@@ -1302,18 +1114,11 @@ namespace utl
     IL Matrix<T> Matrix<T>::lerp(const Matrix<T> &m1, const Matrix<T> &m2, float t)
     {
         if (m1.rows() != m2.rows() || m1.cols() != m2.cols())
-        {
             throw std::invalid_argument("Matrix dimensions must match for linear interpolation");
-        }
         Matrix<T> result(m1.rows(), m1.cols());
 
         for (size_t i = 0; i < m1.rows(); ++i)
-        {
-            for (size_t j = 0; j < m1.cols(); ++j)
-            {
-                result(i, j) = m1(i, j) * (1 - t) + m2(i, j) * t;
-            }
-        }
+            for (size_t j = 0; j < m1.cols(); ++j) result(i, j) = m1(i, j) * (1 - t) + m2(i, j) * t;
         return result;
     }
 
@@ -1322,10 +1127,7 @@ namespace utl
     IL void Vec<T, _size>::print()
     {
         std::cout << "[ ";
-        for (size_t i = 0; i < _size; ++i)
-        {
-            std::cout << (*this)[i] << " ";
-        }
+        for (size_t i = 0; i < _size; ++i) std::cout << (*this)[i] << " ";
         std::cout << "]\n";
     }
 
@@ -1333,9 +1135,7 @@ namespace utl
     IL T &Vec<T, _size>::operator[](size_t i)
     {
         if (i >= _size)
-        {
             throw std::out_of_range("Index out of range");
-        }
         return this->operator()(i, 0);
     }
 
@@ -1343,9 +1143,7 @@ namespace utl
     IL const T &Vec<T, _size>::operator[](size_t i) const
     {
         if (i >= _size)
-        {
             throw std::out_of_range("Index out of range");
-        }
         return this->operator()(i, 0);
     }
 
@@ -1353,10 +1151,7 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::operator*(const T x) const
     {
         Vec<T, _size> result;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result[i] = (*this)[i] * x;
-        }
+        for (size_t i = 0; i < _size; ++i) result[i] = (*this)[i] * x;
         return result;
     }
 
@@ -1365,14 +1160,9 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::operator*(const Vec<Y, n_x> &x) const
     {
         if (_size != n_x)
-        {
             throw std::invalid_argument("Vector sizes do not match for multiplication");
-        }
         Vec<T, _size> result;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result[i] = (*this)[i] * x[i];
-        }
+        for (size_t i = 0; i < _size; ++i) result[i] = (*this)[i] * x[i];
         return result;
     }
 
@@ -1381,16 +1171,12 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::operator/(const Vec<Y, n_x> &x) const
     {
         if (_size != n_x)
-        {
             throw std::invalid_argument("Vector sizes do not match for division");
-        }
         Vec<T, _size> result;
         for (size_t i = 0; i < _size; ++i)
         {
             if (x[i] == 0)
-            {
                 throw std::invalid_argument("Division by zero");
-            }
             result[i] = (*this)[i] / x[i];
         }
         return result;
@@ -1400,10 +1186,7 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::operator+(const T x) const
     {
         Vec<T, _size> result;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result[i] = (*this)[i] + x;
-        }
+        for (size_t i = 0; i < _size; ++i) result[i] = (*this)[i] + x;
         return result;
     }
 
@@ -1412,14 +1195,9 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::operator+(const Vec<Y, n_x> &x) const
     {
         if (_size != n_x)
-        {
             throw std::invalid_argument("Vector sizes do not match for addition");
-        }
         Vec<T, _size> result;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result[i] = (*this)[i] + x[i];
-        }
+        for (size_t i = 0; i < _size; ++i) result[i] = (*this)[i] + x[i];
         return result;
     }
 
@@ -1428,14 +1206,9 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::operator-(const Vec<Y, n_x> &x) const
     {
         if (_size != n_x)
-        {
             throw std::invalid_argument("Vector sizes do not match for subtraction");
-        }
         Vec<T, _size> result;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result[i] = (*this)[i] - x[i];
-        }
+        for (size_t i = 0; i < _size; ++i) result[i] = (*this)[i] - x[i];
         return result;
     }
 
@@ -1444,18 +1217,13 @@ namespace utl
     Vec<T, _size> Vec<T, _size>::operator*(const Matrix<Y> &m) const
     {
         if (m.cols() != _size)
-        {
             throw std::invalid_argument("Vector and matrix dimensions do not match for multiplication");
-        }
 
         Vec<T, m.rows()> result;
         for (size_t i = 0; i < m.rows(); ++i)
         {
             T sum = static_cast<T>(0);
-            for (size_t j = 0; j < _size; ++j)
-            {
-                sum += (*this)[j] * m(i, j);
-            }
+            for (size_t j = 0; j < _size; ++j) sum += (*this)[j] * m(i, j);
             result[i] = sum;
         }
         return result;
@@ -1464,19 +1232,13 @@ namespace utl
     template <typename T, size_t _size>
     IL void Vec<T, _size>::sin()
     {
-        for (size_t i = 0; i < _size; ++i)
-        {
-            (*this)[i] = std::sin((*this)[i]);
-        }
+        for (size_t i = 0; i < _size; ++i) (*this)[i] = std::sin((*this)[i]);
     }
 
     template <typename T, size_t _size>
     IL void Vec<T, _size>::cos()
     {
-        for (size_t i = 0; i < _size; ++i)
-        {
-            (*this)[i] = std::cos((*this)[i]);
-        }
+        for (size_t i = 0; i < _size; ++i) (*this)[i] = std::cos((*this)[i]);
     }
 
     template <typename T, size_t _size>
@@ -1484,14 +1246,9 @@ namespace utl
     IL double Vec<T, _size>::dot(const Vec<Y, n_x> &x) const
     {
         if (_size != n_x)
-        {
             throw std::invalid_argument("Vector sizes do not match for dot product");
-        }
         double result = 0;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result += (*this)[i] * x[i];
-        }
+        for (size_t i = 0; i < _size; ++i) result += (*this)[i] * x[i];
         return result;
     }
 
@@ -1500,9 +1257,7 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::cross(const Vec<Y, n_x> &x) const
     {
         if (_size != 3 || n_x != 3)
-        {
             throw std::invalid_argument("Cross product is defined only for 3-dimensional vectors");
-        }
         Vec<T, _size> result;
         result[0] = (*this)[1] * x[2] - (*this)[2] * x[1];
         result[1] = (*this)[2] * x[0] - (*this)[0] * x[2];
@@ -1514,10 +1269,7 @@ namespace utl
     IL double Vec<T, _size>::squared_magnitude() const
     {
         double sum = 0;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            sum += (*this)[i] * (*this)[i];
-        }
+        for (size_t i = 0; i < _size; ++i) sum += (*this)[i] * (*this)[i];
         return sum;
     }
 
@@ -1525,22 +1277,17 @@ namespace utl
     IL double Vec<T, _size>::magnitude() const
     {
         double sum = 0;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            sum += (*this)[i] * (*this)[i];
-        }
+        for (size_t i = 0; i < _size; ++i) sum += (*this)[i] * (*this)[i];
         return sqrt(sum);
     }
 
     template <typename T, size_t _size>
     IL void Vec<T, _size>::power(float x)
     {
-        if (!std::isfinite(x)) throw std::invalid_argument("Power must be a finite number");
+        if (!std::isfinite(x))
+            throw std::invalid_argument("Power must be a finite number");
 
-        for (size_t i = 0; i < _size; ++i)
-        {
-            (*this)[i] = std::pow((*this)[i], x);
-        }
+        for (size_t i = 0; i < _size; ++i) (*this)[i] = std::pow((*this)[i], x);
     }
 
     template <typename T, size_t _size>
@@ -1548,13 +1295,8 @@ namespace utl
     {
         double mag = magnitude();
         if (mag == 0)
-        {
             throw std::runtime_error("Cannot normalize a zero vector");
-        }
-        for (size_t i = 0; i < _size; ++i)
-        {
-            (*this)[i] /= mag;
-        }
+        for (size_t i = 0; i < _size; ++i) (*this)[i] /= mag;
         return static_cast<float>(mag);
     }
 
@@ -1564,13 +1306,8 @@ namespace utl
         Vec<float, _size> result;
         double mag = magnitude();
         if (mag == 0)
-        {
             throw std::runtime_error("Cannot normalize a zero vector");
-        }
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result[i] = static_cast<float>((*this)[i] / mag);
-        }
+        for (size_t i = 0; i < _size; ++i) result[i] = static_cast<float>((*this)[i] / mag);
         return result;
     }
 
@@ -1583,9 +1320,7 @@ namespace utl
         double x_magnitude = x.magnitude();
 
         if (this_magnitude == 0 || x_magnitude == 0)
-        {
             throw std::runtime_error("Cannot compute angle for zero vector");
-        }
 
         double cos_theta = dot_product / (this_magnitude * x_magnitude);
         return acos(static_cast<float>(cos_theta));
@@ -1596,14 +1331,9 @@ namespace utl
     IL double Vec<T, _size>::distance(const Vec<Y, n_x> &x) const
     {
         if (_size != n_x)
-        {
             throw std::invalid_argument("Vector sizes do not match for distance calculation");
-        }
         double sum = 0;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            sum += ((*this)[i] - x[i]) * ((*this)[i] - x[i]);
-        }
+        for (size_t i = 0; i < _size; ++i) sum += ((*this)[i] - x[i]) * ((*this)[i] - x[i]);
         return sqrt(sum);
     }
 
@@ -1612,9 +1342,7 @@ namespace utl
     IL double Vec<T, _size>::projection_onto(const Vec<Y, n_x> &x) const
     {
         if (x.magnitude() == 0)
-        {
             throw std::runtime_error("Cannot project onto a zero vector");
-        }
         return dot(x) / (x.magnitude() * x.magnitude());
     }
 
@@ -1624,9 +1352,7 @@ namespace utl
         if (_size == 2)
         {
             if (axis != 'z' && axis != 'Z')
-            {
                 throw std::invalid_argument("For vectors of size 2, only rotation around the Z-axis is supported");
-            }
 
             Vec<T, _size> result;
 
@@ -1689,9 +1415,7 @@ namespace utl
         if (_size == 2)
         {
             if (axis != 'z' && axis != 'Z')
-            {
                 throw std::invalid_argument("For vectors of size 2, only rotation around the Z-axis is supported");
-            }
 
             double s = std::sin(angle);
             double c = std::cos(angle);
@@ -1761,46 +1485,31 @@ namespace utl
     template <typename T, size_t _size>
     IL Vec<T, _size> Vec<T, _size>::zero_vector()
     {
-        for (size_t i = 0; i < _size; ++i)
-        {
-            (*this)[i] = 0;
-        }
+        for (size_t i = 0; i < _size; ++i) (*this)[i] = 0;
     }
 
     template <typename T, size_t _size>
     IL Vec<T, _size> Vec<T, _size>::ones_vector()
     {
-        for (size_t i = 0; i < _size; ++i)
-        {
-            (*this)[i] = 1;
-        }
+        for (size_t i = 0; i < _size; ++i) (*this)[i] = 1;
     }
 
     template <typename T, size_t _size>
     IL Vec<T, _size> Vec<T, _size>::random_vector(T min, T max)
     {
-        for (size_t i = 0; i < _size; ++i)
-        {
-            (*this)[i] = min + static_cast<T>(rand()) / (static_cast<T>(RAND_MAX / (max - min)));
-        }
+        for (size_t i = 0; i < _size; ++i) (*this)[i] = min + static_cast<T>(rand()) / (static_cast<T>(RAND_MAX / (max - min)));
     }
 
     template <typename T, size_t _size>
     IL Vec<T, _size> Vec<T, _size>::min(const Vec<T, _size> &v1, const Vec<T, _size> &v2)
     {
         if (v1.size() != v2.size())
-        {
             throw std::invalid_argument("Vector sizes do not match for element-wise minimum");
-        }
         Vec<T, _size> result;
         if (v1.magnitude() < v2.magnitude())
-        {
             result = v1;
-        }
         else
-        {
             result = v2;
-        }
         return result;
     }
 
@@ -1808,18 +1517,12 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::max(const Vec<T, _size> &v1, const Vec<T, _size> &v2)
     {
         if (v1.size() != v2.size())
-        {
             throw std::invalid_argument("Vector sizes do not match for element-wise minimum");
-        }
         Vec<T, _size> result;
         if (v1.magnitude() > v2.magnitude())
-        {
             result = v1;
-        }
         else
-        {
             result = v2;
-        }
         return result;
     }
 
@@ -1827,10 +1530,7 @@ namespace utl
     IL Vec<T, _size> Vec<T, _size>::lerp(const Vec<T, _size> &v1, const Vec<T, _size> &v2, float t)
     {
         Vec<T, _size> result;
-        for (size_t i = 0; i < _size; ++i)
-        {
-            result[i] = v1[i] * (1 - t) + v2[i] * t;
-        }
+        for (size_t i = 0; i < _size; ++i) result[i] = v1[i] * (1 - t) + v2[i] * t;
         return result;
     }
 

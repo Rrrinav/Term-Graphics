@@ -1,6 +1,7 @@
 #pragma once
 #include <fcntl.h>
 
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -146,13 +147,7 @@ public:
             return KEY_A + (key - 'A');  // Uppercase letters
         if (key >= '0' && key <= '9')
             return KEY_0 + (key - '0');  // Numbers
-        else if (key < 27)               // Ctrl+A to Ctrl+Z or Ctrl+a to Ctrl+z
-        {
-            Keys k_upper = static_cast<Keys>(KEY_Ctrl_A + (key - 1));
-            Keys k_lower = static_cast<Keys>(KEY_Ctrl_a + (key - 1));
-            // key_states[k_upper] = true;
-            // key_states[k_lower] = true;  // Set both upper and lower case
-        }
+
         switch (key)
         {
             case '\n':
@@ -284,32 +279,14 @@ public:
      * @param key The key to check.
      * @return The key state as an integer.
      */
-    static int get_key_state(Keys key)
+    static bool get_key_state(Keys key)
     {
 #ifdef _WIN32
         SHORT state = GetAsyncKeyState(key);
         return (state & 0x8000) ? key : 0;
 #else
-        struct termios oldt, newt;
-        int ch;
-        int oldf;
-
-        tcgetattr(STDIN_FILENO, &oldt);
-        newt = oldt;
-        newt.c_lflag &= ~(ICANON | ECHO);
-        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-        oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-        fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
-
-        ch = getchar();
-
-        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-        fcntl(STDIN_FILENO, F_SETFL, oldf);
-
-        if (ch != EOF)
-            return (parse_key(static_cast<int>(ch)));
-        else
-            return 0;
+      auto it = key_states.find(key);
+      return (it != key_states.end() && it->second);
 #endif
     }
 
@@ -535,7 +512,7 @@ public:
                         // Control key handling
                         Keys k = static_cast<Keys>(KEY_Ctrl_A + (buf[i] - 1));  // Ctrl + 'A' to 'Z'
                         Keys k_lower = static_cast<Keys>(KEY_Ctrl_a + (buf[i] - 1));
-                        if (k >= KEY_Ctrl_A && k <= KEY_Ctrl_Z || k >= KEY_Ctrl_a && k <= KEY_Ctrl_z)
+                        if ((k >= KEY_Ctrl_A && k <= KEY_Ctrl_Z) || (k >= KEY_Ctrl_a && k <= KEY_Ctrl_z))
                         {
                             key_states[k_lower] = true;
                             key_states[k] = true;

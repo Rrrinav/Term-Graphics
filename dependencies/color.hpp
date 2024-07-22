@@ -1,4 +1,4 @@
-#pragma once
+#include <cstdint>
 #include <string>
 
 #define RESET "\u001b[0m"
@@ -6,6 +6,7 @@
 #define BOLD "\u001b[1m"
 
 #ifdef EIGHT_BIT_COLOR
+
 enum class Color
 {
     Black = 0,
@@ -98,7 +99,6 @@ std::string to_ansii_bg_str(Color c)
 
 #ifndef SIXTEEN_BIT_COLOR
 #define SIXTEEN_BIT_COLOR
-#include <cstdint>
 
 #include "color_codes.hpp"
 #define COUT_FG_CODE(i) "\u001b[38;5;" << i << "m"
@@ -114,21 +114,7 @@ class Color
 public:
     // Constructors 1. Default 2. RGB 3. Hex 4. ansii terminal code
     Color() : _r(0), _g(0), _b(0) {}
-    Color(uint8_t r, uint8_t g, uint8_t b) : _r(r), _g(g), _b(b)
-    {
-        if (_r > 255)
-            _r = 255;
-        if (_g > 255)
-            _g = 255;
-        if (_b > 255)
-            _b = 255;
-        if (_r < 0)
-            _r = 0;
-        if (_g < 0)
-            _g = 0;
-        if (_b < 0)
-            _b = 0;
-    }
+    Color(uint8_t r, uint8_t g, uint8_t b) : _r(r), _g(g), _b(b) {}
     Color(const uint32_t &hex_val)
     {
         if (hex_val == TRANSPARENT)
@@ -142,20 +128,14 @@ public:
         _g = (hex_val >> 8) & 0xFF;
         _b = (hex_val >> 0) & 0xFF;
 
-        if (_r > 255)
-            _r = 255;
-        if (_g > 255)
-            _g = 255;
-        if (_b > 255)
-            _b = 255;
-        if (_r < 0)
-            _r = 0;
-        if (_g < 0)
-            _g = 0;
-        if (_b < 0)
-            _b = 0;
+        _r = 255;
+
+        _g = 255;
+
+        _b = 255;
     }
-    Color const operator=(const uint32_t &hex_val)
+
+    Color &operator=(const uint32_t &hex_val)
     {
         _r = (hex_val >> 16) & 0xFF;
         _g = (hex_val >> 8) & 0xFF;
@@ -163,13 +143,30 @@ public:
         _a = 255;
         return *this;
     }
-    bool const operator!=(const uint32_t &hex_val)
+
+    Color &operator=(const Color &c)
+    {
+        if (this != &c)
+        {
+            _r = c.r();
+            _g = c.g();
+            _b = c.b();
+            _a = c.a();
+        }
+        return *this;
+    }
+
+    bool operator!=(const uint32_t &hex_val) const
     {
         return _r != ((hex_val >> 16) & 0xFF) || _g != ((hex_val >> 8) & 0xFF) || _b != ((hex_val >> 0) & 0xFF);
     }
-    bool const operator!=(const Color &c) { return _r != c.r() || _g != c.g() || _b != c.b() || _a != c.a(); }
-    Color(const Color &c) : _r(c.r()), _g(c.g()), _b(c.b()) {}
-    bool operator==(const Color &c) const { return _r == c.r() && _g == c.g() && _b == c.b(); }
+
+    bool operator!=(const Color &c) const { return _r != c.r() || _g != c.g() || _b != c.b() || _a != c.a(); }
+
+    bool operator==(const Color &c) const { return _r == c.r() && _g == c.g() && _b == c.b() && _a == c.a(); }
+
+    Color(const Color &c) : _r(c.r()), _g(c.g()), _b(c.b()), _a(c.a()) {}
+
     // Accessors
     uint8_t &r() { return _r; }
     const uint8_t &r() const { return _r; }
@@ -179,8 +176,10 @@ public:
 
     uint8_t &b() { return _b; }
     const uint8_t &b() const { return _b; }
+
     uint8_t &a() { return _a; }
     const uint8_t &a() const { return _a; }
+
     int to_ansii() const
     {
         if (_r == 0 && _g == 0 && _b == 0)
@@ -212,13 +211,14 @@ public:
 
     Color gray_scale() const
     {
-        uint8_t gray = 0.3 * _r + 0.59 * _g + 0.11 * _b;
+        uint8_t gray = static_cast<uint8_t>(0.3 * _r + 0.59 * _g + 0.11 * _b);
         return Color(gray, gray, gray);
     }
 
     Color invert() const { return Color(255 - _r, 255 - _g, 255 - _b); }
 
     Color blend(const Color &c) const { return Color((_r + c.r()) / 2, (_g + c.g()) / 2, (_b + c.b()) / 2); }
+
     Color blend(const Color &c, float blend)
     {
         return Color(static_cast<uint8_t>(_r * (1 - blend) + c.r() * blend),
@@ -228,16 +228,24 @@ public:
 
     std::string get_rgb_string() const { return std::to_string(_r) + ", " + std::to_string(_g) + ", " + std::to_string(_b); }
 
-    static Color get_random() { return Color(rand() % 256, rand() % 256, rand() % 256); }
+    static Color get_random()
+    {
+        return Color(static_cast<uint8_t>(rand() % 256), static_cast<uint8_t>(rand() % 256), static_cast<uint8_t>(rand() % 256));
+    }
 
-    Color lerped(const Color &c, float t) const { return Color(_r + (c.r() - _r) * t, _g + (c.g() - _g) * t, _b + (c.b() - _b) * t); }
+    Color lerped(const Color &c, float t) const
+    {
+        return Color(_r + static_cast<uint8_t>((c.r() - _r) * t),
+                     _g + static_cast<uint8_t>((c.g() - _g) * t),
+                     _b + static_cast<uint8_t>((c.b() - _b) * t));
+    }
 
     static Color lerp(const Color &a, const Color &b, float t)
     {
-        return Color(a.r() + (b.r() - a.r()) * t, a.g() + (b.g() - a.g()) * t, a.b() + (b.b() - a.b()) * t);
+        return Color(a.r() + static_cast<uint8_t>((b.r() - a.r()) * t),
+                     a.g() + static_cast<uint8_t>((b.g() - a.g()) * t),
+                     a.b() + static_cast<uint8_t>((b.b() - a.b()) * t));
     }
-
-    bool is_valid() { return _r >= 0 && _r <= 255 && _g >= 0 && _g <= 255 && _b >= 0 && _b <= 255; }
 };
 
 #endif  // SIXTEEN_BIT_COLOR
