@@ -10,7 +10,6 @@
 // PERF: We need to make this faster, super faster
 // TODO: Testing on windows
 // TODO: More and better error handling and exception handling (even though we dont need much of it)
-// TODO: Refactor to fix stupid shit I did, like Constructor initializer list order..! (did that because I was in hurry of just getting something working first)
 
 #define L_GEBRA_IMPLEMENTATION
 

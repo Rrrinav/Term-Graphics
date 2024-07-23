@@ -285,8 +285,8 @@ public:
         SHORT state = GetAsyncKeyState(key);
         return (state & 0x8000) ? key : 0;
 #else
-      auto it = key_states.find(key);
-      return (it != key_states.end() && it->second);
+        auto it = key_states.find(key);
+        return (it != key_states.end() && it->second);
 #endif
     }
 
@@ -354,7 +354,10 @@ public:
         tv.tv_usec = 0;
         FD_ZERO(&readfds);
         FD_SET(STDIN_FILENO, &readfds);
+
+        // Reset key states
         for (auto &pair : key_states) pair.second = false;
+
         if (select(STDIN_FILENO + 1, &readfds, NULL, NULL, &tv) > 0)
         {
             char buf[1024];
@@ -363,129 +366,86 @@ public:
             {
                 for (ssize_t i = 0; i < nread; ++i)
                 {
-                    if (buf[i] == '\033' && i + 2 < nread && buf[i + 1] == '[' && buf[i + 2] == '<')
+                    if (buf[i] == '\033')
                     {
-                        // SGR mouse event detected
-                        int button = 0, x = 0, y = 0;
-                        char eventType = 0;
-                        int j = i + 3;  // Start after "<"
-
-                        // Parse button
-                        while (j < nread && isdigit(buf[j]))
-                        {
-                            button = button * 10 + (buf[j] - '0');
-                            j++;
-                        }
-                        if (j < nread && buf[j] == ';')
-                            j++;  // Move past ';' if present
-
-                        // Parse x coordinate
-                        while (j < nread && isdigit(buf[j]))
-                        {
-                            x = x * 10 + (buf[j] - '0');
-                            j++;
-                        }
-                        if (j < nread && buf[j] == ';')
-                            j++;  // Move past ';' if present
-
-                        // Parse y coordinate
-                        while (j < nread && isdigit(buf[j]))
-                        {
-                            y = y * 10 + (buf[j] - '0');
-                            j++;
-                        }
-
-                        // Get event type
-                        if (j < nread)
-                            eventType = buf[j];
-
-                        // Check if it's a valid mouse event
-                        if (eventType == 'M' || eventType == 'm')
-                        {
-                            mouse_pos = {x - 1, y - 1};   // SGR reports 1-based coordinates
-                            mouse_event.x = (x - 1) / 2;  // Fix for double width characters
-                            mouse_event.y = y - 1;
-                            mouse_moved = true;  // Set mouse moved flag
-
-                            // Determine the event type based on button
-                            switch (button)
-                            {
-                                case 0:
-                                    mouse_event.event = (eventType == 'M') ? Mouse_event_type::LEFT_CLICK : Mouse_event_type::LEFT_RELEASE;
-                                    break;
-                                case 1:
-                                    mouse_event.event =
-                                        (eventType == 'M') ? Mouse_event_type::MIDDLE_CLICK : Mouse_event_type::MIDDLE_RELEASE;
-                                    break;
-                                case 2:
-                                    mouse_event.event =
-                                        (eventType == 'M') ? Mouse_event_type::RIGHT_CLICK : Mouse_event_type::RIGHT_RELEASE;
-                                    break;
-                                case 64:
-                                    mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_UP : Mouse_event_type::MOUSE_MOVE;
-                                    break;
-                                case 65:
-                                    mouse_event.event = (eventType == 'M') ? Mouse_event_type::SCROLL_DOWN : Mouse_event_type::MOUSE_MOVE;
-                                    break;
-                                default:
-                                    mouse_event.event = Mouse_event_type::MOUSE_MOVE;
-                                    break;
-                            }
-
-                            i = j - 1;  // Move i to the end of the parsed sequence
-                        }
-                    }
-                    else if (buf[i] == '\033')
-                    {  // Escape sequence for special keys
                         if (i + 1 < nread)
                         {
                             if (buf[i + 1] == '[')
                             {
-                                // Handle arrow keys
-                                // Handle arrow keys and function keys
-                                if (i + 3 < nread)
+                                // Handle mouse events
+                                if (i + 2 < nread && buf[i + 2] == '<')
                                 {
-                                    if (isdigit(buf[i + 2]))
+                                    int button = 0, x = 0, y = 0;
+                                    char eventType = 0;
+                                    int j = i + 3;
+
+                                    while (j < nread && isdigit(buf[j]))
                                     {
-                                        int code = (buf[i + 2] - '0') * 10 + (buf[i + 3] - '0');
-                                        switch (code)
+                                        button = button * 10 + (buf[j] - '0');
+                                        j++;
+                                    }
+                                    if (j < nread && buf[j] == ';')
+                                        j++;
+
+                                    while (j < nread && isdigit(buf[j]))
+                                    {
+                                        x = x * 10 + (buf[j] - '0');
+                                        j++;
+                                    }
+                                    if (j < nread && buf[j] == ';')
+                                        j++;
+
+                                    while (j < nread && isdigit(buf[j]))
+                                    {
+                                        y = y * 10 + (buf[j] - '0');
+                                        j++;
+                                    }
+
+                                    if (j < nread)
+                                        eventType = buf[j];
+
+                                    if (eventType == 'M' || eventType == 'm')
+                                    {
+                                        mouse_pos = {x - 1, y - 1};   // SGR reports 1-based coordinates
+                                        mouse_event.x = (x - 1) / 2;  // Fix for double width characters
+                                        mouse_event.y = y - 1;
+                                        mouse_moved = true;
+
+                                        switch (button)
                                         {
-                                            case 11:
-                                                key_states[KEY_F1] = true;
+                                            case 0:
+                                                mouse_event.event =
+                                                    (eventType == 'M') ? Mouse_event_type::LEFT_CLICK : Mouse_event_type::LEFT_RELEASE;
                                                 break;
-                                            case 12:
-                                                key_states[KEY_F2] = true;
+                                            case 1:
+                                                mouse_event.event =
+                                                    (eventType == 'M') ? Mouse_event_type::MIDDLE_CLICK : Mouse_event_type::MIDDLE_RELEASE;
                                                 break;
-                                            case 13:
-                                                key_states[KEY_F3] = true;
+                                            case 2:
+                                                mouse_event.event =
+                                                    (eventType == 'M') ? Mouse_event_type::RIGHT_CLICK : Mouse_event_type::RIGHT_RELEASE;
                                                 break;
-                                            case 14:
-                                                key_states[KEY_F4] = true;
+                                            case 64:
+                                                mouse_event.event =
+                                                    (eventType == 'M') ? Mouse_event_type::SCROLL_UP : Mouse_event_type::MOUSE_MOVE;
                                                 break;
-                                            case 15:
-                                                key_states[KEY_F5] = true;
+                                            case 65:
+                                                mouse_event.event =
+                                                    (eventType == 'M') ? Mouse_event_type::SCROLL_DOWN : Mouse_event_type::MOUSE_MOVE;
                                                 break;
-                                            case 16:
-                                                key_states[KEY_F6] = true;
-                                                break;
-                                            case 17:
-                                                key_states[KEY_F7] = true;
-                                                break;
-                                            case 18:
-                                                key_states[KEY_F8] = true;
-                                                break;
-                                            case 19:
-                                                key_states[KEY_F9] = true;
-                                                break;
-                                            case 20:
-                                                key_states[KEY_F10] = true;
+                                            default:
+                                                mouse_event.event = Mouse_event_type::MOUSE_MOVE;
                                                 break;
                                         }
-                                        i += 3;  // Skip the sequence
+
+                                        i = j;  // Move i to the end of the parsed sequence
                                     }
-                                    else
+                                }
+                                else
+                                {
+                                    // Handle arrow keys and function keys
+                                    if (i + 2 < nread)
                                     {
-                                        // Handle arrow keys (existing code)
                                         switch (buf[i + 2])
                                         {
                                             case 'A':
@@ -500,26 +460,64 @@ public:
                                             case 'D':
                                                 key_states[KEY_LEFT] = true;
                                                 break;
+                                            default:
+                                                // Check for function keys (F1-F12)
+                                                if (isdigit(buf[i + 2]))
+                                                {
+                                                    int code = (buf[i + 2] - '0');
+                                                    if (i + 3 < nread && isdigit(buf[i + 3]))
+                                                    {
+                                                        code = code * 10 + (buf[i + 3] - '0');
+                                                        i++;
+                                                    }
+                                                    switch (code)
+                                                    {
+                                                        case 11:
+                                                            key_states[KEY_F1] = true;
+                                                            break;
+                                                        case 12:
+                                                            key_states[KEY_F2] = true;
+                                                            break;
+                                                        case 13:
+                                                            key_states[KEY_F3] = true;
+                                                            break;
+                                                        case 14:
+                                                            key_states[KEY_F4] = true;
+                                                            break;
+                                                        case 15:
+                                                            key_states[KEY_F5] = true;
+                                                            break;
+                                                        case 17:
+                                                            key_states[KEY_F6] = true;
+                                                            break;
+                                                        case 18:
+                                                            key_states[KEY_F7] = true;
+                                                            break;
+                                                        case 19:
+                                                            key_states[KEY_F8] = true;
+                                                            break;
+                                                        case 20:
+                                                            key_states[KEY_F9] = true;
+                                                            break;
+                                                        case 21:
+                                                            key_states[KEY_F10] = true;
+                                                            break;
+                                                    }
+                                                }
+                                                break;
                                         }
-                                        i += 2;
+                                        i += 2;  // Skip the sequence
                                     }
                                 }
                             }
                         }
                     }
                     else if (buf[i] >= 1 && buf[i] <= 26)
-                    {  // Control + [A-Z] or [a-z]
-                        // Control key handling
-                        Keys k = static_cast<Keys>(KEY_Ctrl_A + (buf[i] - 1));  // Ctrl + 'A' to 'Z'
-                        Keys k_lower = static_cast<Keys>(KEY_Ctrl_a + (buf[i] - 1));
-                        if ((k >= KEY_Ctrl_A && k <= KEY_Ctrl_Z) || (k >= KEY_Ctrl_a && k <= KEY_Ctrl_z))
-                        {
-                            key_states[k_lower] = true;
+                    {
+                        // Control + [A-Z]
+                        Keys k = static_cast<Keys>(KEY_Ctrl_A + (buf[i] - 1));
+                        if (k >= KEY_Ctrl_A && k <= KEY_Ctrl_Z)
                             key_states[k] = true;
-                        }
-                        Keys k2 = static_cast<Keys>(parse_key(buf[i]));
-                        if (k2 != KEY_UNKNOWN)
-                            key_states[k2] = true;
                     }
                     else
                     {
