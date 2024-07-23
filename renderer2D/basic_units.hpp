@@ -19,56 +19,43 @@ public:
     bool _is_empty = true;
 
     Pixel() = default;
-    Pixel(char ch, Color color) : _ch1(ch), _ch2(ch), _color1(color), _color2(color)
+
+    Pixel(char ch, Color color) : _ch1(ch), _ch2(ch), _color1(color), _color2(color), _is_empty(ch == ' ') {}
+
+    Pixel(char ch1, char ch2, Color color) : _ch1(ch1), _ch2(ch2), _color1(color), _color2(color), _is_empty(ch1 == ' ' && ch2 == ' ') {}
+
+    Pixel(char ch1, char ch2, Color color1, Color color2)
+        : _ch1(ch1), _ch2(ch2), _color1(color1), _color2(color2), _is_empty(ch1 == ' ' && ch2 == ' ')
     {
-        if (ch == ' ')
-            _is_empty = true;
-        else
-            _is_empty = false;
     }
-    Pixel(char ch1, char ch2, Color color) : _ch1(ch1), _ch2(ch2), _color1(color), _color2(color)
-    {
-        if (ch1 == ' ' && ch2 == ' ')
-            _is_empty = true;
-        else
-            _is_empty = false;
-    }
-    Pixel(char ch1, char ch2, Color color1, Color color2) : _ch1(ch1), _ch2(ch2), _color1(color1), _color2(color2)
-    {
-        if (ch1 == ' ' && ch2 == ' ')
-            _is_empty = true;
-        else
-            _is_empty = false;
-    }
+
     ~Pixel() = default;
+
     void set_color(Color color)
     {
         _color1 = color;
         _color2 = color;
     }
+
     void set_char(char ch)
     {
         _ch1 = ch;
         _ch2 = ch;
-        if (ch == ' ')
-            _is_empty = true;
-        else
-            _is_empty = false;
+        _is_empty = (ch == ' ');
     }
+
     void set_char(char ch1, char ch2)
     {
         _ch1 = ch1;
         _ch2 = ch2;
-        if (ch1 == ' ' && ch2 == ' ')
-            _is_empty = true;
-        else
-            _is_empty = false;
+        _is_empty = (ch1 == ' ' && ch2 == ' ');
     }
+
     void set(char ch, Color color)
     {
         _ch1 = ch;
         _ch2 = ch;
-        if (!is_empty())
+        if (!_is_empty)
         {
             _color1 = _color1.blend(color);
             _color2 = _color2.blend(color);
@@ -79,24 +66,21 @@ public:
             _color2 = color;
         }
 
-        if (ch == ' ')
-            _is_empty = true;
-        else
-            _is_empty = false;
+        _is_empty = (ch == ' ');
     }
+
     void set(char ch1, char ch2, Color color)
     {
         _ch1 = ch1;
         _ch2 = ch2;
         _color1 = color;
         _color2 = color;
-        if (ch1 == ' ' && ch2 == ' ')
-            _is_empty = true;
-        else
-            _is_empty = false;
+        _is_empty = (ch1 == ' ' && ch2 == ' ');
     }
+
     void set_color2(Color color) { _color2 = color; }
-    bool is_empty() { return _is_empty; }
+
+    bool is_empty() const { return _is_empty; }
 };
 
 // Buffer class
@@ -139,36 +123,42 @@ public:
 
     void set(utl::Vec<int, 2> point, char ch, Color color)
     {
-        size_t x = point.x();
-        size_t y = point.y();
-        if (x >= 0 && x < width && y >= 0 && y < height)
+        int x = point.x();
+        int y = point.y();
+        if (x >= 0 && static_cast<size_t>(x) < width && y >= 0 && static_cast<size_t>(y) < height)
             data[y * width + x] = Pixel(ch, color);
     }
+
     void set(utl::Vec<int, 2> point, char ch1, char ch2, Color color)
     {
-        size_t x = point.x();
-        size_t y = point.y();
-        if (x >= 0 && x < width && y >= 0 && y < height)
+        int x = point.x();
+        int y = point.y();
+        if (x >= 0 && static_cast<size_t>(x) < width && y >= 0 && static_cast<size_t>(y) < height)
             data[y * width + x] = Pixel(ch1, ch2, color);
     }
+
     void set(utl::Vec<int, 2> point, char ch1, char ch2, Color color1, Color color2)
     {
-        size_t x = point.x();
-        size_t y = point.y();
-        if (x >= 0 && x < width && y >= 0 && y < height)
+        int x = point.x();
+        int y = point.y();
+        if (x >= 0 && static_cast<size_t>(x) < width && y >= 0 && static_cast<size_t>(y) < height)
             data[y * width + x] = Pixel(ch1, ch2, color1, color2);
     }
+
     Pixel &operator()(size_t x, size_t y) { return data[y * width + x]; }
+
     const Pixel &operator()(size_t x, size_t y) const { return data[y * width + x]; }
+
     void fill(char ch, Color color)
     {
         for (size_t i = 0; i < width * height; ++i) data[i] = Pixel(ch, color);
     }
+
     void set_absolute(utl::Vec<int, 2> point, char ch, bool left, Color color)
     {
-        size_t x = point.x();
-        size_t y = point.y();
-        if (x >= 0 && x < width && y >= 0 && y < height)
+        int x = point.x();
+        int y = point.y();
+        if (x >= 0 && static_cast<size_t>(x) < width && y >= 0 && static_cast<size_t>(y) < height)
         {
             if (left)
             {

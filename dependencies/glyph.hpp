@@ -1,48 +1,46 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <vector>
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
 
+// TODO: Use size_t for width and height
 class Glyph
 {
 private:
     std::vector<std::string> data;
-    int width = 0;
-    int height = 0;
+    size_t width = 0;
+    size_t height = 0;
 
 public:
     Glyph() = default;
     Glyph(const std::string &filename) { load_from_file(filename); }
-    Glyph(int width, int height, char fill = ' ')
+    Glyph(int width, int height, char fill = ' ') : data(height, std::string(width, fill)), width(width), height(height) {}
+    Glyph(std::vector<std::string> data) : data(std::move(data)), width(0), height(static_cast<int>(data.size()))
     {
-        data = std::vector<std::string>(height, std::string(width, fill));
-        this->width = width;
-        this->height = height;
-    }
-    Glyph(std::vector<std::string> data) : data(data)
-    {
-        height = data.size();
-        width = 0;
-        for (const auto &line : data)
+        for (const auto &line : this->data)
             if (line.length() > width)
-                width = line.length();
+                width = static_cast<int>(line.length());
         pad_lines_to_width();
     }
-    Glyph(const Glyph &other) : data(other.data) {}
+    Glyph(const Glyph &other) = default;
     ~Glyph() = default;
-    char get_char(int x, int y) const
+
+    char get_char(size_t x, size_t y) const
     {
-        if (x < 0 || x >= width || y < 0 || y >= height)
+        if (x >= width || y >= height)
             return ' ';  // Return space if out of bounds
         return data[y][x];
     }
+
     int get_width() const { return width; }
     int get_height() const { return height; }
     std::vector<std::string> get_data() const { return data; }
+
     bool load_from_file(const std::string &filename)
     {
         width = 0;
@@ -58,12 +56,12 @@ public:
         while (std::getline(file, line))
         {
             if (line.empty() || line[0] == '#')
-                continue;  // Skip empty lines
+                continue;  // Skip empty lines and comments
             data.push_back(line);
             if (line.length() > width)
-                width = line.length();  // Update width to the maximum line length
+                width = static_cast<int>(line.length());  // Update width to the maximum line length
         }
-        height = data.size();  // Update height to the number of lines
+        height = static_cast<int>(data.size());  // Update height to the number of lines
         file.close();
 
         pad_lines_to_width();  // Ensure all lines have the same width
@@ -124,9 +122,9 @@ public:
         int max_x = 0;
         int min_y = height;
         int max_y = 0;
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < (int)height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < (int)width; x++)
             {
                 if (data[y][x] != ' ')
                 {
@@ -163,15 +161,15 @@ public:
 class Animated_glyph
 {
     std::vector<Glyph> frames;
-    int current_frame;
-    float frame_time;
-    float frame_duration;
-    float scale_x;
-    float scale_y;
-    int FPS;
+    int current_frame = 0;
+    float frame_time = 0;
+    float frame_duration = 0;
+    float scale_x = 1.0f;
+    float scale_y = 1.0f;
+    int FPS = 1;
 
 public:
-    Animated_glyph() : current_frame(0), frame_time(0), frame_duration(0), scale_x(1.0f), scale_y(1.0f), FPS(1) {}
+    Animated_glyph() = default;
     Animated_glyph(const std::vector<Glyph> &frames, float frame_duration, float scale_x = 1.0f, float scale_y = 1.0f, int FPS = 1)
         : frames(frames), current_frame(0), frame_time(0), frame_duration(frame_duration), scale_x(scale_x), scale_y(scale_y), FPS(FPS)
     {
@@ -202,7 +200,7 @@ public:
             }
             for (size_t i = 0; i < line.size(); i++)
             {
-                if (std::isdigit(line[i]) && i <= num_digits_in_frame_number)
+                if (std::isdigit(line[i]) && i <= static_cast<size_t>(num_digits_in_frame_number))
                 {
                     is_frame_number = true;
                 }
@@ -261,7 +259,7 @@ public:
         if (frame_time >= frame_duration)
         {
             frame_time = 0;
-            current_frame = (current_frame + 1) % frames.size();
+            current_frame = (current_frame + 1) % static_cast<int>(frames.size());
         }
         return frames[current_frame];
     }

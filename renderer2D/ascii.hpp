@@ -70,11 +70,8 @@ public:
     }
     void draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
     void draw_line(const Line &line) { draw_line(line.get_start(), line.get_end(), line.get_char(), line.get_color()); }
-    void draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
-    void draw_anti_aliased_line(const Line &line)
-    {
-        draw_anti_aliased_line(line.get_start(), line.get_end(), line.get_char(), line.get_color());
-    }
+    void draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, Color color = Color(WHITE));
+    void draw_anti_aliased_line(const Line &line) { draw_anti_aliased_line(line.get_start(), line.get_end(), line.get_color()); }
     void draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
     void draw_circle(const Circle &circle) { draw_circle(circle.get_center(), circle.get_radius(), circle.get_char(), circle.get_color()); }
     void draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
@@ -120,12 +117,6 @@ public:
 
     void draw_rect_rotated_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, float angle)
     {
-        // Convert angle to radians
-
-        // Determine the direction of the gradient
-        float gradient_direction_x = std::cos(angle);
-        float gradient_direction_y = std::sin(angle);
-        float max_distance = std::sqrt(width * width + height * height);
         // Iterate over each pixel in the rectangle
         for (int i = 0; i < width; ++i)
         {
@@ -184,11 +175,11 @@ public:
         auto points = triangle.get_vertices();
         draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
     }
-    void draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+    void draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, Color color = WHITE);
     void draw_antialiased_triangle(const Triangle &triangle)
     {
         auto points = triangle.get_vertices();
-        draw_antialiased_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+        draw_antialiased_triangle(points[0], points[1], points[2], triangle.get_color());
     }
     void draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
     void draw_xaolin_wu_triangle(const Triangle &triangle)
@@ -221,12 +212,12 @@ public:
             if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
                 _buffer->set({x, y}, text[i * 2], text[i * 2 + 1], color);
             x++;
-            if (x >= start.x() + width)
+            if (x >= (int)(start.x() + width))
             {
                 x = start.x();
                 y++;
             }
-            if (y >= start.y() + height)
+            if (y >= (int)(start.y() + height))
                 break;
         }
         if (text.size() % 2 == 1)
@@ -392,9 +383,6 @@ void Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, C
 
     while (true)
     {
-        int prev_x = x1;
-        int prev_y = y1;
-        // Plot the point
         if (x1 >= 0 && x1 < static_cast<int>(_buffer->width) && y1 >= 0 && y1 < static_cast<int>(_buffer->height))
             _buffer->set({x1, y1}, c, color);
 
@@ -418,7 +406,7 @@ void Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, C
     }
 }
 
-void Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color)
+void Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, Color color)
 {
     int x0 = start.x();
     int y0 = start.y();
@@ -514,11 +502,11 @@ void Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> e
     }
 }
 
-void Renderer::draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color)
+void Renderer::draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, Color color)
 {
-    draw_anti_aliased_line(a, b, ch, color);
-    draw_anti_aliased_line(b, c, ch, color);
-    draw_anti_aliased_line(c, a, ch, color);
+    draw_anti_aliased_line(a, b, color);
+    draw_anti_aliased_line(b, c, color);
+    draw_anti_aliased_line(c, a, color);
 }
 
 void Renderer::draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color)
@@ -713,9 +701,9 @@ void Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2>
         safe_draw_line(x1, y, x2);
         // Implement anti-aliasing here based on number of empty pixels
         if (count && prev_x1 != x1)
-            draw_anti_aliased_line({prev_x1, y - 1}, {x1, y}, ch);
+            draw_anti_aliased_line({prev_x1, y - 1}, {x1, y});
         if (count && prev_x2 != x2)
-            draw_anti_aliased_line({prev_x2, y - 1}, {x2, y}, ch);
+            draw_anti_aliased_line({prev_x2, y - 1}, {x2, y});
         prev_x1 = x1;
         prev_x2 = x2;
         count++;
@@ -728,9 +716,9 @@ void Renderer::draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2>
         int x2 = interpolate_x(a, c, y);
         safe_draw_line(x1, y, x2);
         if (count && prev_x1 != x1)
-            draw_anti_aliased_line({prev_x1, y - 1}, {x1, y}, ch);
+            draw_anti_aliased_line({prev_x1, y - 1}, {x1, y});
         if (count && prev_x2 != x2)
-            draw_anti_aliased_line({prev_x2, y - 1}, {x2, y}, ch);
+            draw_anti_aliased_line({prev_x2, y - 1}, {x2, y});
         prev_x1 = x1;
         prev_x2 = x2;
         count++;
@@ -794,7 +782,6 @@ void Renderer::draw_text_with_font(utl::Vec<int, 2> start, const std::string &te
     int y = start.y();
     int px = 0;
     int py = 0;
-    int count = 0;
     for (char ch : text)
     {
         if (font.get_glyph(ch).is_empty())
@@ -918,21 +905,6 @@ void Renderer::print()
     {
         for (size_t x = 0; x < _buffer->width; x++)
         {
-            // // Check if both characters are spaces
-            // if ((*_buffer)(x, y)._ch1 == ' ' && (*_buffer)(x, y)._ch2 == ' ')
-            // {
-            //     // Add the background color for the first space
-            //     print_buffer += (*_buffer)(x, y)._color1.to_ansii_bg_str();
-            //     print_buffer += ' ';
-            //     // Add the background color for the second space
-            //     print_buffer += (*_buffer)(x, y)._color2.to_ansii_bg_str();
-            //     print_buffer += ' ';
-            //     // Reset background color after each double space to the initial background color
-            //     if (_bg_color != Color(TRANSPARENT))
-            //         print_buffer += _bg_color.to_ansii_bg_str();
-            //     continue;
-            // }
-            // Add the foreground color and character for _ch1
             print_buffer += (*_buffer)(x, y)._color1.to_ansii_fg_str();
             print_buffer += (*_buffer)(x, y)._ch1;
             // Add the foreground color and character for _ch2

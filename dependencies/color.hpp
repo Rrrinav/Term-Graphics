@@ -127,12 +127,6 @@ public:
         _r = (hex_val >> 16) & 0xFF;
         _g = (hex_val >> 8) & 0xFF;
         _b = (hex_val >> 0) & 0xFF;
-
-        _r = 255;
-
-        _g = 255;
-
-        _b = 255;
     }
 
     Color &operator=(const uint32_t &hex_val)

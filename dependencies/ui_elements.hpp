@@ -58,7 +58,7 @@ public:
     void set_bg_color(Color bg) { _bg_color = bg; }
     void handle_event(const Mouse_event &event) override
     {
-        if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
+        if (event.x >= _position[0] && event.x <= _position[0] + (int) _width && event.y >= _position[1] && event.y <= _position[1] + (int) _height)
         {
             _is_hovered = true;
             if (event.event == Mouse_event_type::LEFT_CLICK && !_is_pressed)
@@ -102,7 +102,7 @@ public:
     void handle_event(const Mouse_event &event) override
     {
         utl::Vec<int, 2> toggle_pos = {static_cast<int>(_position[0] + _value * _width), _position[1]};
-        if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
+        if (event.x >= _position[0] && event.x <= _position[0] +  (int)_width && event.y >= _position[1] && event.y <= _position[1] +  (int)_height)
         {
             _is_hovered = true;
             if (event.x == toggle_pos[0] && event.y == toggle_pos[1])
@@ -155,7 +155,7 @@ public:
     bool is_active() const { return _is_active; }
     void handle_event(const Mouse_event &event) override
     {
-        if (event.x >= _position[0] && event.x <= _position[0] + _width && event.y >= _position[1] && event.y <= _position[1] + _height)
+        if (event.x >= _position[0] && event.x <= _position[0] +  (int)_width && event.y >= _position[1] && event.y <= _position[1] +  (int)_height)
         {
             if (event.event == Mouse_event_type::LEFT_CLICK)
                 _is_active = true;
