@@ -17,21 +17,21 @@ int main()
 
         // Draw a circle at the center of the camera's view
         utl::Vec<int, 2> world_center = camera.screen_to_world({20, 20});
-        r.draw_circle(world_center, 5, 'x');
+        r.draw_fill_circle(world_center, 5 * camera.get_zoom(), 'x', CYAN);
 
         // Handle input for panning
         if (Window::is_pressed(KEY_UP))
-        {
-            r.draw_text({0, 0}, "UP", RED);
-
             camera.pan({0, -1});
-        }
         if (Window::is_pressed(KEY_DOWN))
             camera.pan({0, 1});
         if (Window::is_pressed(KEY_LEFT))
             camera.pan({-1, 0});
         if (Window::is_pressed(KEY_RIGHT))
             camera.pan({1, 0});
+        if (Window::is_pressed(KEY_w))
+            camera.zoom_by(0.1);
+        if (Window::is_pressed(KEY_s))
+            camera.zoom_by(-0.1);
 
         // Render the scene
         r.print();
