@@ -45,11 +45,4 @@ public:
         oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
         return oss.str();
     }
-
-    // Get tick count in milliseconds (time since start of program)
-    static std::chrono::milliseconds tick()
-    {
-        static const auto start = std::chrono::steady_clock::now();
-        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
-    }
 };
