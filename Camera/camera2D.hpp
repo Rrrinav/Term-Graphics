@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
@@ -25,8 +26,8 @@ class Camera2D
         _position({0, 0}),
         _zoom(1.0f),
         _rotation(0.0f),
-        _world_min({0, 0}),
-        _world_max({1000, 1000}),
+        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
+        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
@@ -38,8 +39,8 @@ class Camera2D
         _position(position),
         _zoom(zoom),
         _rotation(rotation),
-        _world_min({0, 0}),
-        _world_max({1000, 1000}),
+        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
+        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
@@ -51,8 +52,8 @@ class Camera2D
         _position(position),
         _zoom(1.0f),
         _rotation(0.0f),
-        _world_min({0, 0}),
-        _world_max({1000, 1000}),
+        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
+        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
@@ -64,8 +65,8 @@ class Camera2D
         _position({0, 0}),
         _zoom(zoom),
         _rotation(0.0f),
-        _world_min({0, 0}),
-        _world_max({1000, 1000}),
+        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
+        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
@@ -143,10 +144,35 @@ class Camera2D
     _rotation = 0.0f;
   }
 
-  void follow(utl::Vec<int, 2> target_position, float speed, float delta_time)
+  void follow(utl::Vec<int, 2> target_position, float delta_time, float follow_speed)
   {
-    utl::Vec<float, 2> direction = target_position - _position;
-    _position = _position + direction * speed * delta_time;
+    if (delta_time <= 0.0f || follow_speed <= 0.0f)
+      return;
+
+    // Calculate the difference between the target and current positions
+    auto difference = target_position - _position;
+    auto distance = difference.magnitude();
+
+    // Return if already at target position
+    if (distance < 0.5f)
+      return;
+
+    // Calculate the direction vector towards the target
+    auto direction = difference.get_normalized_vector();
+
+    // Calculate the velocity vector towards the target
+    auto velocity = direction * follow_speed * delta_time;
+
+    // Scale the velocity to ensure it moves significantly
+    if (velocity.magnitude() < 1.0f)
+      velocity = direction * follow_speed;
+
+    // Ensure we do not overshoot the target position
+    if (velocity.magnitude() > distance)
+      _position = target_position;
+    else
+      _position = _position + velocity;
+
     clamp_position();
   }
 
