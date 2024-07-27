@@ -1,105 +1,120 @@
 #pragma once
-
 #include <chrono>
 #include <thread>
 
 class Frame_rate
 {
-private:
-    int target_fps;
-    int actual_fps;
-    int frame_count;
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
-    std::chrono::time_point<std::chrono::high_resolution_clock> last_frame_time;
-    std::chrono::milliseconds target_frame_duration;
+  private:
+  int target_fps;
+  int actual_fps;
+  int frame_count;
+  std::chrono::time_point<std::chrono::high_resolution_clock> program_start_time;
+  std::chrono::time_point<std::chrono::high_resolution_clock> fps_start_time;
+  std::chrono::time_point<std::chrono::high_resolution_clock> frame_start_time;
+  std::chrono::duration<double> target_frame_duration;
+  std::chrono::time_point<std::chrono::high_resolution_clock> last_interval_check;
+  double last_frame_duration;
 
-public:
-    Frame_rate()
-        : target_fps(24),
-          actual_fps(0),
-          frame_count(0),
-          start_time(std::chrono::high_resolution_clock::now()),
-          last_frame_time(std::chrono::high_resolution_clock::now()),
-          target_frame_duration(1000 / target_fps)
+  public:
+  Frame_rate()
+      : target_fps(24),
+        actual_fps(0),
+        frame_count(0),
+        program_start_time(std::chrono::high_resolution_clock::now()),
+        fps_start_time(std::chrono::high_resolution_clock::now()),
+        frame_start_time(std::chrono::high_resolution_clock::now()),
+        target_frame_duration(1.0 / target_fps),
+        last_interval_check(std::chrono::high_resolution_clock::now()),
+        last_frame_duration(0.0)
+  {
+  }
+
+  Frame_rate(int target_fps)
+      : target_fps(target_fps),
+        actual_fps(0),
+        frame_count(0),
+        program_start_time(std::chrono::high_resolution_clock::now()),
+        fps_start_time(std::chrono::high_resolution_clock::now()),
+        frame_start_time(std::chrono::high_resolution_clock::now()),
+        target_frame_duration(1.0 / target_fps),
+        last_interval_check(std::chrono::high_resolution_clock::now()),
+        last_frame_duration(0.0)
+  {
+  }
+
+  void set_target_fps(int fps)
+  {
+    target_fps = fps;
+    target_frame_duration = std::chrono::duration<double>(1.0 / target_fps);
+  }
+
+  int get_target_fps() const { return target_fps; }
+  int get_actual_fps() const { return actual_fps; }
+
+  double get_elapsed_time() const
+  {
+    return std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - program_start_time).count();
+  }
+
+  double get_delta_time() const { return last_frame_duration; }
+
+  void start_frame() { frame_start_time = std::chrono::high_resolution_clock::now(); }
+
+  void end_frame()
+  {
+    auto now = std::chrono::high_resolution_clock::now();
+    last_frame_duration = std::chrono::duration<double>(now - frame_start_time).count();
+    frame_count++;
+
+    auto elapsed = std::chrono::duration<double>(now - fps_start_time).count();
+
+    if (elapsed >= 1.0)
     {
+      actual_fps = static_cast<int>(frame_count / elapsed);
+      frame_count = 0;
+      fps_start_time = now;
     }
 
-    Frame_rate(int target_fps)
-        : target_fps(target_fps),
-          actual_fps(0),
-          frame_count(0),
-          start_time(std::chrono::high_resolution_clock::now()),
-          last_frame_time(std::chrono::high_resolution_clock::now()),
-          target_frame_duration(1000 / target_fps)
+    auto frame_end = frame_start_time + target_frame_duration;
+    if (now < frame_end)
+      std::this_thread::sleep_until(frame_end);
+  }
+
+  void reset()
+  {
+    program_start_time = std::chrono::high_resolution_clock::now();
+    fps_start_time = std::chrono::high_resolution_clock::now();
+    frame_start_time = std::chrono::high_resolution_clock::now();
+    last_interval_check = std::chrono::high_resolution_clock::now();
+    actual_fps = 0;
+    frame_count = 0;
+    last_frame_duration = 0.0;
+  }
+
+  void reset_frame_count() { frame_count = 0; }
+
+  void adjust_target_fps(int adjustment)
+  {
+    target_fps += adjustment;
+    if (target_fps < 1)
+      target_fps = 1;
+    target_frame_duration = std::chrono::duration<double>(1.0 / target_fps);
+  }
+
+  int get_frame_count() const { return frame_count; }
+
+  void pause(int milliseconds) { std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds)); }
+
+  bool has_passed(float seconds)
+  {
+    auto now = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration<double>(now - last_interval_check).count();
+
+    if (elapsed >= seconds)
     {
+      last_interval_check = now;
+      return true;
     }
-
-    void set_target_fps(int fps) { target_fps = fps; }
-
-    int get_target_fps() const { return target_fps; }
-
-    int get_actual_fps() const { return actual_fps; }
-
-    // Function to get elapsed time since the start of the program
-    double get_elapsed_time() const
-    {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_time).count() /
-               1000.0;
-    }
-
-    // Function to get delta time between frames
-    double get_delta_time() const
-    {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - last_frame_time).count() /
-               1000.0;
-    }
-
-    // Function to start a new frame
-    void start_frame() { last_frame_time = std::chrono::high_resolution_clock::now(); }
-
-    void end_frame() { syn_fps(); }
-
-    void reset()
-    {
-        start_time = std::chrono::high_resolution_clock::now();
-        last_frame_time = std::chrono::high_resolution_clock::now();
-        actual_fps = 0;
-        frame_count = 0;
-    }
-
-    void reset_frame_count() { frame_count = 0; }
-
-    void reset_frame_time() { last_frame_time = std::chrono::high_resolution_clock::now(); }
-
-    void adjust_target_fps(int adjustment)
-    {
-        target_fps += adjustment;
-        if (target_fps < 1)
-            target_fps = 1;
-    }
-
-    int get_frame_count() const { return frame_count; }
-
-    // Function to end the current frame and adjust the timing to match the target FPS
-    void syn_fps()
-    {
-        frame_count++;
-        auto now = std::chrono::high_resolution_clock::now();
-        auto frame_duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_frame_time);
-
-        // Calculate the actual FPS over one second
-        if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= 1)
-        {
-            actual_fps = frame_count;
-            frame_count = 0;
-            start_time = now;
-        }
-
-        // Adjust the frame timing to match the target FPS
-        if (frame_duration < target_frame_duration)
-            std::this_thread::sleep_for(target_frame_duration - frame_duration);
-    }
-
-    // Additional functions for convenience
-    void pause(int milliseconds) { std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds)); }  // Simple pause method
+    return false;
+  }
 };

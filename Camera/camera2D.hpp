@@ -10,12 +10,12 @@ class Camera2D
 {
   size_t _screen_width;
   size_t _screen_height;
-  utl::Vec<int, 2> _position;
+  utl::Vec<float, 2> _position;
   float _zoom;
   float _rotation;
 
-  utl::Vec<int, 2> _world_min;
-  utl::Vec<int, 2> _world_max;
+  utl::Vec<float, 2> _world_min;
+  utl::Vec<float, 2> _world_max;
   float _min_zoom;
   float _max_zoom;
 
@@ -26,34 +26,34 @@ class Camera2D
         _position({0, 0}),
         _zoom(1.0f),
         _rotation(0.0f),
-        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
-        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
+        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
   }
 
-  Camera2D(size_t screen_width, size_t screen_height, utl::Vec<int, 2> position, float zoom, float rotation)
+  Camera2D(size_t screen_width, size_t screen_height, utl::Vec<float, 2> position, float zoom, float rotation)
       : _screen_width(screen_width),
         _screen_height(screen_height),
         _position(position),
         _zoom(zoom),
         _rotation(rotation),
-        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
-        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
+        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
   }
 
-  Camera2D(size_t screen_width, size_t screen_height, utl::Vec<int, 2> position)
+  Camera2D(size_t screen_width, size_t screen_height, utl::Vec<float, 2> position)
       : _screen_width(screen_width),
         _screen_height(screen_height),
         _position(position),
         _zoom(1.0f),
         _rotation(0.0f),
-        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
-        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
+        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
@@ -65,8 +65,8 @@ class Camera2D
         _position({0, 0}),
         _zoom(zoom),
         _rotation(0.0f),
-        _world_min({std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}),
-        _world_max({std::numeric_limits<int>::max(), std::numeric_limits<int>::max()}),
+        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
   {
@@ -144,35 +144,22 @@ class Camera2D
     _rotation = 0.0f;
   }
 
-  void follow(utl::Vec<int, 2> target_position, float delta_time, float follow_speed)
+  void follow(utl::Vec<float, 2> target_position, float delta_time, float follow_speed)
   {
-    if (delta_time <= 0.0f || follow_speed <= 0.0f)
+    if (delta_time == 0.0f)
+      return;
+    if (target_position == _position)
       return;
 
-    // Calculate the difference between the target and current positions
-    auto difference = target_position - _position;
-    auto distance = difference.magnitude();
-
-    // Return if already at target position
-    if (distance < 0.5f)
-      return;
-
-    // Calculate the direction vector towards the target
-    auto direction = difference.get_normalized_vector();
-
-    // Calculate the velocity vector towards the target
-    auto velocity = direction * follow_speed * delta_time;
-
-    // Scale the velocity to ensure it moves significantly
-    if (velocity.magnitude() < 1.0f)
-      velocity = direction * follow_speed;
-
-    // Ensure we do not overshoot the target position
-    if (velocity.magnitude() > distance)
+    utl::Vec<float, 2> direction = (target_position - _position).get_normalized_vector();
+    float c_speed = std::ceil(follow_speed * delta_time);
+    utl::Vec<float, 2> velocity = direction * follow_speed * delta_time;
+    if (target_position.distance(_position) < c_speed)
+    {
       _position = target_position;
-    else
-      _position = _position + velocity;
-
+      return;
+    }
+    _position = _position + velocity;
     clamp_position();
   }
 
