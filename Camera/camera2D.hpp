@@ -26,7 +26,7 @@ class Camera2D
         _position({0, 0}),
         _zoom(1.0f),
         _rotation(0.0f),
-        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_min({-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()}),
         _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
@@ -39,7 +39,7 @@ class Camera2D
         _position(position),
         _zoom(zoom),
         _rotation(rotation),
-        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_min({-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()}),
         _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
@@ -52,7 +52,7 @@ class Camera2D
         _position(position),
         _zoom(1.0f),
         _rotation(0.0f),
-        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_min({-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()}),
         _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
@@ -65,7 +65,7 @@ class Camera2D
         _position({0, 0}),
         _zoom(zoom),
         _rotation(0.0f),
-        _world_min({std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}),
+        _world_min({-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()}),
         _world_max({std::numeric_limits<float>::max(), std::numeric_limits<float>::max()}),
         _min_zoom(0.1f),
         _max_zoom(10.0f)
@@ -105,13 +105,13 @@ class Camera2D
     clamp_position();
   }
 
-  void pan(utl::Vec<int, 2> dp)
+  void pan(utl::Vec<float, 2> dp)
   {
     _position = _position + dp;
     clamp_position();
   }
 
-  utl::Vec<int, 2> get_position() const { return _position; }
+  utl::Vec<float, 2> get_position() const { return _position; }
 
   float get_zoom() const { return _zoom; }
 
@@ -148,22 +148,33 @@ class Camera2D
   {
     if (delta_time == 0.0f)
       return;
-    if (target_position == _position)
-      return;
 
-    utl::Vec<float, 2> direction = (target_position - _position).get_normalized_vector();
-    float c_speed = std::ceil(follow_speed * delta_time);
-    utl::Vec<float, 2> velocity = direction * follow_speed * delta_time;
-    if (target_position.distance(_position) < c_speed)
+    // Compute the direction vector
+    utl::Vec<float, 2> direction = target_position - _position;
+    float distance = direction.magnitude();
+
+    // Calculate the actual move distance based on speed and delta_time
+    float move_distance = follow_speed * delta_time;
+
+    // If we're close enough to the target, just set the position to the target
+    if (distance < move_distance)
     {
       _position = target_position;
-      return;
     }
-    _position = _position + velocity;
+    else
+    {
+      // Normalize the direction and move by the computed move distance
+      direction.normalize();
+      // _position = (_position + (direction * move_distance));
+      _position[0] += direction[0] * move_distance;
+      _position[1] += direction[1] * move_distance;
+    }
+
+    // Ensure the position is within the world bounds
     clamp_position();
   }
 
-  utl::Vec<int, 2> world_to_screen(utl::Vec<int, 2> world_position) const
+  utl::Vec<int, 2> world_to_screen(utl::Vec<float, 2> world_position) const
   {
     int centerx = static_cast<int>(_screen_width / 2);
     int centery = static_cast<int>(_screen_height / 2);
@@ -172,7 +183,7 @@ class Camera2D
     return utl::Vec<int, 2>{x, y}.rotate_about_center({centerx, centery}, _rotation, 'z');
   }
 
-  utl::Vec<int, 2> world_to_screen_no_rotation(utl::Vec<int, 2> world_position) const
+  utl::Vec<int, 2> world_to_screen_no_rotation(utl::Vec<float, 2> world_position) const
   {
     int centerx = static_cast<int>(_screen_width / 2);
     int centery = static_cast<int>(_screen_height / 2);

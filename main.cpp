@@ -14,9 +14,9 @@ int main()
   camera.set_zoom_limits(0.1f, 10.0f);
 
   utl::Vec<float, 2> circle_position = {0, 0};  // Start circle at center of world
-  const float circle_speed = 10.0f;             // Speed of the circle movement in units per second
-  const float follow_speed = 1.0f;              // Adjust this to change how quickly the camera follows
-  Frame_rate frame_rate(60);
+  const float circle_speed = 100.0f;            // Speed of the circle movement in units per second
+  const float follow_speed = 30.0f;             // Adjust this to change how quickly the camera follows
+  Frame_rate frame_rate(80);
 
   while (true)
   {
@@ -30,15 +30,15 @@ int main()
     // for (int i = 0; i < 90; i += 3) r.draw_line({0, i}, {120, i}, '-', GRAY_19);
 
     // Handle input for moving the circle
-    utl::Vec<float, 2> circle_velocity = {0, 10};
-    // if (Window::is_pressed(KEY_UP))
-    //   circle_velocity = circle_velocity + utl::Vec<int, 2>({0, (int)-circle_speed});
-    // if (Window::is_pressed(KEY_DOWN))
-    // circle_velocity = circle_velocity + utl::Vec<float, 2>({0, circle_speed});
-    // if (Window::is_pressed(KEY_LEFT))
-    //   circle_velocity = circle_velocity + utl::Vec<int, 2>({(int)-circle_speed, 0});
-    // if (Window::is_pressed(KEY_RIGHT))
-    //   circle_velocity = circle_velocity + utl::Vec<int, 2>({(int)circle_speed, 0});
+    utl::Vec<float, 2> circle_velocity = {0, 0};
+    if (Window::is_pressed(KEY_UP))
+      circle_velocity = circle_velocity + utl::Vec<int, 2>({0, (int)-circle_speed});
+    if (Window::is_pressed(KEY_DOWN))
+      circle_velocity = circle_velocity + utl::Vec<float, 2>({0, circle_speed});
+    if (Window::is_pressed(KEY_LEFT))
+      circle_velocity = circle_velocity + utl::Vec<int, 2>({(int)-circle_speed, 0});
+    if (Window::is_pressed(KEY_RIGHT))
+      circle_velocity = circle_velocity + utl::Vec<int, 2>({(int)circle_speed, 0});
     //
     float delta_time = frame_rate.get_delta_time();
     // Update the circle position
