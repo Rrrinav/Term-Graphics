@@ -38,8 +38,8 @@ example_4: Examples/gradient_and_button.cpp
 	$(cc) Examples/gradient_and_button.cpp -o $(build_dir)/example4 $(flags) && ./$(build_dir)/example4
 
 # Example 4: gradient and button
-example_4: Examples/ball.cpp
-	$(cc) Examples/ball.cpp -o $(build_dir)/example4 $(flags) && ./$(build_dir)/example4
+example_5: Examples/ball.cpp
+	$(cc) Examples/ball.cpp -o $(build_dir)/example5 $(flags) && ./$(build_dir)/example5
 
 # Clean up build directory
 clean:
