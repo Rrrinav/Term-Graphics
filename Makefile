@@ -37,6 +37,10 @@ example_3: Examples/perlin_noise.cpp
 example_4: Examples/gradient_and_button.cpp
 	$(cc) Examples/gradient_and_button.cpp -o $(build_dir)/example4 $(flags) && ./$(build_dir)/example4
 
+# Example 4: gradient and button
+example_4: Examples/ball.cpp
+	$(cc) Examples/ball.cpp -o $(build_dir)/example4 $(flags) && ./$(build_dir)/example4
+
 # Clean up build directory
 clean:
 	rm -rf $(build_dir)/*

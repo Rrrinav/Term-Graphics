@@ -6,6 +6,10 @@
 #include "renderer2D/ascii.hpp"
 #include "time/frame_rate.hpp"
 
+// WARNING: This isnt simple, matter of fact this just sucks so much... but just works 
+// TODO: Make this good enough to remove that warning!
+
+
 void change_color(Color &brush_color, Renderer &rend)
 {
     enum Mode
