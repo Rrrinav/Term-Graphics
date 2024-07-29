@@ -56,7 +56,7 @@ int main()
       camera.zoom_by(-0.1f);
 
     // Make the camera follow the circle with a delay
-    camera.follow(circle_position, delta_time, follow_speed);
+    camera.smooth_follow(circle_position, delta_time, 1);
 
     // Draw the circle at its world position
     auto screen_position = camera.world_to_screen(circle_position);

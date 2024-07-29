@@ -173,7 +173,16 @@ class Camera2D
     // Ensure the position is within the world bounds
     clamp_position();
   }
+  void smooth_follow(utl::Vec<float, 2> target_position, float delta_time, float smooth_factor)
+  {
+    if (delta_time == 0.0f || smooth_factor == 0.0f)
+      return;
 
+    // Linear interpolation towards the target position
+    _position = _position + (target_position - _position) * smooth_factor * delta_time;
+
+    clamp_position();
+  }
   utl::Vec<int, 2> world_to_screen(utl::Vec<float, 2> world_position) const
   {
     int centerx = static_cast<int>(_screen_width / 2);
