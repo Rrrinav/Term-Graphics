@@ -83,16 +83,16 @@ namespace utl
   template <typename T>
   class Matrix
   {
-private:
+  private:
     // Private constructor for the matrix class
     Matrix(size_t rows, size_t cols, std::initializer_list<T> initList) : _rows(rows), _cols(cols), data(initList) {}
 
-protected:
+  protected:
     size_t _rows;
     size_t _cols;
     std::vector<T> data;
 
-public:
+  public:
     //-------------------------------------------------------------------------------------------------
     //                          | CONSTRUCTORS AND DESTRUCTORS |
     //-------------------------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ public:
     IL size_t size() const { return data.size(); }
 
     IL size_t rows() const { return _rows; }
-
+    IL size_t rows() { return _rows; }
     IL size_t cols() const { return _cols; }
 
     IL T &operator()(size_t row, size_t col)
@@ -299,7 +299,7 @@ public:
   template <typename T, size_t _size>
   class Vec : public Matrix<T>
   {
-public:
+  public:
     using Matrix<T>::Matrix;
 
     //-------------------------------------------------------------------------------------------------
@@ -389,6 +389,23 @@ public:
     IL void sin();
     IL void cos();
     //-------------------------------------------| VECTOR OPERATIONS |-------------------------------------------
+
+    template <typename Y>
+    Vec<T, _size> size_aware_multiply(const Matrix<Y> &m) const
+    {
+      Vec<T, _size> result;
+
+      for (size_t i = 0; i < _size; ++i)
+      {
+        result[i] = 0;
+        for (size_t j = 0; j < m.cols(); ++j)
+          if (j < _size)
+            result[i] += (*this)[j] * m(j, i);
+          else
+            result[i] += 1 * m(j, i);
+      }
+      return result;
+    }
     // Dot and cross product
     template <typename Y, size_t n_x>
     IL double dot(const Vec<Y, n_x> &x) const;
@@ -1218,7 +1235,7 @@ namespace utl
     if (m.cols() != _size)
       throw std::invalid_argument("Vector and matrix dimensions do not match for multiplication");
 
-    Vec<T, m.rows()> result;
+    Vec<T, _size> result;
     for (size_t i = 0; i < m.rows(); ++i)
     {
       T sum = static_cast<T>(0);

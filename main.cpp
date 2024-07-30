@@ -1,7 +1,6 @@
 #define RENDERER_IMPLEMENTATION
-#include <chrono>
+
 #include <cmath>
-#include <thread>
 #include <vector>
 
 #include "Camera/camera2D.hpp"
@@ -117,9 +116,9 @@ class Renderer3D
 public:
   Mesh mesh_cube;
   Mat4 mat_proj;
-  Renderer3D(float width, float height, float fov = 90.0f, float znear = 0.05f, float zfar = 100.0f)
+  Renderer3D(float width, float height, float fov = 90.0f, float znear = 0.05f, float zfar = 1000.0f)
   {
-    float fov_rad = 1.0f / tan(fov * 0.5f / 180.0f * 3.14159f);
+    float fov_rad = 1.0f / tanf(fov * 0.5f / 180.0f * 3.14159f);
     float aspect_ratio = height / width;
     mat_proj.m[0][0] = aspect_ratio * fov_rad;
     mat_proj.m[1][1] = fov_rad;
@@ -150,7 +149,7 @@ public:
 
 int main()
 {
-  Renderer r(120, 90);
+  Renderer r(140, 140);
   r.set_bg_color(GRAY_1);
   r.Init();
   Renderer3D r3d(120, 90);
@@ -172,11 +171,12 @@ int main()
       {
         vec3 p = t.p[i];
         vec3 rotated = p * rotX.m * rotZ.m;
-
+        rotated.z += 2.0f;
+        rotated = rotated * r3d.mat_proj.m;
         // Scale into view
         rotated.x += 1.0f;
         rotated.y += 1.0f;
-        rotated.x *= 0.5f * r.get_width() / 2.0f;
+        rotated.x *= 0.5f * r.get_width();
         rotated.y *= 0.5f * r.get_height();
 
         tri.p[i] = rotated;
@@ -187,9 +187,9 @@ int main()
     }
 
     r.print();
-    theta += 0.05f;  // Increment rotation angle
+    theta += 0.1f;  // Increment rotation angle
 
-    r.sleep(16);  // Sleep for 100ms
+    r.sleep(50);  // Sleep for 100ms
   }
 
   return 0;
