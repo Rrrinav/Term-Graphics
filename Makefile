@@ -41,6 +41,9 @@ example_4: Examples/gradient_and_button.cpp
 example_5: Examples/ball.cpp
 	$(cc) Examples/ball.cpp -o $(build_dir)/example5 $(flags) && ./$(build_dir)/example5
 
+main3: main3.cpp
+	$(cc) main3.cpp -o $(build_dir)/main3 $(flags) && ./$(build_dir)/main3
+
 # Clean up build directory
 clean:
 	rm -rf $(build_dir)/*

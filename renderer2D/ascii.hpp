@@ -620,14 +620,8 @@ void Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::V
   // Function to draw a horizontal line within bounds
   auto safe_draw_line = [&](int x1, int y, int x2)
   {
-    // if (y < 0 || y >= static_cast<int>(_buffer->height))
-    //     return;
-    // if (x1 > x2)
-    //     std::swap(x1, x2);
-    // if (x2 < 0 || x1 >= static_cast<int>(_buffer->width))
-    //     return;
-    // x1 = std::max(x1, 0);
-    // x2 = std::min(x2, static_cast<int>(_buffer->width) - 1);
+    if (x1 > x2)
+      std::swap(x1, x2);
     for (int x = x1; x <= x2; ++x) _buffer->set({x, y}, ch, color);
   };
   // Function to interpolate x between two points at a given y
@@ -649,7 +643,7 @@ void Renderer::draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::V
   {
     int x1 = interpolate_x(b, c, y);
     int x2 = interpolate_x(a, c, y);
-    safe_draw_line(x1, y, x2);
+    safe_draw_line(x2, y, x1);
   }
 }
 

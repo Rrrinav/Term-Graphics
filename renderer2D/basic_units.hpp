@@ -55,17 +55,10 @@ public:
     {
         _ch1 = ch;
         _ch2 = ch;
-        if (!_is_empty)
-        {
-            _color1 = _color1.blend(color);
-            _color2 = _color2.blend(color);
-        }
-        else
         {
             _color1 = color;
             _color2 = color;
         }
-
         _is_empty = (ch == ' ');
     }
 
@@ -126,7 +119,7 @@ public:
         int x = point.x();
         int y = point.y();
         if (x >= 0 && static_cast<size_t>(x) < width && y >= 0 && static_cast<size_t>(y) < height)
-            data[y * width + x] = Pixel(ch, color);
+            data[y * width + x].set(ch, color);
     }
 
     void set(utl::Vec<int, 2> point, char ch1, char ch2, Color color)

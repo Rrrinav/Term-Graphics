@@ -8,13 +8,14 @@
 #define RENDERER_IMPLEMENTATION4
 #include "../renderer2D/ascii.hpp"
 
-class Renderer3D : public Renderer
+class Engine3D : public Renderer
 {
   Mesh _mesh;
   utl::Matrix<float> _projection_mat;
+  utl::Vec<float, 3> _camera_pos = {0, 0, 0};
 
 public:
-  Renderer3D(float width, float height, float fov = 90.0f, float znear = 0.05f, float zfar = 100.0f)
+  Engine3D(float width, float height, float fov = 90.0f, float znear = 0.1f, float zfar = 1000.0f)
       : Renderer((size_t)width, (size_t)height), _mesh(), _projection_mat(utl::Matrix<float>(4, 4))
   {
     float fov_rad = 1.0f / tan(fov * 0.5f / 180.0f * 3.14159f);
@@ -50,4 +51,6 @@ public:
     }
     return result;
   }
+
+  utl::Vec<float, 3> get_camera_pos() { return _camera_pos; }
 };
