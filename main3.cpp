@@ -1,3 +1,4 @@
+#include "dependencies/color.hpp"
 #define RENDERER_IMPLEMENTATION
 #include "./Renderer3D/ascii.hpp"
 #define L_GEBRA_IMPLEMENTATION
@@ -13,10 +14,6 @@ int main()
   Mesh mesh;
   mesh.load_from_obj("./assets/teapot.obj");
   r.set_mesh(mesh);
-
-  std::vector<char> shades = {' ', '.', ',', '-', '~', ':', ';', '=', '!', '*', '#', '$', '@'};
-  std::vector<Color> colors = {GRAY_1,  GRAY_2,  GRAY_3,  GRAY_4,  GRAY_5,  GRAY_6,  GRAY_7,  GRAY_8,  GRAY_9,  GRAY_10,
-                               GRAY_11, GRAY_12, GRAY_13, GRAY_14, GRAY_15, GRAY_16, GRAY_17, GRAY_18, GRAY_19, GRAY_20};
 
   float angle = 0;
 
@@ -41,14 +38,17 @@ int main()
       v3 = v3.rotate(angle, 'x');
 
       // Translate the vertices
-      v1[2] += 7;
-      v2[2] += 7;
-      v3[2] += 7;
+      v1[2] += 5;
+      v2[2] += 5;
+      v3[2] += 5;
 
       // Calculate the normal and dot product for back-face culling
       auto edge1 = v2 - v1;
       auto edge2 = v3 - v1;
-      auto normal = edge1.cross(edge2).get_normalized_vector();
+      auto normal = edge1.cross(edge2);
+      if (normal.magnitude() == 0)
+        continue;
+      normal = normal.get_normalized_vector();
       if (normal.magnitude() == 0)
         continue;
       normal = normal.get_normalized_vector();
@@ -65,8 +65,8 @@ int main()
         auto intensity = normal.dot(light_dir);
         intensity = std::max(0.0, intensity);
 
-        auto shade = shades[(int)(intensity * (shades.size() - 1))];
-        auto color = colors[(int)(intensity * (colors.size() - 1))];
+        auto shade = char_gradient[(int)(intensity * (char_gradient.size() - 1))];
+        auto color = grayscale_gradient[(int)(intensity * (grayscale_gradient.size() - 1))];
 
         // Normalize the vertices for screen space
         v1 = v1 + utl::Vec<float, 3>({1, 1, 0});
@@ -100,7 +100,7 @@ int main()
     }
 
     // Update the angle for rotation
-    angle += 0.1f;
+    angle += 0.01f;
     if (angle > 2 * M_PI)
       angle = 0;
     r.print();
