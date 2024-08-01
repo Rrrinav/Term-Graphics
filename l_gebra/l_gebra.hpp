@@ -1322,7 +1322,7 @@ namespace utl
     Vec<float, _size> result;
     double mag = magnitude();
     if (mag == 0)
-      throw std::runtime_error("Cannot normalize a zero vector");
+      return (*this);
     for (size_t i = 0; i < _size; ++i) result[i] = static_cast<float>((*this)[i] / mag);
     return result;
   }
