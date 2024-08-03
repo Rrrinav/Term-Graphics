@@ -326,7 +326,7 @@ const Buffer &Renderer::get_buffer() const { return *_buffer; }
 
 size_t Renderer::get_width() const { return _buffer->width; }
 
-size_t Renderer::get_height() const { return _buffer->height / 2; }
+size_t Renderer::get_height() const { return _buffer->height; }
 
 void Renderer::Init() { _window.init_terminal(); }
 

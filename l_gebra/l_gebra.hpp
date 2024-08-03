@@ -418,7 +418,7 @@ namespace utl
     IL void power(float x);
     // Normalize
     IL float normalize();
-    IL Vec<float, _size> get_normalized_vector();
+    IL Vec<float, _size> get_normalized_vector() const;
     template <typename Y, size_t n_x>
     // Get angle between two vectors
     IL float angle(const Vec<Y, n_x> &x) const;
@@ -438,7 +438,7 @@ namespace utl
     // v3d.rotate(1.57079632679, 'y');  // Rotate 90 degrees around Y-axis |
     //----------------------------------------------------------------------
     IL Vec<T, _size> rotate(float angle, char8_t axis);
-    IL Vec<T, _size> rotate_about_center(const utl::Vec<T, 2> &center, float angle, char8_t axis);
+    IL Vec<T, _size> rotate_about_center(const utl::Vec<T, _size> &center, float angle, char8_t axis);
     //------------------------------------------------------------------------------------
     //                         | EXTRA UTILITY FUNCTIONS |
     //------------------------------------------------------------------------------------
@@ -1317,7 +1317,7 @@ namespace utl
   }
 
   template <typename T, size_t _size>
-  IL Vec<float, _size> Vec<T, _size>::get_normalized_vector()
+  IL Vec<float, _size> Vec<T, _size>::get_normalized_vector() const
   {
     Vec<float, _size> result;
     double mag = magnitude();
@@ -1424,7 +1424,7 @@ namespace utl
   }
 
   template <typename T, size_t _size>
-  IL Vec<T, _size> Vec<T, _size>::rotate_about_center(const utl::Vec<T, 2> &center, float angle, char8_t axis)
+  IL Vec<T, _size> Vec<T, _size>::rotate_about_center(const utl::Vec<T, _size> &center, float angle, char8_t axis)
   {
     utl::Vec<T, _size> point = *this;
 
@@ -1437,58 +1437,59 @@ namespace utl
       double c = std::cos(angle);
 
       // Translate point back to origin
-      double x = (*this).x() - center.x();
-      double y = (*this).y() - center.y();
+      T x = (*this).x() - center.x();
+      T y = (*this).y() - center.y();
 
       // Rotate point
-      double x_new = x * c - y * s;
-      double y_new = x * s + y * c;
+      T x_new = static_cast<T>(x * c - y * s);
+      T y_new = static_cast<T>(x * s + y * c);
 
       // Translate point back
       x = x_new + center.x();
       y = y_new + center.y();
 
-      return {static_cast<T>(x), static_cast<T>(y)};
+      return {x, y};
     }
     else if (_size == 3)
     {
-      Vec<T, _size> result;
+      if (axis != 'x' && axis != 'X' && axis != 'y' && axis != 'Y' && axis != 'z' && axis != 'Z')
+        throw std::invalid_argument("Invalid rotation axis");
+
+      utl::Vec<T, 3> result;
       double cosA = std::cos(angle);
       double sinA = std::sin(angle);
 
       // Translate point to center
-      double x = (*this)[0] - center.x();
-      double y = (*this)[1] - center.y();
-      double z = (*this)[2] - center.z();
+      T x = (*this)[0] - center[0];
+      T y = (*this)[1] - center[1];
+      T z = (*this)[2] - center[2];
 
       switch (axis)
       {
         case 'x':
         case 'X':
           result[0] = x;
-          result[1] = y * cosA - z * sinA;
-          result[2] = y * sinA + z * cosA;
+          result[1] = static_cast<T>(y * cosA - z * sinA);
+          result[2] = static_cast<T>(y * sinA + z * cosA);
           break;
         case 'y':
         case 'Y':
-          result[0] = x * cosA + z * sinA;
+          result[0] = static_cast<T>(x * cosA + z * sinA);
           result[1] = y;
-          result[2] = -x * sinA + z * cosA;
+          result[2] = static_cast<T>(-x * sinA + z * cosA);
           break;
         case 'z':
         case 'Z':
-          result[0] = x * cosA - y * sinA;
-          result[1] = x * sinA + y * cosA;
+          result[0] = static_cast<T>(x * cosA - y * sinA);
+          result[1] = static_cast<T>(x * sinA + y * cosA);
           result[2] = z;
           break;
-        default:
-          throw std::invalid_argument("Invalid rotation axis");
       }
 
       // Translate back
-      result[0] += center.x();
-      result[1] += center.y();
-      result[2] += center.z();
+      result[0] += center[0];
+      result[1] += center[1];
+      result[2] += center[2];
 
       return result;
     }
