@@ -110,11 +110,11 @@ public:
 #else
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 
-        std::cout << "\033[?1000l";  // Enable xterm mouse reporting
-        std::cout << "\033[?1002l";  // Enable UTF-8 mouse
-        std::cout << "\033[?1005l";  // Enable urxvt mouse
-        std::cout << "\033[?1015l";  // Enable utf8 ext mode
-        std::cout << "\033[?1003l";  // Enable all mouse tracking
+        std::cout << "\033[?1000l";  // Disable xterm mouse reporting
+        std::cout << "\033[?1002l";  // Disable UTF-8 mouse
+        std::cout << "\033[?1005l";  // Disable urxvt mouse
+        std::cout << "\033[?1015l";  // Disable utf8 ext mode
+        std::cout << "\033[?1003l";  // Disable all mouse tracking
         std::cout << "\033[?1006l";  // Disable mouse tracking
 #endif
         system("clear");  // or "cls" on Windows

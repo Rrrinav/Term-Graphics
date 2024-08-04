@@ -7,7 +7,7 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
 
-class Triangle3D
+struct Triangle3D
 {
   utl::Vec<float, 3> _v1;
   utl::Vec<float, 3> _v2;
@@ -15,7 +15,6 @@ class Triangle3D
   char _ch;
   Color _color;
 
-public:
   Triangle3D(utl::Vec<float, 3> v1, utl::Vec<float, 3> v2, utl::Vec<float, 3> v3, char ch, Color color)
       : _v1(v1), _v2(v2), _v3(v3), _ch(ch), _color(color)
   {
@@ -31,7 +30,26 @@ public:
       : _v1({x1, y1, z1}), _v2({x2, y2, z2}), _v3({x3, y3, z3}), _ch('.'), _color(WHITE)
   {
   }
-  Triangle3D(const Triangle3D &triangle) : _v1(triangle._v1), _v2(triangle._v2), _v3(triangle._v3), _ch(triangle._ch), _color(triangle._color) {}
+
+  // Copy constructor
+  Triangle3D(const Triangle3D &triangle)
+      : _v1(triangle._v1), _v2(triangle._v2), _v3(triangle._v3), _ch(triangle._ch), _color(triangle._color)
+  {
+  }
+
+  // Copy assignment operator
+  Triangle3D &operator=(const Triangle3D &triangle)
+  {
+    if (this != &triangle)
+    {
+      _v1 = triangle._v1;
+      _v2 = triangle._v2;
+      _v3 = triangle._v3;
+      _ch = triangle._ch;
+      _color = triangle._color;
+    }
+    return *this;
+  }
   Triangle3D(std::initializer_list<utl::Vec<float, 3>> list)
   {
     auto it = list.begin();

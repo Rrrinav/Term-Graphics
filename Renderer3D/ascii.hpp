@@ -11,6 +11,8 @@
 #define RENDERER_IMPLEMENTATION
 #include "../renderer2D/ascii.hpp"
 
+// BUG: Triangle clipping is not working properly.
+
 class Engine3D : public Renderer
 {
 private:
@@ -21,7 +23,7 @@ private:
   utl::Vec<float, 3> _look_dir;
 
 public:
-  Engine3D(float width, float height, float fov = 90.0f, float znear = 0.01f, float zfar = 1000.0f)
+  Engine3D(float width, float height, float fov = 90.0f, float znear = 1.0f, float zfar = 1000.0f)
       : Renderer((size_t)width, (size_t)height), _mesh(), _projection_mat(4, 4), _view_matrix(4, 4), _camera_pos({0, 0, 0})
   {
     float fov_rad = 1.0f / tan(fov * 0.5f / 180.0f * 3.14159f);
@@ -101,12 +103,20 @@ public:
     Triangle3D out_tri1, out_tri2;
     int nClippedTriangles = 0;
     nClippedTriangles = tri_clip_against_plane(plane_p, plane_n, in_tri, out_tri1, out_tri2);
-    std::vector<Triangle3D> clipped_triangles(nClippedTriangles);
+    std::vector<Triangle3D> clipped_triangles;
     if (nClippedTriangles >= 1)
       clipped_triangles.push_back(out_tri1);
     if (nClippedTriangles >= 2)
       clipped_triangles.push_back(out_tri2);
 
+    // std::cout << "clipped_triangles\n";
+    // for (auto &clipped_tri : clipped_triangles)
+    // {
+    //   std::cout << clipped_tri.get_v1()[0] << " " << clipped_tri.get_v1()[1] << " " << clipped_tri.get_v1()[2] << std::endl;
+    //   std::cout << clipped_tri.get_v2()[0] << " " << clipped_tri.get_v2()[1] << " " << clipped_tri.get_v2()[2] << std::endl;
+    //   std::cout << clipped_tri.get_v3()[0] << " " << clipped_tri.get_v3()[1] << " " << clipped_tri.get_v3()[2] << std::endl;
+    //   std::cout << clipped_tri.get_color().get_rgb_string() << std::endl;
+    // }
     return clipped_triangles;
   }
 
@@ -119,7 +129,7 @@ public:
     // Return signed shortest distance from point to plane
     auto dist = [&](utl::Vec<float, 3> p)
     {
-      auto n = plane_n.get_normalized_vector();
+      // p = p.get_normalized_vector();
       return (plane_n.x() * p.x() + plane_n.y() * p.y() + plane_n.z() * p.z() - (plane_n.dot(plane_p)));
     };
 
@@ -170,22 +180,32 @@ public:
       out_tri1.set_v1(inside_points[0]);
       out_tri1.set_v2(_intersect_plane(plane_p, plane_n, inside_points[0], outside_points[0]));
       out_tri1.set_v3(_intersect_plane(plane_p, plane_n, inside_points[0], outside_points[1]));
+      // std::cout << "out_tri only 1\n";
+      // std::cout << out_tri1.get_v1()[0] << " " << out_tri1.get_v1()[1] << " " << out_tri1.get_v1()[2] << std::endl;
       return 1;
     }
     if (nInsidePointCount == 2 && nOutsidePointCount == 1)
     {
       // Triangle should be clipped, producing two new triangles
-      out_tri1.set_color(GREEN);
+      out_tri1.set_color(BLUE);
       out_tri1.set_char(in_tri.get_char());
       out_tri1.set_v1(inside_points[0]);
       out_tri1.set_v2(inside_points[1]);
       out_tri1.set_v3(_intersect_plane(plane_p, plane_n, inside_points[0], outside_points[0]));
 
-      out_tri2.set_color(BLUE);
+      out_tri2.set_color(GREEN);
       out_tri2.set_char(in_tri.get_char());
       out_tri2.set_v1(inside_points[1]);
       out_tri2.set_v2(out_tri1.get_v3());
       out_tri2.set_v3(_intersect_plane(plane_p, plane_n, inside_points[1], outside_points[0]));
+      // std::cout << "Two triangles---------------------------------------------------------\n";
+      // std::cout << out_tri1.get_v1()[0] << " " << out_tri1.get_v1()[1] << " " << out_tri1.get_v1()[2] << std::endl;
+      // std::cout << out_tri1.get_v2()[0] << " " << out_tri1.get_v2()[1] << " " << out_tri1.get_v2()[2] << std::endl;
+      // std::cout << out_tri1.get_v3()[0] << " " << out_tri1.get_v3()[1] << " " << out_tri1.get_v3()[2] << std::endl;
+      // std::cout << out_tri2.get_v1()[0] << " " << out_tri2.get_v1()[1] << " " << out_tri2.get_v1()[2] << std::endl;
+      // std::cout << out_tri2.get_v2()[0] << " " << out_tri2.get_v2()[1] << " " << out_tri2.get_v2()[2] << std::endl;
+      // std::cout << out_tri2.get_v3()[0] << " " << out_tri2.get_v3()[1] << " " << out_tri2.get_v3()[2] << std::endl;
+      // std::cout << "----------------------------------------\n";
       return 2;
     }
 
@@ -246,8 +266,8 @@ private:
     float ad = lineStart.dot(plane_n_normalized);
     float bd = lineEnd.dot(plane_n_normalized);
     float t = (-plane_d - ad) / (bd - ad);
-
-    utl::Vec<float, 3> lineToIntersect = (lineEnd - lineStart) * t;
+    auto l = lineEnd - lineStart;
+    utl::Vec<float, 3> lineToIntersect = l * t;
     return lineStart + lineToIntersect;
   }
 };
