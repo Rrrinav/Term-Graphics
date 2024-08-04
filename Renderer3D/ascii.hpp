@@ -167,7 +167,7 @@ public:
     if (nInsidePointCount == 1 && nOutsidePointCount == 2)
     {
       // Triangle should be clipped, as two points lie outside
-      out_tri1.set_color(RED);
+      out_tri1.set_color(in_tri.get_color());
       out_tri1.set_char(in_tri.get_char());
       out_tri1.set_v1(inside_points[0]);
       out_tri1.set_v2(_intersect_plane(plane_p, plane_n, inside_points[0], outside_points[0]));
@@ -178,13 +178,13 @@ public:
     if (nInsidePointCount == 2 && nOutsidePointCount == 1)
     {
       // Triangle should be clipped, producing two new triangles
-      out_tri1.set_color(BLUE);
+      out_tri1.set_color(in_tri.get_color());
       out_tri1.set_char(in_tri.get_char());
       out_tri1.set_v1(inside_points[0]);
       out_tri1.set_v2(inside_points[1]);
       out_tri1.set_v3(_intersect_plane(plane_p, plane_n, inside_points[0], outside_points[0]));
 
-      out_tri2.set_color(GREEN);
+      out_tri2.set_color(in_tri.get_color());
       out_tri2.set_char(in_tri.get_char());
       out_tri2.set_v1(inside_points[1]);
       out_tri2.set_v2(out_tri1.get_v3());
