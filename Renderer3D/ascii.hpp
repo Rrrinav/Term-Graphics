@@ -109,14 +109,6 @@ public:
     if (nClippedTriangles >= 2)
       clipped_triangles.push_back(out_tri2);
 
-    // std::cout << "clipped_triangles\n";
-    // for (auto &clipped_tri : clipped_triangles)
-    // {
-    //   std::cout << clipped_tri.get_v1()[0] << " " << clipped_tri.get_v1()[1] << " " << clipped_tri.get_v1()[2] << std::endl;
-    //   std::cout << clipped_tri.get_v2()[0] << " " << clipped_tri.get_v2()[1] << " " << clipped_tri.get_v2()[2] << std::endl;
-    //   std::cout << clipped_tri.get_v3()[0] << " " << clipped_tri.get_v3()[1] << " " << clipped_tri.get_v3()[2] << std::endl;
-    //   std::cout << clipped_tri.get_color().get_rgb_string() << std::endl;
-    // }
     return clipped_triangles;
   }
 
@@ -180,8 +172,7 @@ public:
       out_tri1.set_v1(inside_points[0]);
       out_tri1.set_v2(_intersect_plane(plane_p, plane_n, inside_points[0], outside_points[0]));
       out_tri1.set_v3(_intersect_plane(plane_p, plane_n, inside_points[0], outside_points[1]));
-      // std::cout << "out_tri only 1\n";
-      // std::cout << out_tri1.get_v1()[0] << " " << out_tri1.get_v1()[1] << " " << out_tri1.get_v1()[2] << std::endl;
+
       return 1;
     }
     if (nInsidePointCount == 2 && nOutsidePointCount == 1)
@@ -198,14 +189,6 @@ public:
       out_tri2.set_v1(inside_points[1]);
       out_tri2.set_v2(out_tri1.get_v3());
       out_tri2.set_v3(_intersect_plane(plane_p, plane_n, inside_points[1], outside_points[0]));
-      // std::cout << "Two triangles---------------------------------------------------------\n";
-      // std::cout << out_tri1.get_v1()[0] << " " << out_tri1.get_v1()[1] << " " << out_tri1.get_v1()[2] << std::endl;
-      // std::cout << out_tri1.get_v2()[0] << " " << out_tri1.get_v2()[1] << " " << out_tri1.get_v2()[2] << std::endl;
-      // std::cout << out_tri1.get_v3()[0] << " " << out_tri1.get_v3()[1] << " " << out_tri1.get_v3()[2] << std::endl;
-      // std::cout << out_tri2.get_v1()[0] << " " << out_tri2.get_v1()[1] << " " << out_tri2.get_v1()[2] << std::endl;
-      // std::cout << out_tri2.get_v2()[0] << " " << out_tri2.get_v2()[1] << " " << out_tri2.get_v2()[2] << std::endl;
-      // std::cout << out_tri2.get_v3()[0] << " " << out_tri2.get_v3()[1] << " " << out_tri2.get_v3()[2] << std::endl;
-      // std::cout << "----------------------------------------\n";
       return 2;
     }
 

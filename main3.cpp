@@ -172,19 +172,6 @@ int main()
                              t.get_color());
       }
     }
-    // for (auto tri : triangles_to_sort)
-    // {
-    //   r.draw_fill_triangle({(int)tri.get_v1()[0], (int)tri.get_v1()[1]},
-    //                        {(int)tri.get_v2()[0], (int)tri.get_v2()[1]},
-    //                        {(int)tri.get_v3()[0], (int)tri.get_v3()[1]},
-    //                        tri.get_char(),
-    //                        tri.get_color());
-    //   r.draw_triangle({(int)tri.get_v1()[0], (int)tri.get_v1()[1]},
-    //                   {(int)tri.get_v2()[0], (int)tri.get_v2()[1]},
-    //                   {(int)tri.get_v3()[0], (int)tri.get_v3()[1]},
-    //                   '.',
-    //                   RED);
-    // }
 
     r.print();
     r.sleep(1000 / 60);
