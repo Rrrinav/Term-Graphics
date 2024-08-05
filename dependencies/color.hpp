@@ -249,24 +249,9 @@ public:
 
 #endif  // EIGHT_BIT_COLOR
 
-std::vector<char> char_gradient = {' ', '.', ',', '-', '~', ':', ';', '=', '!', '*', '#', '$', '@'};
-std::vector<Color> grayscale_gradient = {GRAY_4,
-                                         GRAY_5,
-                                         GRAY_6,
-                                         GRAY_7,
-                                         GRAY_8,
-                                         GRAY_9,
-                                         GRAY_10,
-                                         GRAY_11,
-                                         GRAY_12,
-                                         GRAY_13,
-                                         GRAY_14,
-                                         GRAY_15,
-                                         GRAY_16,
-                                         GRAY_17,
-                                         GRAY_18,
-                                         GRAY_19,
-                                         GRAY_20};
+std::vector<char> char_gradient = { '.', ',', '-', '~', ':', ';', '=', '!', '*', '#', '$', '@'};
+std::vector<Color> grayscale_gradient = {GRAY_2,  GRAY_3,  GRAY_4,  GRAY_5,  GRAY_6,  GRAY_7,  GRAY_8,  GRAY_9,  GRAY_10,
+                                         GRAY_11, GRAY_12, GRAY_13, GRAY_14, GRAY_15, GRAY_16, GRAY_17, GRAY_18, GRAY_19, GRAY_20};
 std::vector<Color> heat_map = {
     Color(0x0000FF),  // Blue
     Color(0x0033FF),  // Intermediate between blue and next color

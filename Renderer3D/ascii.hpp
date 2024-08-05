@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <list>
 #include <vector>
 
 #include "./basic_units.hpp"
@@ -110,6 +111,46 @@ public:
       clipped_triangles.push_back(out_tri2);
 
     return clipped_triangles;
+  }
+
+  std::vector<Triangle3D> clip_triangle(const Triangle3D &tri, Plane plane) { return clip_triangle(tri, plane.point, plane.normal); }
+
+  int tri_clip_against_plane(Plane plane, const Triangle3D &in_tri, Triangle3D &out_tri1, Triangle3D &out_tri2)
+  {
+    return tri_clip_against_plane(plane.point, plane.normal, in_tri, out_tri1, out_tri2);
+  }
+
+  std::vector<Triangle3D> tri_clip_against_planes(const Triangle3D &triangle, std::vector<Plane> planes)
+  {
+    std::list<Triangle3D> listTriangles = {triangle};
+
+    for (const auto &plane : planes)
+    {
+      int nTrisToAdd = 0;
+      int nCurrentTriangles = listTriangles.size();
+
+      while (nCurrentTriangles--)
+      {
+        Triangle3D test = listTriangles.front();
+        listTriangles.pop_front();
+
+        Triangle3D clipped[2];
+        nTrisToAdd = tri_clip_against_plane(plane.point, plane.normal, test, clipped[0], clipped[1]);
+
+        for (int w = 0; w < nTrisToAdd; w++) listTriangles.push_back(clipped[w]);
+      }
+    }
+
+    return std::vector<Triangle3D>(listTriangles.begin(), listTriangles.end());
+  }
+
+  std::vector<Triangle3D> tri_clip_against_screen(const Triangle3D &triangle)
+  {
+    std::vector<Plane> screen_planes = {Plane({0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}),
+                                        Plane({0.0f, (float)get_height() - 1, 0.0f}, {0.0f, -1.0f, 0.0f}),
+                                        Plane({0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}),
+                                        Plane({(float)get_width() - 1, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f})};
+    return tri_clip_against_planes(triangle, screen_planes);
   }
 
   int tri_clip_against_plane(const utl::Vec<float, 3> &plane_p, const utl::Vec<float, 3> &planen, const Triangle3D &in_tri,

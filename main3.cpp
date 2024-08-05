@@ -4,7 +4,6 @@
 #define L_GEBRA_IMPLEMENTATION
 #include <algorithm>
 #include <cmath>
-#include <list>
 
 #include "l_gebra/l_gebra.hpp"
 
@@ -29,7 +28,7 @@ int main()
     if (Window::is_pressed(KEY_d))
       r.pan_cam(utl::Vec<float, 3>{-5, 0, 0} * 0.16);
     if (Window::is_pressed(KEY_UP))
-      r.pan_cam(utl::Vec<float, 3>{0, 0, 2} * 0.16);
+      r.pan_cam(utl::Vec<float, 3>{0, 0, 5} * 0.16);
     if (Window::is_pressed(KEY_DOWN))
       r.pan_cam(utl::Vec<float, 3>{0, 0, -5} * 0.16);
     if (Window::is_pressed(KEY_u))
@@ -97,8 +96,8 @@ int main()
           auto light_dir = utl::Vec<float, 3>{0, 1, -1}.get_normalized_vector();
           auto intensity = normal.dot(light_dir);
           intensity = std::max(0.3, intensity);
-          auto shade = char_gradient[3 + (int)(intensity * (char_gradient.size() - 3))];
-          auto color = grayscale_gradient[3 + (int)(intensity * (grayscale_gradient.size() - 3))];
+          auto shade = char_gradient[(int)(intensity * (char_gradient.size()))];
+          auto color = grayscale_gradient[(int)(intensity * (grayscale_gradient.size()))];
 
           v1 = v1 + utl::Vec<float, 3>({1, 1, 0});
           v2 = v2 + utl::Vec<float, 3>({1, 1, 0});
@@ -124,45 +123,8 @@ int main()
 
     for (auto &triToRaster : triangles_to_sort)
     {
-      Triangle3D clipped[2];
-      std::list<Triangle3D> listTriangles;
-
-      listTriangles.push_back(triToRaster);
-      int nNewTriangles = 1;
-
-      for (int p = 0; p < 4; p++)
-      {
-        int nTrisToAdd = 0;
-        while (nNewTriangles > 0)
-        {
-          // Take triangle from front of queue
-          Triangle3D test = listTriangles.front();
-          listTriangles.pop_front();
-          nNewTriangles--;
-
-          switch (p)
-          {
-            case 0:
-              nTrisToAdd = r.tri_clip_against_plane({0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, test, clipped[0], clipped[1]);
-              break;
-            case 1:
-              nTrisToAdd =
-                  r.tri_clip_against_plane({0.0f, (float)r.get_height() - 1, 0.0f}, {0.0f, -1.0f, 0.0f}, test, clipped[0], clipped[1]);
-              break;
-            case 2:
-              nTrisToAdd = r.tri_clip_against_plane({0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, test, clipped[0], clipped[1]);
-              break;
-            case 3:
-              nTrisToAdd =
-                  r.tri_clip_against_plane({(float)r.get_width() - 1, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, test, clipped[0], clipped[1]);
-              break;
-          }
-
-          for (int w = 0; w < nTrisToAdd; w++) listTriangles.push_back(clipped[w]);
-        }
-        nNewTriangles = listTriangles.size();
-      }
-
+      std::vector<Triangle3D> listTriangles;
+      listTriangles = r.tri_clip_against_screen(triToRaster);
       for (auto &t : listTriangles)
       {
         r.draw_fill_triangle({(int)t.get_v1()[0], (int)t.get_v1()[1]},
@@ -174,7 +136,6 @@ int main()
     }
 
     r.print();
-    r.sleep(1000 / 60);
 
     // Update the angle for rotation
     // angle += 0.01f;

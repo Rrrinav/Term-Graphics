@@ -161,3 +161,23 @@ struct Mesh
     return true;
   }
 };
+
+struct Plane
+{
+  utl::Vec<float, 3> point;
+  utl::Vec<float, 3> normal;
+
+  Plane(utl::Vec<float, 3> point, utl::Vec<float, 3> normal) : point(point), normal(normal) {}
+  Plane() : point({0, 0, 0}), normal({0, 0, 0}) {}
+  Plane(float x, float y, float z, float nx, float ny, float nz) : point({x, y, z}), normal({nx, ny, nz}) {}
+  Plane(std::initializer_list<utl::Vec<float, 3>> list)
+  {
+    auto it = list.begin();
+    if (list.size() >= 1)
+      point = *it++;
+    if (list.size() >= 2)
+      normal = *it;
+  }
+  void setpoint(utl::Vec<float, 3> point) { point = point; }
+  void setnormal(utl::Vec<float, 3> normal) { normal = normal; }
+};
