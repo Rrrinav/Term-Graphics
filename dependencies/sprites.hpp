@@ -9,8 +9,6 @@
 
 #include "../dependencies/color.hpp"
 
-// TODO: Add Normalization for sprite dimensions
-
 class Sprite
 {
   size_t _width;
@@ -18,12 +16,26 @@ class Sprite
   std::vector<char> _characters;
   std::vector<Color> _colors;
 
-  public:
+public:
   Sprite() = default;
   Sprite(const std::string &filename) { load_from_file(filename); }
   Sprite(size_t width, size_t height, std::vector<char> characters, std::vector<Color> colors)
       : _width(width), _height(height), _characters(characters), _colors(colors)
   {
+  }
+
+  char get_char(float x, float y) const
+  {
+    size_t nx = _width * x;
+    size_t ny = _height * y;
+    return _characters[ny * _width + nx];
+  }
+
+  Color get_color(float x, float y) const
+  {
+    size_t nx = _width * x;
+    size_t ny = _height * y;
+    return _colors[ny * _width + nx];
   }
 
   // Format of the file:

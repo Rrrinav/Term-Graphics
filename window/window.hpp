@@ -534,7 +534,6 @@ public:
     static void update_input_states() { update_mouse_and_key_states(); }
 };
 
-// TODO: Implement arrow keys too bruv...
 
 // Initialize the static member
 std::unordered_map<Keys, bool> Window::key_states;

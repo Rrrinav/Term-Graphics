@@ -186,7 +186,24 @@ namespace utl
     IL Matrix<T> operator*(const Matrix<Y> &other) const;
     template <typename Y>
     IL Matrix<T> operator/(const Matrix<Y> &other) const;
-
+    IL Matrix<T> operator/(const T &scalar) const
+    {
+      Matrix<T> result = *this;
+      for (size_t i = 0; i < size(); ++i) result.data[i] = result.data[i] / scalar;
+      return result;
+    }
+    IL Matrix<T> operator-() const
+    {
+      Matrix<T> result = *this;
+      for (size_t i = 0; i < size(); ++i) result.data[i] = -result.data[i];
+      return result;
+    }
+    IL Matrix<T> operator+=(const Matrix<T> &other) { return *this = *this + other; }
+    IL Matrix<T> operator-=(const Matrix<T> &other) { return *this = *this - other; }
+    IL Matrix<T> operator*=(const Matrix<T> &other) { return *this = *this * other; }
+    IL Matrix<T> operator/=(const Matrix<T> &other) { return *this = *this / other; }
+    IL Matrix<T> operator*=(const T &scalar) { return *this = *this * scalar; }
+    IL Matrix<T> operator/=(const T &scalar) { return *this = *this / scalar; }
     //-------------------------------------------------------------------------------------------------
     //                                   |  MATRIX OPERATIONS  |
     //-------------------------------------------------------------------------------------------------
@@ -372,6 +389,11 @@ namespace utl
 
     //--------------------------------------| ARITHEMATIC OPERATIONS |--------------------------------------
     IL Vec operator*(const T x) const;
+    IL Vec operator/(const T x) const {
+        Vec result;
+        for (size_t i = 0; i < _size; ++i) result[i] = (*this)[i] / x;
+        return result;
+    }
     template <typename Y, size_t n_x>
     IL Vec operator*(const Vec<Y, n_x> &x) const;
     template <typename Y, size_t n_x>
@@ -383,6 +405,41 @@ namespace utl
     IL Vec operator-(const Vec<Y, n_x> &x) const;
     template <typename Y>
     Vec<T, _size> operator*(const Matrix<Y> &m) const;
+    IL Vec<T, _size> operator-() const {
+        Vec result;
+        for (size_t i = 0; i < _size; ++i) result[i] = -(*this)[i];
+        return result;
+    }
+    template <typename Y, size_t n_x>
+    IL Vec<T, _size>& operator+=(const Vec<Y, n_x> &x) {
+        for (size_t i = 0; i < _size; ++i) (*this)[i] += x[i];
+        return *this;
+    }
+    template <typename Y, size_t n_x>
+    IL Vec<T, _size>& operator-=(const Vec<Y, n_x> &x) {
+        for (size_t i = 0; i < _size; ++i) (*this)[i] -= x[i];
+        return *this;
+    }
+    template <typename Y>
+    IL Vec<T, _size>& operator*=(const Y x) {
+        for (size_t i = 0; i < _size; ++i) (*this)[i] *= x;
+        return *this;
+    }
+    template <typename Y>
+    IL Vec<T, _size>& operator/=(const Y x) {
+        for (size_t i = 0; i < _size; ++i) (*this)[i] /= x;
+        return *this;
+    }
+    template <typename Y, size_t n_x>
+    IL Vec<T, _size>& operator*=(const Vec<Y, n_x> &x) {
+        for (size_t i = 0; i < _size; ++i) (*this)[i] *= x[i];
+        return *this;
+    }
+    template <typename Y, size_t n_x>
+    IL Vec<T, _size>& operator/=(const Vec<Y, n_x> &x) {
+        for (size_t i = 0; i < _size; ++i) (*this)[i] /= x[i];
+        return *this;
+    }
 
     //-----------------------------------------------| UTILITY |-------------------------------------------------
     // Calculate elemen wise sin or cos

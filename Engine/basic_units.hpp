@@ -7,14 +7,34 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
 
-struct Triangle3D
+struct Texture_coord
+{
+  float u;
+  float v;
+  Texture_coord(std::initializer_list<float> list)
+  {
+    auto it = list.begin();
+    if (list.size() >= 1)
+      u = *it++;
+    if (list.size() >= 2)
+      v = *it;
+  }
+  Texture_coord(float u, float v) : u(u), v(v) {}
+  Texture_coord() : u(0), v(0) {}
+};
+
+class Triangle3D
 {
   utl::Vec<float, 3> _v1;
   utl::Vec<float, 3> _v2;
   utl::Vec<float, 3> _v3;
+  Texture_coord _t1;
+  Texture_coord _t2;
+  Texture_coord _t3;
   char _ch;
   Color _color;
 
+public:
   Triangle3D(utl::Vec<float, 3> v1, utl::Vec<float, 3> v2, utl::Vec<float, 3> v3, char ch, Color color)
       : _v1(v1), _v2(v2), _v3(v3), _ch(ch), _color(color)
   {
@@ -50,7 +70,7 @@ struct Triangle3D
     }
     return *this;
   }
-  Triangle3D(std::initializer_list<utl::Vec<float, 3>> list)
+  Triangle3D(std::initializer_list<utl::Vec<float, 3>> list, std::initializer_list<Texture_coord> tex_coords = {})
   {
     auto it = list.begin();
     if (list.size() >= 1)
@@ -60,9 +80,17 @@ struct Triangle3D
     if (list.size() >= 3)
       _v3 = *it;
 
+    if (tex_coords.size() >= 1)
+      _t1 = *tex_coords.begin();
+    if (tex_coords.size() >= 2)
+      _t2 = *(tex_coords.begin() + 1);
+    if (tex_coords.size() >= 3)
+      _t3 = *(tex_coords.begin() + 2);
+
     _ch = '.';
     _color = WHITE;
   }
+
   void set_v1(utl::Vec<float, 3> v1) { _v1 = v1; }
   void set_v2(utl::Vec<float, 3> v2) { _v2 = v2; }
   void set_v3(utl::Vec<float, 3> v3) { _v3 = v3; }
@@ -74,6 +102,45 @@ struct Triangle3D
   std::vector<utl::Vec<float, 3>> get_vertices() const { return {_v1, _v2, _v3}; }
   char get_char() const { return _ch; }
   Color get_color() const { return _color; }
+  Triangle3D operator+(const utl::Vec<float, 3> &v) const { return {_v1 + v, _v2 + v, _v3 + v, _ch, _color}; }
+  Triangle3D operator-(const utl::Vec<float, 3> &v) const { return {_v1 - v, _v2 - v, _v3 - v, _ch, _color}; }
+  Triangle3D operator*(float scalar) const { return {_v1 * scalar, _v2 * scalar, _v3 * scalar, _ch, _color}; }
+  Triangle3D operator/(float scalar) const { return {_v1 / scalar, _v2 / scalar, _v3 / scalar, _ch, _color}; }
+  Triangle3D &operator+=(const utl::Vec<float, 3> &v)
+  {
+    _v1 += v;
+    _v2 += v;
+    _v3 += v;
+    return *this;
+  }
+  Triangle3D &operator-=(const utl::Vec<float, 3> &v)
+  {
+    _v1 -= v;
+    _v2 -= v;
+    _v3 -= v;
+    return *this;
+  }
+  Triangle3D &operator*=(float scalar)
+  {
+    _v1 *= scalar;
+    _v2 *= scalar;
+    _v3 *= scalar;
+    return *this;
+  }
+  Triangle3D &operator/=(float scalar)
+  {
+    _v1 /= scalar;
+    _v2 /= scalar;
+    _v3 /= scalar;
+    return *this;
+  }
+  friend Triangle3D operator*(float scalar, const Triangle3D &tri) { return tri * scalar; }
+  utl::Vec<float, 3> get_normal() const
+  {
+    auto v1 = _v2 - _v1;
+    auto v2 = _v3 - _v1;
+    return v1.cross(v2).get_normalized_vector();
+  }
 };
 
 struct Mesh
@@ -89,27 +156,28 @@ struct Mesh
   {
     Mesh cube = {
         // SOUTH (front face, z = 0)
-        {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f}},  // Clockwise
+        {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f}},
+
         {{0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
 
         // EAST (right face, x = 1)
-        {{1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},  // Clockwise
+        {{1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
         {{1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 1.0f}},
 
         // NORTH (back face, z = 1)
-        {{1.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 1.0f}},  // Clockwise
+        {{1.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 1.0f}},
         {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
 
         // WEST (left face, x = 0)
-        {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},  // Clockwise
+        {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
         {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
 
         // TOP (y = 1)
-        {{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}},  // Clockwise
+        {{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}},
         {{0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 0.0f}},
 
         // BOTTOM (y = 0)
-        {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}},  // Clockwise
+        {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}},
         {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
     };
 

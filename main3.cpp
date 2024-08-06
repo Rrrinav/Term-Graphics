@@ -1,6 +1,6 @@
 #include "dependencies/color.hpp"
 #define RENDERER_IMPLEMENTATION
-#include "./Renderer3D/ascii.hpp"
+#include "./Engine/Engine3D.hpp"
 #define L_GEBRA_IMPLEMENTATION
 #include <algorithm>
 #include <cmath>
@@ -12,8 +12,8 @@ int main()
   Engine3D r(150, 150);
   r.set_bg_color(GRAY_1);
   Mesh mesh;
-  mesh.load_from_obj("./assets/axis.obj");
-  r.set_mesh(mesh);
+  // mesh.load_from_obj("./assets/axis.obj");
+  r.set_mesh(Mesh::get_cube());
   float angle = 0.1f;
   utl::Vec<float, 3> look_dir = {0, 0, 1};
   while (true)
@@ -35,6 +35,8 @@ int main()
       r.rotate_look_dir(angle, 'y');
     if (Window::is_pressed(KEY_o))
       r.rotate_look_dir(-angle, 'y');
+    if (Window::is_pressed(KEY_ESC))
+      break;
 
     r.empty();
     r.reset_screen();
@@ -47,11 +49,6 @@ int main()
       auto v1 = tri.get_v1();
       auto v2 = tri.get_v2();
       auto v3 = tri.get_v3();
-
-      // Apply rotation transformations
-      // v1 = v1.rotate(angle, 'y');
-      // v2 = v2.rotate(angle, 'y');
-      // v3 = v3.rotate(angle, 'y');
 
       // Translate the vertices
       v1[2] += 8;
@@ -74,15 +71,6 @@ int main()
         utl::Vec<float, 3> plane_n = {0, 0, 0.1};
         auto t = r.clip_triangle(Triangle3D(v1, v2, v3), {0, 0, 1.0}, plane_n);
 
-        // std::cout << "clipped_triangles main =====================================\n";
-        //
-        // for (auto &clipped_tri : t)
-        // {
-        //   std::cout << clipped_tri.get_v1()[0] << " " << clipped_tri.get_v1()[1] << " " << clipped_tri.get_v1()[2] << std::endl;
-        //   std::cout << clipped_tri.get_v2()[0] << " " << clipped_tri.get_v2()[1] << " " << clipped_tri.get_v2()[2] << std::endl;
-        //   std::cout << clipped_tri.get_v3()[0] << " " << clipped_tri.get_v3()[1] << " " << clipped_tri.get_v3()[2] << std::endl;
-        //   std::cout << clipped_tri.get_color().get_rgb_string() << std::endl;
-        // }
         for (auto &tr : t)
         {
           v1 = tr.get_v1();
@@ -99,9 +87,9 @@ int main()
           auto shade = char_gradient[(int)(intensity * (char_gradient.size()))];
           auto color = grayscale_gradient[(int)(intensity * (grayscale_gradient.size()))];
 
-          v1 = v1 + utl::Vec<float, 3>({1, 1, 0});
-          v2 = v2 + utl::Vec<float, 3>({1, 1, 0});
-          v3 = v3 + utl::Vec<float, 3>({1, 1, 0});
+          v1 += utl::Vec<float, 3>{1, 1, 0};
+          v2 += utl::Vec<float, 3>{1, 1, 0};
+          v3 += utl::Vec<float, 3>{1, 1, 0};
 
           v1[0] = v1[0] * 0.5f * 150;
           v1[1] = v1[1] * 0.5f * 150;
@@ -127,7 +115,7 @@ int main()
       listTriangles = r.tri_clip_against_screen(triToRaster);
       for (auto &t : listTriangles)
       {
-        r.draw_fill_triangle({(int)t.get_v1()[0], (int)t.get_v1()[1]},
+        r.draw_triangle({(int)t.get_v1()[0], (int)t.get_v1()[1]},
                              {(int)t.get_v2()[0], (int)t.get_v2()[1]},
                              {(int)t.get_v3()[0], (int)t.get_v3()[1]},
                              t.get_char(),
@@ -136,11 +124,6 @@ int main()
     }
 
     r.print();
-
-    // Update the angle for rotation
-    // angle += 0.01f;
-    // if (angle > 2 * M_PI)
-    //   angle = 0;
   }
 
   std::cin.get();

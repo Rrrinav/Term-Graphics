@@ -8,7 +8,6 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
 
-// TODO: Use size_t for width and height
 class Glyph
 {
 private:

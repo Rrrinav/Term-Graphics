@@ -12,8 +12,6 @@
 #define RENDERER_IMPLEMENTATION
 #include "../renderer2D/ascii.hpp"
 
-// BUG: Triangle clipping is not working properly.
-
 class Engine3D : public Renderer
 {
 private:
@@ -63,6 +61,16 @@ public:
     return result;
   }
 
+  utl::Vec<float, 3> get_look_dir() const { return _look_dir; }
+  Triangle3D project_triangle(const Triangle3D &tri) const
+  {
+    Triangle3D projected_tri = tri;
+    projected_tri.set_v1(get_projection(tri.get_v1()));
+    projected_tri.set_v2(get_projection(tri.get_v2()));
+    projected_tri.set_v3(get_projection(tri.get_v3()));
+    return projected_tri;
+  }
+
   utl::Vec<float, 3> get_camera_pos() const { return _camera_pos; }
 
   void set_camera_pos(const utl::Vec<float, 3> &pos) { _camera_pos = pos; }
@@ -76,7 +84,7 @@ public:
 
   void rotate_look_dir(float angle, char axis)
   {
-    _look_dir = (_look_dir.rotate(angle, axis)).get_normalized_vector();
+    _look_dir = (_look_dir.get_normalized_vector().rotate(angle, axis)).get_normalized_vector();
     update_view({0, 1, 0});
   }
 
@@ -93,6 +101,15 @@ public:
       result[1] /= w;
       result[2] /= w;
     }
+    return result;
+  }
+
+  Triangle3D apply_view_transform(const Triangle3D &tri) const
+  {
+    Triangle3D result = tri;
+    result.set_v1(apply_view_transform(tri.get_v1()));
+    result.set_v2(apply_view_transform(tri.get_v2()));
+    result.set_v3(apply_view_transform(tri.get_v3()));
     return result;
   }
 

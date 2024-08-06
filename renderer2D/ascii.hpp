@@ -46,7 +46,7 @@ public:
   size_t get_height() const;
   void Init();
   void end() { _window.cleanup_terminal(); }
-  // TODO: Implement draw methods using shapes and caching for all the shapes bruv..
+
   bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
   bool draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color = Color(WHITE));
   bool draw_point(const Point &point)
@@ -968,7 +968,4 @@ void Renderer::hide_cursor() { std::cout << "\033[?25l"; }
 
 void Renderer::show_cursor() { std::cout << "\033[?25h"; }
 
-// TODO: Texture Mapping, animations
-//       Camera system, 3D rendering,
-//       key frames, procedural generation
 #endif  // RENDERER_IMPLEMENTATION
