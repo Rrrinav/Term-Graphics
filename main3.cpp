@@ -35,7 +35,7 @@ int main()
       r.rotate_look_dir(angle, 'y');
     if (Window::is_pressed(KEY_o))
       r.rotate_look_dir(-angle, 'y');
-    if (Window::is_pressed(KEY_ESC))
+    if (Window::is_pressed(Keys::KEY_ESC))
       break;
 
     r.empty();
@@ -125,7 +125,8 @@ int main()
 
     r.print();
   }
-
+  
+  r.sleep(1000 / 60);
   std::cin.get();
   return 0;
 }
