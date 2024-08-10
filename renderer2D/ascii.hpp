@@ -7,9 +7,7 @@
 #include <string>
 #include <vector>
 
-// PERF: We need to make this faster, super faster
 // TODO: Testing on windows
-// TODO: More and better error handling and exception handling (even though we dont need much of it)
 
 #define L_GEBRA_IMPLEMENTATION
 

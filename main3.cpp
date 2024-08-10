@@ -10,10 +10,10 @@
 int main()
 {
   Engine3D r(150, 150);
-  r.set_bg_color(GRAY_1);
+  r.set_bg_color(GRAY_2);
   Mesh mesh;
-  // mesh.load_from_obj("./assets/axis.obj");
-  r.set_mesh(Mesh::get_cube());
+  mesh.load_from_obj("./assets/Mario.obj");
+  r.set_mesh(mesh);
   float angle = 0.1f;
   utl::Vec<float, 3> look_dir = {0, 0, 1};
   while (true)
@@ -50,6 +50,9 @@ int main()
       auto v2 = tri.get_v2();
       auto v3 = tri.get_v3();
 
+      v1 = v1.rotate(M_PI, 'y');
+      v2 = v2.rotate(M_PI, 'y');
+      v3 = v3.rotate(M_PI, 'y');
       // Translate the vertices
       v1[2] += 8;
       v2[2] += 8;
@@ -115,17 +118,17 @@ int main()
       listTriangles = r.tri_clip_against_screen(triToRaster);
       for (auto &t : listTriangles)
       {
-        r.draw_triangle({(int)t.get_v1()[0], (int)t.get_v1()[1]},
-                             {(int)t.get_v2()[0], (int)t.get_v2()[1]},
-                             {(int)t.get_v3()[0], (int)t.get_v3()[1]},
-                             t.get_char(),
-                             t.get_color());
+        r.draw_fill_triangle({(int)t.get_v1()[0], (int)t.get_v1()[1]},
+                        {(int)t.get_v2()[0], (int)t.get_v2()[1]},
+                        {(int)t.get_v3()[0], (int)t.get_v3()[1]},
+                        t.get_char(),
+                        t.get_color());
       }
     }
 
     r.print();
   }
-  
+
   r.sleep(1000 / 60);
   std::cin.get();
   return 0;

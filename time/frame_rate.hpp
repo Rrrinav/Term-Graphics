@@ -57,6 +57,7 @@ class Frame_rate
   }
 
   double get_delta_time() const { return last_frame_duration; }
+  double get_current_frame_duration() const { return last_frame_duration; }
 
   void start_frame() { frame_start_time = std::chrono::high_resolution_clock::now(); }
 
