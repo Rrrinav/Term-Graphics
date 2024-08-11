@@ -36,9 +36,9 @@ static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
  */
 class Renderer
 {
-  std::shared_ptr<Buffer> _buffer;  //>> The buffer to draw to
-  Color _bg_color = Color(TRANSPARENT); //>> The background color of the renderer
-  Window _window; //>> The window object
+  std::shared_ptr<Buffer> _buffer;       //>> The buffer to draw to
+  Color _bg_color = Color(TRANSPARENT);  //>> The background color of the renderer
+  Window _window;                        //>> The window object
 
 public:
   // Constructors
