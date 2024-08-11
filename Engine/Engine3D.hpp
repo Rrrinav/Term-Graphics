@@ -12,16 +12,29 @@
 #define RENDERER_IMPLEMENTATION
 #include "../renderer2D/ascii.hpp"
 
+/*!
+  * Engine3D class is a simple 3D rendering engine that uses 3D triangles to render 3D objects.
+  * This class is a subclass of Renderer class from renderer2D/ascii.hpp.
+  */
 class Engine3D : public Renderer
 {
 private:
-  Mesh _mesh;
-  utl::Matrix<float> _projection_mat;
-  utl::Matrix<float> _view_matrix;
-  utl::Vec<float, 3> _camera_pos;
-  utl::Vec<float, 3> _look_dir;
+  Mesh _mesh;                          //>> Mesh object to store the 3D triangles
+  utl::Matrix<float> _projection_mat;  //>> Projection matrix for the camera
+  utl::Matrix<float> _view_matrix;     //>> View matrix for the camera
+  utl::Vec<float, 3> _camera_pos;      //>> Camera position
+  utl::Vec<float, 3> _look_dir;        //>> Camera look direction
 
 public:
+  /*
+  * Constructor for Engine3D class.
+  * @param width Width of the screen
+  * @param height Height of the screen
+  * @param fov Field of view in degrees, default is 90 degrees
+  * @param znear Near clipping plane, default is 1.0
+  * @param zfar Far clipping plane, default is 1000.0
+  * @return Engine3D object
+  */
   Engine3D(float width, float height, float fov = 90.0f, float znear = 1.0f, float zfar = 1000.0f)
       : Renderer((size_t)width, (size_t)height), _mesh(), _projection_mat(4, 4), _view_matrix(4, 4), _camera_pos({0, 0, 0})
   {
@@ -36,11 +49,34 @@ public:
     _look_dir = {0, 0, 1};
   }
 
+  /*!
+  * Destructor for Engine3D class.
+  */
+  ~Engine3D() = default;
+
+  /*
+  * Set the mesh object for the Engine3D class.
+  * @param mesh Mesh object to set
+  */
   void set_mesh(const Mesh &mesh) { _mesh = mesh; }
 
+  /*!
+  * Get the mesh object from the Engine3D class.
+  * @return Mesh object
+  */
   std::vector<Triangle3D> get_mesh() const { return _mesh.triangles; }
+
+  /*!
+  * get_projection_matrix function returns the projection matrix of the camera.
+  * @return Projection matrix of the camera
+  */
   utl::Matrix<float> get_projection_matrix() const { return _projection_mat; }
 
+  /*
+  * get_view_matrix function returns projected vertex
+  * @param point The point to project
+  * @return Projected vertex
+  */
   utl::Vec<float, 3> get_projection(const utl::Vec<float, 3> &point) const
   {
     utl::Vec<float, 3> result;
@@ -61,7 +97,17 @@ public:
     return result;
   }
 
+  /*!
+  * Get the look direction of the camera.
+  * @return Look direction of the camera
+  */
   utl::Vec<float, 3> get_look_dir() const { return _look_dir; }
+
+  /*!
+  * Project a 3D triangle to 2D.
+  * @param tri Triangle to project
+  * @return Projected triangle
+  */
   Triangle3D project_triangle(const Triangle3D &tri) const
   {
     Triangle3D projected_tri = tri;
@@ -71,23 +117,45 @@ public:
     return projected_tri;
   }
 
+  /*!
+  * Get the camera position.
+  * @return Camera position
+  */
   utl::Vec<float, 3> get_camera_pos() const { return _camera_pos; }
-
+  
+  /*!
+  * Set the camera position.
+  * @param pos Camera position to set
+  */
   void set_camera_pos(const utl::Vec<float, 3> &pos) { _camera_pos = pos; }
-
+  
+  /*!
+  * Update the view matrix according to changes made to the camera.
+  * @param up Up vector of the camera
+  */
   void update_view(const utl::Vec<float, 3> &up)
   {
     utl::Vec<float, 3> target = _camera_pos + _look_dir;
     utl::Matrix<float> camera_mat = _create_cam_matrix(_camera_pos, target, up);
     _view_matrix = _non_scale_inverse(camera_mat);
   }
-
+  
+  /*!
+  * Rotate the camera around the look direction.
+  * @param angle Angle to rotate
+  * @param axis Axis to rotate around
+  */
   void rotate_look_dir(float angle, char axis)
   {
     _look_dir = (_look_dir.get_normalized_vector().rotate(angle, axis)).get_normalized_vector();
     update_view({0, 1, 0});
   }
-
+  
+  /*!
+  * Apply view transformation to a point.
+  * @param point Point to transform
+  * @return Transformed point
+  */
   utl::Vec<float, 3> apply_view_transform(const utl::Vec<float, 3> &point) const
   {
     utl::Vec<float, 3> result;
@@ -103,7 +171,12 @@ public:
     }
     return result;
   }
-
+  
+  /*!
+  * Apply view transformation to a triangle.
+  * @param tri Triangle to transform
+  * @return Transformed triangle
+  */
   Triangle3D apply_view_transform(const Triangle3D &tri) const
   {
     Triangle3D result = tri;
@@ -112,9 +185,20 @@ public:
     result.set_v3(apply_view_transform(tri.get_v3()));
     return result;
   }
-
+  
+  /*!
+  * Pan the camera.
+  * @param pan Pan vector to be added to current camera position
+  */
   void pan_cam(const utl::Vec<float, 3> &pan) { _camera_pos = _camera_pos + pan; }
-
+  
+  /*!
+  * Clip a triangle against a plane.
+  * @param tri Triangle to clip
+  * @param plane_p Point on the plane
+  * @param plane_n Normal of the plane
+  * @return Clipped triangles
+  */
   std::vector<Triangle3D> clip_triangle(const Triangle3D &tri, const utl::Vec<float, 3> &plane_p, utl::Vec<float, 3> &plane_n)
   {
     Triangle3D in_tri = tri;
@@ -129,14 +213,34 @@ public:
 
     return clipped_triangles;
   }
-
+  
+  /*!
+  * Clip a triangle against a plane.
+  * @param tri Triangle to clip
+  * @param plane Plane object to clip against
+  * @return Clipped triangles
+  */
   std::vector<Triangle3D> clip_triangle(const Triangle3D &tri, Plane plane) { return clip_triangle(tri, plane.point, plane.normal); }
-
+  
+  /*!
+  * Clip a triangle against a plane
+  * @param plane Plane object to clip against
+  * @param in_tri Triangle to clip
+  * @param out_tri1 Reference to the first output triangle
+  * @param out_tri2 Reference to the second output triangle
+  * @return Number of clipped triangles
+  */
   int tri_clip_against_plane(Plane plane, const Triangle3D &in_tri, Triangle3D &out_tri1, Triangle3D &out_tri2)
   {
     return tri_clip_against_plane(plane.point, plane.normal, in_tri, out_tri1, out_tri2);
   }
-
+  
+  /*!
+  * Clip a triangle against multiple planes.
+  * @param triangle Triangle to clip
+  * @param planes vector of planes to clip against
+  * @return Clipped triangles
+  */
   std::vector<Triangle3D> tri_clip_against_planes(const Triangle3D &triangle, std::vector<Plane> planes)
   {
     std::list<Triangle3D> listTriangles = {triangle};
@@ -160,7 +264,12 @@ public:
 
     return std::vector<Triangle3D>(listTriangles.begin(), listTriangles.end());
   }
-
+  
+  /*!
+  * Clip a triangle against the screen.
+  * @param triangle Triangle to clip
+  * @return Clipped triangles
+  */
   std::vector<Triangle3D> tri_clip_against_screen(const Triangle3D &triangle)
   {
     std::vector<Plane> screen_planes = {Plane({0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}),
@@ -170,6 +279,15 @@ public:
     return tri_clip_against_planes(triangle, screen_planes);
   }
 
+  /*!
+  * Main function for clipping a triangle against a plane.
+  * @param plane_p Point on the plane
+  * @param planen Normal of the plane
+  * @param in_tri Triangle to clip
+  * @param out_tri1 Reference to the first output triangle
+  * @param out_tri2 Reference to the second output triangle
+  * @return Number of clipped triangles
+  */
   int tri_clip_against_plane(const utl::Vec<float, 3> &plane_p, const utl::Vec<float, 3> &planen, const Triangle3D &in_tri,
                              Triangle3D &out_tri1, Triangle3D &out_tri2)
   {
