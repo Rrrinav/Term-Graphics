@@ -122,13 +122,13 @@ public:
   * @return Camera position
   */
   utl::Vec<float, 3> get_camera_pos() const { return _camera_pos; }
-  
+
   /*!
   * Set the camera position.
   * @param pos Camera position to set
   */
   void set_camera_pos(const utl::Vec<float, 3> &pos) { _camera_pos = pos; }
-  
+
   /*!
   * Update the view matrix according to changes made to the camera.
   * @param up Up vector of the camera
@@ -139,7 +139,7 @@ public:
     utl::Matrix<float> camera_mat = _create_cam_matrix(_camera_pos, target, up);
     _view_matrix = _non_scale_inverse(camera_mat);
   }
-  
+
   /*!
   * Rotate the camera around the look direction.
   * @param angle Angle to rotate
@@ -150,7 +150,7 @@ public:
     _look_dir = (_look_dir.get_normalized_vector().rotate(angle, axis)).get_normalized_vector();
     update_view({0, 1, 0});
   }
-  
+
   /*!
   * Apply view transformation to a point.
   * @param point Point to transform
@@ -171,7 +171,7 @@ public:
     }
     return result;
   }
-  
+
   /*!
   * Apply view transformation to a triangle.
   * @param tri Triangle to transform
@@ -185,13 +185,13 @@ public:
     result.set_v3(apply_view_transform(tri.get_v3()));
     return result;
   }
-  
+
   /*!
   * Pan the camera.
   * @param pan Pan vector to be added to current camera position
   */
   void pan_cam(const utl::Vec<float, 3> &pan) { _camera_pos = _camera_pos + pan; }
-  
+
   /*!
   * Clip a triangle against a plane.
   * @param tri Triangle to clip
@@ -213,7 +213,7 @@ public:
 
     return clipped_triangles;
   }
-  
+
   /*!
   * Clip a triangle against a plane.
   * @param tri Triangle to clip
@@ -221,7 +221,7 @@ public:
   * @return Clipped triangles
   */
   std::vector<Triangle3D> clip_triangle(const Triangle3D &tri, Plane plane) { return clip_triangle(tri, plane.point, plane.normal); }
-  
+
   /*!
   * Clip a triangle against a plane
   * @param plane Plane object to clip against
@@ -234,7 +234,7 @@ public:
   {
     return tri_clip_against_plane(plane.point, plane.normal, in_tri, out_tri1, out_tri2);
   }
-  
+
   /*!
   * Clip a triangle against multiple planes.
   * @param triangle Triangle to clip
@@ -264,7 +264,7 @@ public:
 
     return std::vector<Triangle3D>(listTriangles.begin(), listTriangles.end());
   }
-  
+
   /*!
   * Clip a triangle against the screen.
   * @param triangle Triangle to clip
