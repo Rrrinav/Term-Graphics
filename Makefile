@@ -27,7 +27,7 @@ engine: sprite_engine.cpp
 
 # Example 2: wall
 example_2: Examples/2wall.cpp
-	$(cc) Examples/2wall.cpp -o $(build_dir)/example2 $(flags) && ./$(build_dir)/example2
+	cd Examples && $(cc) 2wall.cpp -o ../$(build_dir)/example2 $(flags) && ../$(build_dir)/example2
 
 # Example 3: perlin noise
 example_3: Examples/3perlin_noise.cpp

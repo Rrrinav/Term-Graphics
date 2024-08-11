@@ -25,282 +25,365 @@
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
 
-// Renderer class
+/*!
+ * \class Renderer
+ *
+ * \brief The Renderer class provides functions to draw various shapes, text, and UI elements onto a buffer.
+ *
+ * This class handles the rendering of graphical elements in a terminal-based environment. It supports 
+ * a wide range of drawing functions for points, lines, circles, rectangles, triangles, polygons, text, 
+ * and UI elements like buttons, sliders, and textboxes.
+ */
 class Renderer
 {
-  std::shared_ptr<Buffer> _buffer;
-  Color _bg_color = Color(TRANSPARENT);
-  Window _window;
+  std::shared_ptr<Buffer> _buffer;  //>> The buffer to draw to
+  Color _bg_color = Color(TRANSPARENT); //>> The background color of the renderer
+  Window _window; //>> The window object
 
 public:
+  // Constructors
   Renderer();
   Renderer(size_t width, size_t height);
   Renderer(std::shared_ptr<Buffer> buffer);
-  Renderer(size_t width, size_t height, Color bg_color) : _buffer(std::make_shared<Buffer>(width, height)), _bg_color(bg_color) { Init(); }
-  ~Renderer() { _window.cleanup_terminal(); }
+  Renderer(size_t width, size_t height, Color bg_color);
+  // Destructor
+  ~Renderer();
+  // Getters
 
+  //Get the smart pointer to the buffer
+  //@return The smart pointer to the buffer
   const Buffer &get_buffer() const;
+
+  //Get the width of the buffer
+  //@return The width of the buffer
   size_t get_width() const;
+
+  //Get the height of the buffer
+  //@return The height of the buffer
   size_t get_height() const;
+
+  // Initialize the renderer
+  // This function initializes the terminal window for rendering
   void Init();
+
+  // End the renderer
+  // This function cleans up the terminal window
   void end() { _window.cleanup_terminal(); }
 
+  // Draw a point
+  // @param point The point to draw
+  // @param c The character to draw
+  // @param color The color of the point, default is white
+  // @return True if the point was drawn, false otherwise
   bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
+
+  // Draw a point with two characters
+  // @param point The point to draw
+  // @param c The character to draw
+  // @param c2 The second character to draw
+  // @param color The color of the point, default is white
   bool draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color = Color(WHITE));
-  bool draw_point(const Point &point)
-  {
-    bool i = draw_point2(point.get_pos(), point.get_char(), point.get_char2(), point.get_color());
-    return i;
-  }
-  bool draw_half_point(utl::Vec<int, 2> point, char c, bool left, Color color = Color(WHITE))
-  {
-    _buffer->set_absolute(point, c, left, color);
-    return true;
-  }
-  bool draw_half_point(const half_point &point)
-  {
-    _buffer->set_absolute(point.get_pos(), point.get_char(), point.is_left(), point.get_color());
-    return true;
-  }
+
+  // Draw a point
+  // @param point The point to draw
+  // @return True if the point was drawn, false otherwise
+  bool draw_point(const Point &point);
+
+  // Draw a half point
+  // @param point The point to draw
+  // @param c The character to draw
+  // @param left Whether to draw the left or right half
+  // @param color The color of the point, default is white
+  bool draw_half_point(utl::Vec<int, 2> point, char c, bool left, Color color = Color(WHITE));
+
+  // Draw a half point
+  // @param point object The point to draw
+  bool draw_half_point(const half_point &point);
+
+  // Draw a line
+  // @param start The start point of the line
+  // @param end The end point of the line
+  // @param c The character to draw
+  // @param color The color of the line, default is white
   void draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
+
+  // Draw a line
+  // @param line object The line to draw
   void draw_line(const Line &line) { draw_line(line.get_start(), line.get_end(), line.get_char(), line.get_color()); }
+
+  // Draw an anti-aliased line
+  // @param start The start point of the line
+  // @param end The end point of the line
+  // @param color The color of the line, default is white
   void draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, Color color = Color(WHITE));
+
+  // Draw an anti-aliased line
+  // @param line object The line to draw
   void draw_anti_aliased_line(const Line &line) { draw_anti_aliased_line(line.get_start(), line.get_end(), line.get_color()); }
+
+  // Draw a circle
+  // @param center The center of the circle
+  // @param radius The radius of the circle
+  // @param c The character to draw
+  // @param color The color of the circle, default is white
   void draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
+
+  // Draw a circle
+  // @param circle object The circle to draw
   void draw_circle(const Circle &circle) { draw_circle(circle.get_center(), circle.get_radius(), circle.get_char(), circle.get_color()); }
+
+  // Draw a filled circle
+  // @param center The center of the circle
+  // @param radius The radius of the circle
+  // @param c The character to draw
+  // @param color The color of the circle, default is white
   void draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
-  void draw_fill_circle(const Circle &circle)
-  {
-    draw_fill_circle(circle.get_center(), circle.get_radius(), circle.get_char(), circle.get_color());
-  }
+
+  // Draw a filled circle using a Circle object
+  // @param circle The Circle object to draw
+  void draw_fill_circle(const Circle &circle);
+
+  // Draw a rectangle
+  // @param start The top-left corner of the rectangle
+  // @param width The width of the rectangle
+  // @param height The height of the rectangle
+  // @param c The character to draw
+  // @param char2 The second character to draw, vertical lines, default is '@'
+  // @param color The color of the rectangle, default is white
   void draw_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, char char2 = '@', Color color = WHITE);
-  void draw_rectangle(const Rectangle &rectangle)
-  {
-    draw_rectangle(
-        rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(), '@', rectangle.get_color());
-  }
+
+  // Draw a rectangle
+  // @param rectangle object The rectangle to draw
+  void draw_rectangle(const Rectangle &rectangle);
+
+  // Draw a filled rectangle
+  // @param start The top-left corner of the rectangle
+  // @param width The width of the rectangle
+  // @param height The height of the rectangle
+  // @param c The character to draw
+  // @param color The color of the rectangle, default is white
   void draw_fill_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, Color color = WHITE);
-  void draw_fill_rectangle(const Rectangle &rectangle)
-  {
-    draw_fill_rectangle(
-        rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(), rectangle.get_color());
-  }
-  void draw_rect_linear_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, bool horizontal = true)
-  {
-    for (int i = 0; i < (horizontal ? width : height); i++)
-    {
-      float t = static_cast<float>(i) / (horizontal ? width : height);
-      Color color = gradient.get_color_at(t);
-      for (int j = 0; j < (horizontal ? height : width); j++)
-        if (horizontal)
-          _buffer->set({start.x() + i, start.y() + j}, ch, color);
-        else
-          _buffer->set({start.x() + j, start.y() + i}, ch, color);
-    }
-  }
 
-  // Utility function to rotate coordinates
-  std::pair<float, float> rotate_point(float x, float y, float angle)
-  {
-    float cos_theta = std::cos(angle);
-    float sin_theta = std::sin(angle);
-    float rotated_x = x * cos_theta - y * sin_theta;
-    float rotated_y = x * sin_theta + y * cos_theta;
-    return {rotated_x, rotated_y};
-  }
+  // Draw a filled rectangle
+  // @param rectangle object The rectangle to draw
+  void draw_fill_rectangle(const Rectangle &rectangle);
 
-  void draw_rect_rotated_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, float angle)
-  {
-    // Iterate over each pixel in the rectangle
-    for (int i = 0; i < width; ++i)
-    {
-      for (int j = 0; j < height; ++j)
-      {
-        // Calculate the pixel position relative to the start of the rectangle
-        float px = start.x() + i;
-        float py = start.y() + j;
+  // Draw a linear gradient rectangle
+  // @param start The top-left corner of the rectangle
+  // @param width The width of the rectangle
+  // @param height The height of the rectangle
+  // @param ch The character to draw
+  // @param gradient The gradient object
+  // @param horizontal Whether the gradient is horizontal or vertical, default is true
+  void draw_rect_linear_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, bool horizontal = true);
 
-        // Rotate the pixel position to align with the gradient direction
-        auto [rotated_x, rotated_y] = rotate_point(px - start.x() - width / 2.0f, py - start.y() - height / 2.0f, -angle);
+  // Rotate a point around the origin
+  // @param x The x-coordinate of the point
+  // @param y The y-coordinate of the point
+  // @param angle The angle to rotate by
+  // @return The rotated point, as a pair of x and y coordinates
+  std::pair<float, float> rotate_point(float x, float y, float angle);
 
-        // Map rotated coordinates to gradient progress
-        float t = (rotated_x + width / 2.0f) / width;
-        // Get the color at the normalized position
-        Color color = gradient.get_color_at(t);
+  // Draw a rotated gradient rectangle
+  // @param start The top-left corner of the rectangle
+  // @param width The width of the rectangle
+  // @param height The height of the rectangle
+  // @param ch The character to draw
+  // @param gradient The gradient object
+  // @param angle The angle to rotate the gradient by
+  void draw_rect_rotated_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, float angle);
 
-        // Set the pixel in the buffer
-        _buffer->set({start.x() + i, start.y() + j}, ch, color);
-      }
-    }
-  }
-  void draw_rect_radial_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient)
-  {
-    float half_width = width / 2.0f;
-    float half_height = height / 2.0f;
-    // Calculate the center of the rectangle
-    float centerX = start.x() + half_width;
-    float centerY = start.y() + half_height;
+  // Draw a radial gradient rectangle
+  // @param start The top-left corner of the rectangle
+  // @param width The width of the rectangle
+  // @param height The height of the rectangle
+  // @param ch The character to draw
+  // @param gradient The gradient object
+  void draw_rect_radial_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient);
 
-    float max_distance = std::sqrt(half_width * half_width + half_height * half_height);
-    // Iterate over each pixel in the rectangle
-    for (int i = 0; i < width; ++i)
-    {
-      for (int j = 0; j < height; ++j)
-      {
-        // Calculate the distance of the current pixel from the center
-        float distanceX = start.x() + i - centerX;
-        float distanceY = start.y() + j - centerY;
-        float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
-
-        // Normalize the distance to get a value between 0 and 1
-        float t = distance / max_distance;
-
-        // Get the color at the normalized distance
-        Color color = gradient.get_color_at(t);
-
-        // Set the pixel in the buffer
-        _buffer->set({start.x() + i, start.y() + j}, ch, color);
-      }
-    }
-  }
+  // Draw a triangle
+  // @param a The first vertex of the triangle
+  // @param b The second vertex of the triangle
+  // @param c The third vertex of the triangle
+  // @param ch The character to draw
+  // @param color The color of the triangle, default is white
   void draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
-  void draw_triangle(const Triangle &triangle)
-  {
-    auto points = triangle.get_vertices();
-    draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
-  }
+
+  // Draw a triangle
+  // @param triangle object The triangle to draw
+  void draw_triangle(const Triangle &triangle);
+
+  // Draw an anti-aliased triangle
+  // @param a The first vertex of the triangle
+  // @param b The second vertex of the triangle
+  // @param c The third vertex of the triangle
+  // @param color The color of the triangle, default is white
   void draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, Color color = WHITE);
-  void draw_antialiased_triangle(const Triangle &triangle)
-  {
-    auto points = triangle.get_vertices();
-    draw_antialiased_triangle(points[0], points[1], points[2], triangle.get_color());
-  }
+
+  // Draw an anti-aliased triangle
+  // @param triangle object The triangle to draw
+  void draw_antialiased_triangle(const Triangle &triangle);
+
+  // Draw a Xaolin Wu triangle, uses xiaolin wu's line algorithm
+  // @param a The first vertex of the triangle
+  // @param b The second vertex of the triangle
+  // @param c The third vertex of the triangle
+  // @param ch The character to draw
+  // @param color The color of the triangle, default is white
   void draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
-  void draw_xaolin_wu_triangle(const Triangle &triangle)
-  {
-    auto points = triangle.get_vertices();
-    draw_xaolin_wu_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
-  }
+
+  // Draw a Xaolin Wu triangle
+  // @param triangle object The triangle to draw
+  void draw_xaolin_wu_triangle(const Triangle &triangle);
+
+  // Draw a filled triangle
+  // @param a The first vertex of the triangle
+  // @param b The second vertex of the triangle
+  // @param c The third vertex of the triangle
+  // @param ch The character to draw
+  // @param color The color of the triangle, default is white
   void draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
-  void draw_fill_triangle(const Triangle &triangle)
-  {
-    auto points = triangle.get_vertices();
-    draw_fill_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
-  }
+
+  // Draw a filled triangle
+  // @param triangle object The triangle to draw
+  void draw_fill_triangle(const Triangle &triangle);
+
+  // Draw a filled anti-aliased triangle
+  // @param a The first vertex of the triangle
+  // @param b The second vertex of the triangle
+  // @param c The third vertex of the triangle
+  // @param ch The character to draw
+  // @param color The color of the triangle, default is white
   void draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
-  void draw_fill_antialias_triangle(const Triangle &triangle)
-  {
-    auto points = triangle.get_vertices();
-    draw_fill_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
-  }
+
+  // Draw a filled anti-aliased triangle
+  // @param triangle object The triangle to draw
+  void draw_fill_antialias_triangle(const Triangle &triangle);
+
+  // Draw a polygon
+  // @param vertices The vertices of the polygon
+  // @param ch The character to draw
+  // @param color The color of the polygon, default is white
   void draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color = WHITE);
+
+  // Draw a polygon
+  // @param polygon object The polygon to draw
   void draw_polygon(const Polygon &polygon) { draw_polygon(polygon.get_vertices(), polygon.get_char(), polygon.get_color()); }
+
+  // Draw an arc
+  // @param center The center of the arc
+  // @param radius The radius of the arc
+  // @param ch The character to draw
+  // @param end_angle The end angle of the arc
+  // @param start_angle The start angle of the arc, default is 0
+  // @param color The color of the arc, default is white
   void draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f, Color color = WHITE);
+
+  // Draw a text
+  // @param start The starting position of the text
+  // @param text The text to draw
+  // @param color The color of the text, default is white
   void draw_text(utl::Vec<int, 2> start, const std::string &text, Color color = WHITE);
-  void draw_text_constraints(utl::Vec<int, 2> start, const std::string &text, Color color, size_t width, size_t height)
-  {
-    int x = start.x();
-    int y = start.y();
-    for (size_t i = 0; i < text.size() / 2; i++)
-    {
-      if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
-        _buffer->set({x, y}, text[i * 2], text[i * 2 + 1], color);
-      x++;
-      if (x >= (int)(start.x() + width))
-      {
-        x = start.x();
-        y++;
-      }
-      if (y >= (int)(start.y() + height))
-        break;
-    }
-    if (text.size() % 2 == 1)
-      _buffer->set({x, y}, text[(int)(text.length() - 1)], ' ', color);
-  }
+
+  // Draw text with constraints
+  // @param start The starting position of the text
+  // @param text The text to draw
+  // @param color The color of the text, default is white
+  // @param width The width of the text
+  // @param height The height of the text
+  void draw_text_constraints(utl::Vec<int, 2> start, const std::string &text, Color color, size_t width, size_t height);
+
+  // Draw text with a font
+  // @param start The starting position of the text
+  // @param text The text to draw
+  // @param color The color of the text, default is white
+  // @param font The font object to use
   void draw_text_with_font(utl::Vec<int, 2> start, const std::string &text, Color color, const Font &font);
+
+  // Draw text with a shadow
+  // @param start The starting position of the text
+  // @param text The text to draw
+  // @param color The color of the text, default is white
+  // @param shadow_color The color of the shadow, default is black
+  // @param font The font object to use
+  // @param shadow_offset_x The x offset of the shadow, default is 1
+  // @param shadow_offset_y The y offset of the shadow, default is 1
   void draw_text_with_shadow(utl::Vec<int, 2> start, const std::string &text, Color color, Color shadow_color, const Font &font,
                              int shadow_offset_x = 1, int shadow_offset_y = 1);
+
+  // Load a font
+  // @param font_path The path to the font file
+  // @return The font object
   static Font load_font(const std::string &font_path);
+
+  // Load a glyph
+  // @param glyph_path The path to the glyph file
+  // @return The glyph object
   Glyph load_glyph(const std::string &glyph_path);
+
+  // Draw a glyph
+  // @param start_pos The starting position of the glyph
+  // @param glyph The glyph object to draw
+  // @param color The color of the glyph, default is white
   void draw_glyph(utl::Vec<int, 2> start_pos, const Glyph &glyph, Color color = WHITE);
-  void draw_sprite(const utl::Vec<int, 2> start_pos, const Sprite &sprite)
-  {
-    auto characters = sprite.characters();
-    auto colors = sprite.colors();
-    size_t width = sprite.width();
-    int x1 = 0, x2 = 0;
-    for (size_t y = 0; y < sprite.height(); y++)
-      for (size_t x = 0; x < sprite.width() / 2; x++)
-      {
-        x1 = 2 * x;
-        x2 = 2 * x + 1;
-        _buffer->set({(int)(start_pos.x() + x), (int)(start_pos.y() + y)},
-                     characters[y * width + x1],
-                     characters[y * width + x2],
-                     colors[y * width + x1],
-                     colors[y * width + x2]);
-      }
-    if (sprite.width() % 2)
-      for (size_t y = 0; y < sprite.height(); y++)
-        _buffer->set({(int)(start_pos.x() + x2), (int)(start_pos.y() + y)},
-                     characters[y * width + (width - 1)],
-                     ' ',
-                     colors[y * width + width - 1],
-                     Color());
-  }
 
-  void draw_button(std::shared_ptr<Button> button)
-  {
-    draw_fill_rectangle(button->position(), button->width(), button->height(), button->fill_char(), button->bg_color());
-    draw_rectangle(button->position(), button->width(), button->height(), '-', '|', button->bg_color());
-    draw_text(button->position() + utl::Vec<int, 2>{(int)(button->width() / 2 - button->label().size() / 4), (int)(button->height() / 2)},
-              button->label(),
-              button->fg_color());
-  }
+  // Draw a sprite
+  // @param start_pos The starting position of the sprite
+  // @param sprite The sprite object to draw
+  void draw_sprite(const utl::Vec<int, 2> start_pos, const Sprite &sprite);
 
-  void draw_slider(std::shared_ptr<Slider> slider)
-  {
-    draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{(int)slider->width(), 0}, '=', slider->bg_color());
-    int l = (int)(slider->value() * slider->width());
-    draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{l, 0}, '=', slider->fg_color());
-    draw_point(slider->position() + utl::Vec<int, 2>{l, 0}, slider->fill_char(), slider->fg_color());
-  }
+  // Draw a button
+  // @param button The button object to draw
+  void draw_button(std::shared_ptr<Button> button);
 
-  void draw_textbox(std::shared_ptr<Textbox> textbox)
-  {
-    utl::Vec<int, 2> pos = textbox->position();
-    size_t width = textbox->width();
-    size_t height = textbox->height();
-    Color bg_color = textbox->bg_color();
-    Color fg_color = textbox->fg_color();
-    std::string text = textbox->text();
+  // Draw a slider
+  // @param slider The slider object to draw
+  void draw_slider(std::shared_ptr<Slider> slider);
 
-    // Draw the background of the textbox
-    draw_fill_rectangle(pos, width, height - 1, textbox->fill_char(), bg_color);
-    draw_rectangle(pos, width, height, '-', '|', bg_color);
-    // Draw the text inside the textbox
-    draw_text_constraints(pos + utl::Vec<int, 2>{1, 1}, text, fg_color, width - 1, height - 2);
+  // Draw a textbox
+  // @param textbox The textbox object to draw
+  void draw_textbox(std::shared_ptr<Textbox> textbox);
 
-    // Draw the cursor if the textbox is active
-    if (textbox->is_active())
-    {
-      // PERF: WTF did I even jsut write, it works tho :) Hehe !
-      int xp = (int)(pos[0] + 2 + (text.size() > width - 1 ? (text.size() / 2) % (width - 1) : text.size() / 2));
-      int yp = (int)(pos[1] + 1 + text.size() / std::ceil((2 * (width - 1))));
-      draw_point({xp, yp}, '-', fg_color);
-    }
-  }
-
+  // Draw a buffer
   void print();
+
+  // Create a buffer
+  // @param width The width of the buffer
+  // @param height The height of the buffer
+  // @return A shared pointer to the buffer
   static std::shared_ptr<Buffer> create_buffer(size_t width, size_t height);
+
+  // empty the buffer, fill it with spaces
   void empty();
+
+  // clear the screen
   static void clear_screen();
+
+  // reset the screen, move the cursor to the top left and clear the screen
   static void reset_screen();
+
+  // fill the buffer with a character and color
+  // @param c The character to fill the buffer with
+  // @param color The color of the character
   void fill_buffer(char c, Color color);
+
+  // set the background color
+  // @param color The color of the background
   void set_bg_color(Color color);
+
+  // sleep for a given number of milliseconds
+  // @param milliseconds The number of milliseconds to sleep
   static inline void sleep(int milliseconds);
+
+  // move the cursor to a given position
+  // @param x The x-coordinate of the cursor
+  // @param y The y-coordinate of the cursor
   static void move_cursor(size_t x, size_t y);
+
+  // hide the cursor
   static void hide_cursor();
+
+  // show the cursor
   static void show_cursor();
 
 private:
@@ -320,6 +403,11 @@ Renderer::Renderer(size_t width, size_t height) : _buffer(std::make_shared<Buffe
 
 Renderer::Renderer(std::shared_ptr<Buffer> buffer) : _buffer(buffer) { Init(); }
 
+Renderer::Renderer(size_t width, size_t height, Color bg_color) : _buffer(std::make_shared<Buffer>(width, height)), _bg_color(bg_color)
+{
+  Init();
+}
+Renderer::~Renderer() { _window.cleanup_terminal(); }
 const Buffer &Renderer::get_buffer() const { return *_buffer; }
 
 size_t Renderer::get_width() const { return _buffer->width; }
@@ -351,6 +439,29 @@ bool Renderer::draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color)
     _buffer->set({x, y}, c, c2, color);
 
   return true;
+}
+
+bool Renderer::draw_point(const Point &point)
+{
+  bool i = draw_point2(point.get_pos(), point.get_char(), point.get_char2(), point.get_color());
+  return i;
+}
+
+bool Renderer::draw_half_point(utl::Vec<int, 2> point, char c, bool left, Color color)
+{
+  _buffer->set_absolute(point, c, left, color);
+  return true;
+}
+
+bool Renderer::draw_half_point(const half_point &point)
+{
+  _buffer->set_absolute(point.get_pos(), point.get_char(), point.is_left(), point.get_color());
+  return true;
+}
+
+void Renderer::draw_fill_circle(const Circle &circle)
+{
+  draw_fill_circle(circle.get_center(), circle.get_radius(), circle.get_char(), circle.get_color());
 }
 
 void Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color)
@@ -399,6 +510,199 @@ void Renderer::draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, C
   }
 }
 
+void Renderer::draw_rectangle(const Rectangle &rectangle)
+{
+  draw_rectangle(rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(), '@', rectangle.get_color());
+}
+void Renderer::draw_fill_rectangle(const Rectangle &rectangle)
+{
+  draw_fill_rectangle(rectangle.get_top_left(), rectangle.get_width(), rectangle.get_height(), rectangle.get_char(), rectangle.get_color());
+}
+
+void Renderer::draw_rect_linear_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, bool horizontal)
+{
+  for (int i = 0; i < (horizontal ? width : height); i++)
+  {
+    float t = static_cast<float>(i) / (horizontal ? width : height);
+    Color color = gradient.get_color_at(t);
+    for (int j = 0; j < (horizontal ? height : width); j++)
+      if (horizontal)
+        _buffer->set({start.x() + i, start.y() + j}, ch, color);
+      else
+        _buffer->set({start.x() + j, start.y() + i}, ch, color);
+  }
+}
+std::pair<float, float> Renderer::rotate_point(float x, float y, float angle)
+{
+  float cos_theta = std::cos(angle);
+  float sin_theta = std::sin(angle);
+  float rotated_x = x * cos_theta - y * sin_theta;
+  float rotated_y = x * sin_theta + y * cos_theta;
+  return {rotated_x, rotated_y};
+}
+void Renderer::draw_rect_rotated_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient, float angle)
+{
+  // Iterate over each pixel in the rectangle
+  for (int i = 0; i < width; ++i)
+  {
+    for (int j = 0; j < height; ++j)
+    {
+      // Calculate the pixel position relative to the start of the rectangle
+      float px = start.x() + i;
+      float py = start.y() + j;
+
+      // Rotate the pixel position to align with the gradient direction
+      auto [rotated_x, rotated_y] = rotate_point(px - start.x() - width / 2.0f, py - start.y() - height / 2.0f, -angle);
+
+      // Map rotated coordinates to gradient progress
+      float t = (rotated_x + width / 2.0f) / width;
+      // Get the color at the normalized position
+      Color color = gradient.get_color_at(t);
+
+      // Set the pixel in the buffer
+      _buffer->set({start.x() + i, start.y() + j}, ch, color);
+    }
+  }
+}
+void Renderer::draw_rect_radial_gradient(utl::Vec<int, 2> start, int width, int height, char ch, Gradient &gradient)
+{
+  float half_width = width / 2.0f;
+  float half_height = height / 2.0f;
+  // Calculate the center of the rectangle
+  float centerX = start.x() + half_width;
+  float centerY = start.y() + half_height;
+
+  float max_distance = std::sqrt(half_width * half_width + half_height * half_height);
+  // Iterate over each pixel in the rectangle
+  for (int i = 0; i < width; ++i)
+  {
+    for (int j = 0; j < height; ++j)
+    {
+      // Calculate the distance of the current pixel from the center
+      float distanceX = start.x() + i - centerX;
+      float distanceY = start.y() + j - centerY;
+      float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
+
+      // Normalize the distance to get a value between 0 and 1
+      float t = distance / max_distance;
+
+      // Get the color at the normalized distance
+      Color color = gradient.get_color_at(t);
+
+      // Set the pixel in the buffer
+      _buffer->set({start.x() + i, start.y() + j}, ch, color);
+    }
+  }
+}
+void Renderer::draw_triangle(const Triangle &triangle)
+{
+  auto points = triangle.get_vertices();
+  draw_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+}
+void Renderer::draw_antialiased_triangle(const Triangle &triangle)
+{
+  auto points = triangle.get_vertices();
+  draw_antialiased_triangle(points[0], points[1], points[2], triangle.get_color());
+}
+void Renderer::draw_xaolin_wu_triangle(const Triangle &triangle)
+{
+  auto points = triangle.get_vertices();
+  draw_xaolin_wu_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+}
+void Renderer::draw_fill_triangle(const Triangle &triangle)
+{
+  auto points = triangle.get_vertices();
+  draw_fill_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+}
+void Renderer::draw_fill_antialias_triangle(const Triangle &triangle)
+{
+  auto points = triangle.get_vertices();
+  draw_fill_antialias_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
+}
+void Renderer::draw_text_constraints(utl::Vec<int, 2> start, const std::string &text, Color color, size_t width, size_t height)
+{
+  int x = start.x();
+  int y = start.y();
+  for (size_t i = 0; i < text.size() / 2; i++)
+  {
+    if (x >= 0 && x < static_cast<int>(_buffer->width) && y >= 0 && y < static_cast<int>(_buffer->height))
+      _buffer->set({x, y}, text[i * 2], text[i * 2 + 1], color);
+    x++;
+    if (x >= (int)(start.x() + width))
+    {
+      x = start.x();
+      y++;
+    }
+    if (y >= (int)(start.y() + height))
+      break;
+  }
+  if (text.size() % 2 == 1)
+    _buffer->set({x, y}, text[(int)(text.length() - 1)], ' ', color);
+}
+void Renderer::draw_button(std::shared_ptr<Button> button)
+{
+  draw_fill_rectangle(button->position(), button->width(), button->height(), button->fill_char(), button->bg_color());
+  draw_rectangle(button->position(), button->width(), button->height(), '-', '|', button->bg_color());
+  draw_text(button->position() + utl::Vec<int, 2>{(int)(button->width() / 2 - button->label().size() / 4), (int)(button->height() / 2)},
+            button->label(),
+            button->fg_color());
+}
+void Renderer::draw_sprite(const utl::Vec<int, 2> start_pos, const Sprite &sprite)
+{
+  auto characters = sprite.characters();
+  auto colors = sprite.colors();
+  size_t width = sprite.width();
+  int x1 = 0, x2 = 0;
+  for (size_t y = 0; y < sprite.height(); y++)
+    for (size_t x = 0; x < sprite.width() / 2; x++)
+    {
+      x1 = 2 * x;
+      x2 = 2 * x + 1;
+      _buffer->set({(int)(start_pos.x() + x), (int)(start_pos.y() + y)},
+                   characters[y * width + x1],
+                   characters[y * width + x2],
+                   colors[y * width + x1],
+                   colors[y * width + x2]);
+    }
+  if (sprite.width() % 2)
+    for (size_t y = 0; y < sprite.height(); y++)
+      _buffer->set({(int)(start_pos.x() + x2), (int)(start_pos.y() + y)},
+                   characters[y * width + (width - 1)],
+                   ' ',
+                   colors[y * width + width - 1],
+                   Color());
+}
+void Renderer::draw_textbox(std::shared_ptr<Textbox> textbox)
+{
+  utl::Vec<int, 2> pos = textbox->position();
+  size_t width = textbox->width();
+  size_t height = textbox->height();
+  Color bg_color = textbox->bg_color();
+  Color fg_color = textbox->fg_color();
+  std::string text = textbox->text();
+
+  // Draw the background of the textbox
+  draw_fill_rectangle(pos, width, height - 1, textbox->fill_char(), bg_color);
+  draw_rectangle(pos, width, height, '-', '|', bg_color);
+  // Draw the text inside the textbox
+  draw_text_constraints(pos + utl::Vec<int, 2>{1, 1}, text, fg_color, width - 1, height - 2);
+
+  // Draw the cursor if the textbox is active
+  if (textbox->is_active())
+  {
+    // DOUBT:  WTF did I even jsut write, it works tho :) Hehe !
+    int xp = (int)(pos[0] + 2 + (text.size() > width - 1 ? (text.size() / 2) % (width - 1) : text.size() / 2));
+    int yp = (int)(pos[1] + 1 + text.size() / std::ceil((2 * (width - 1))));
+    draw_point({xp, yp}, '-', fg_color);
+  }
+}
+void Renderer::draw_slider(std::shared_ptr<Slider> slider)
+{
+  draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{(int)slider->width(), 0}, '=', slider->bg_color());
+  int l = (int)(slider->value() * slider->width());
+  draw_line(slider->position(), slider->position() + utl::Vec<int, 2>{l, 0}, '=', slider->fg_color());
+  draw_point(slider->position() + utl::Vec<int, 2>{l, 0}, slider->fill_char(), slider->fg_color());
+}
 void Renderer::draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, Color color)
 {
   int x0 = start.x();

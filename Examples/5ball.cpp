@@ -7,7 +7,7 @@
 int main()
 {
   Renderer r(120, 90);
-  r.set_bg_color(GRAY_1);
+  r.set_bg_color(GRAY_2);
   r.Init();
 
   Camera2D camera(120, 90, {0, 0});  // Start camera at center position
