@@ -101,3 +101,4 @@ All contributions are welcome and appreciated. For major changes, please open an
 [Rinav](https://github.com/Rrrinav) (original author)
 
 ### STILL IN DEVELOPMENT
+Testing and proper development on windows still not done
