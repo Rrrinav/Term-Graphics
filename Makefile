@@ -31,15 +31,28 @@ example_2: Examples/2wall.cpp
 
 # Example 3: perlin noise
 example_3: Examples/3perlin_noise.cpp
-	$(cc) Examples/3perlin_noise.cpp -o $(build_dir)/example3 $(flags) && ./$(build_dir)/example3
+	cd Examples && $(cc) 3perlin_noise.cpp -o ../$(build_dir)/example3 $(flags) && ../$(build_dir)/example3
 
 # Example 4: gradient and button
 example_4: Examples/4gradient_and_button.cpp
-	$(cc) Examples/4gradient_and_button.cpp -o $(build_dir)/example4 $(flags) && ./$(build_dir)/example4
+	cd Examples && $(cc) 4gradient_and_button.cpp -o ../$(build_dir)/example4 $(flags) && ../$(build_dir)/example4
 
-# Example 4: gradient and button
+# Example 5: ball
 example_5: Examples/5ball.cpp
-	$(cc) Examples/5ball.cpp -o $(build_dir)/example5 $(flags) && ./$(build_dir)/example5
+	cd Examples && $(cc) 5ball.cpp -o ../$(build_dir)/example5 $(flags) && ../$(build_dir)/example5
+
+# Example 6: Mandelbrot set
+example_6: Examples/6mandlebbrot.cpp
+	cd Examples && $(cc) 6mandlebbrot.cpp -o ../$(build_dir)/example5 $(flags) && ../$(build_dir)/example5
+
+example_7: Examples/7patricle.cpp
+	cd Examples && $(cc) 7patricle.cpp -o ../$(build_dir)/example7 $(flags) && ../$(build_dir)/example7
+
+example_8: Examples/8bad_apple.cpp
+	cd Examples && $(cc) 8bad_apple.cpp -o ../$(build_dir)/example8 $(flags) && ../$(build_dir)/example8
+
+example_9: Examples/9dog.cpp
+	cd Examples && $(cc) 9dog.cpp -o ../$(build_dir)/example8 $(flags) && ../$(build_dir)/example8
 
 main3: main3.cpp
 	$(cc) main3.cpp -o $(build_dir)/main3 $(flags) && ./$(build_dir)/main3

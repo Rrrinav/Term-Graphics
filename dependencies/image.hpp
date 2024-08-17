@@ -21,14 +21,14 @@ namespace utl
 
   public:
   public:
-    Image(const std::string &filePath) { loadImage(filePath); }
+    Image(const std::string &filePath) { load_image(filePath); }
 
     ~Image() { stbi_image_free(_pixels); }
 
-    int getWidth() const { return _width; }
-    int getHeight() const { return _height; }
-    int getChannels() const { return _channels; }
-    const unsigned char *getPixels() const { return _pixels; }
+    int get_width() const { return _width; }
+    int get_height() const { return _height; }
+    int get_channels() const { return _channels; }
+    const unsigned char *get_pixels() const { return _pixels; }
 
     char pixelToChar(int x, int y) const
     {
@@ -49,7 +49,7 @@ namespace utl
       return char_gradient[charIndex];
     }
 
-    Color getColor(int x, int y) const
+    Color get_color(int x, int y) const
     {
       int index = (y * _width + x) * _channels;
       unsigned char r = _pixels[index];
@@ -74,18 +74,18 @@ namespace utl
           char ascii_char = pixelToChar(x, y);
 
           // Get the original color (or grayscale it)
-          Color color = getColor(x, y);
+          Color color = get_color(x, y);
 
           // Store character and color
           characters[y * width + x] = ascii_char;
           colors[y * width + x] = color;  // or grayscale version of the color
         }
-      } 
+      }
       return Sprite(width, height, characters, colors);
     }
 
   private:
-    void loadImage(const std::string &filePath)
+    void load_image(const std::string &filePath)
     {
       // Load image data
       _pixels = stbi_load(filePath.c_str(), &_width, &_height, &_channels, 0);
