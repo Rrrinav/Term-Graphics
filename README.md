@@ -100,5 +100,7 @@ All contributions are welcome and appreciated. For major changes, please open an
 
 [Rinav](https://github.com/Rrrinav) (original author)
 
+[Stb libraries](https://github.com/nothings/stb) (used stb_image for image loading)
+
 ### STILL IN DEVELOPMENT
 Testing and proper development on windows still not done

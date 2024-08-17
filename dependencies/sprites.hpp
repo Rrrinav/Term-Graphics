@@ -23,6 +23,11 @@ public:
       : _width(width), _height(height), _characters(characters), _colors(colors)
   {
   }
+  Sprite(size_t width, size_t height) : _width(width), _height(height)
+  {
+    _characters.resize(_width * _height, ' ');
+    _colors.resize(_width * _height, Color());
+  }
 
   char get_char(float x, float y) const
   {

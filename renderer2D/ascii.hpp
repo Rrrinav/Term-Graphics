@@ -36,9 +36,9 @@ static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
  */
 class Renderer
 {
-  std::shared_ptr<Buffer> _buffer;       //>> The buffer to draw to
-  Color _bg_color = Color(TRANSPARENT);  //>> The background color of the renderer
-  Window _window;                        //>> The window object
+  std::shared_ptr<Buffer> _buffer;  //>> The buffer to draw to
+  Color _bg_color = Color(TRANSPARENT); //>> The background color of the renderer
+  Window _window; //>> The window object
 
 public:
   // Constructors
@@ -223,18 +223,6 @@ public:
   // Draw an anti-aliased triangle
   // @param triangle object The triangle to draw
   void draw_antialiased_triangle(const Triangle &triangle);
-
-  // Draw a Xaolin Wu triangle, uses xiaolin wu's line algorithm
-  // @param a The first vertex of the triangle
-  // @param b The second vertex of the triangle
-  // @param c The third vertex of the triangle
-  // @param ch The character to draw
-  // @param color The color of the triangle, default is white
-  void draw_xaolin_wu_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
-
-  // Draw a Xaolin Wu triangle
-  // @param triangle object The triangle to draw
-  void draw_xaolin_wu_triangle(const Triangle &triangle);
 
   // Draw a filled triangle
   // @param a The first vertex of the triangle
@@ -604,11 +592,7 @@ void Renderer::draw_antialiased_triangle(const Triangle &triangle)
   auto points = triangle.get_vertices();
   draw_antialiased_triangle(points[0], points[1], points[2], triangle.get_color());
 }
-void Renderer::draw_xaolin_wu_triangle(const Triangle &triangle)
-{
-  auto points = triangle.get_vertices();
-  draw_xaolin_wu_triangle(points[0], points[1], points[2], triangle.get_char(), triangle.get_color());
-}
+
 void Renderer::draw_fill_triangle(const Triangle &triangle)
 {
   auto points = triangle.get_vertices();

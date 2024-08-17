@@ -198,6 +198,25 @@ public:
       data[y * width + x] = Pixel(ch1, ch2, color1, color2);
   }
 
+  void set_absolute(utl::Vec<int, 2> point, char ch, bool left, Color color)
+  {
+    int x = point.x();
+    int y = point.y();
+    if (x >= 0 && static_cast<size_t>(x) < width && y >= 0 && static_cast<size_t>(y) < height)
+    {
+      if (left)
+      {
+        data[y * width + x]._ch1 = ch;
+        data[y * width + x]._color1 = color;
+      }
+      else
+      {
+        data[y * width + x]._ch2 = ch;
+        data[y * width + x]._color2 = color;
+      }
+    }
+  }
+
   // Access a pixel using (x, y) coordinates
   // @param x The x-coordinate of the pixel
   // @param y The y-coordinate of the pixel
