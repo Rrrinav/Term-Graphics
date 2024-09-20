@@ -82,16 +82,6 @@ auto mouse_pos = Window::get_mouse_pos();
 renderer.draw_point(mouse_pos, 'x', YELLOW);
 ```
 
-### Images
-
-```cpp
-  utl::Image image("path/to/image");
-  size_t width = image.get_width();
-  size_t height = image.get_height();
-  auto pixels = image.get_pixels();
-  auto channels = image.get_channels();
-```
-
 ## Installation
 
 Clone the repository

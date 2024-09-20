@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -31,15 +32,27 @@ public:
 
   char get_char(float x, float y) const
   {
-    size_t nx = _width * x;
-    size_t ny = _height * y;
+    // Clamp x and y to the [0, 1] range and scale to the sprite dimensions
+    x = std::fmod(std::fmax(0.0f, x), 1.0f);  // Wrap around if x exceeds 1.0
+    y = std::fmod(std::fmax(0.0f, y), 1.0f);  // Wrap around if y exceeds 1.0
+
+    // Map normalized x, y to the respective indices
+    size_t nx = static_cast<size_t>(x * _width);
+    size_t ny = static_cast<size_t>(y * _height);
+
     return _characters[ny * _width + nx];
   }
 
   Color get_color(float x, float y) const
   {
-    size_t nx = _width * x;
-    size_t ny = _height * y;
+    // Same normalization as get_char for x and y
+    x = std::fmod(std::fmax(0.0f, x), 1.0f);  // Wrap around if x exceeds 1.0
+    y = std::fmod(std::fmax(0.0f, y), 1.0f);  // Wrap around if y exceeds 1.0
+
+    // Map normalized x, y to the respective indices
+    size_t nx = static_cast<size_t>(x * _width);
+    size_t ny = static_cast<size_t>(y * _height);
+
     return _colors[ny * _width + nx];
   }
 
