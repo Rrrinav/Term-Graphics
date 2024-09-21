@@ -9,7 +9,8 @@ int main()
   Renderer rend(WIDTH, HEIGHT);
   rend.set_bg_color(GRAY_5);
   Sprite s("../assets/wall_sprite.txt");
-  float zoom_factor = 2.0f;
+  int tex_print_width = 10;
+  int tex_print_height = 10;
   while (true)
   {
     Window::update_input_states();
@@ -19,25 +20,23 @@ int main()
     {
       for (int j = 0; j < WIDTH; j++)
       {
-        // Normalize j and i to be between 0 and 1, then scale by zoom factor
-        float normalized_x = (static_cast<float>(j) / WIDTH) * zoom_factor;
-        float normalized_y = (static_cast<float>(i) / HEIGHT) * zoom_factor;
-
-        // Pass zoomed normalized coordinates to get_char and get_color
-        rend.draw_point({j, i}, s.get_char(normalized_x, normalized_y), s.get_color(normalized_x, normalized_y));
+        // Pass wrapped normalized coordinates to get_char and get_color
+        rend.draw_point(
+            {j, i}, s.get_char_un(j, i, tex_print_width, tex_print_height), s.get_color_un(j, i, tex_print_width, tex_print_height));
       }
     }
 
+    // Key bindings to change sprite tiling size
     if (Window::is_pressed(Keys::KEY_i))
-    {
-      zoom_factor += 0.1f;
-    }
+      tex_print_width += 1;  // Increase width
+    if (Window::is_pressed(Keys::KEY_k))
+      tex_print_width -= 1;  // Decrease width
     if (Window::is_pressed(Keys::KEY_g))
-    {
-      zoom_factor -= 0.1f;
-    }
+      tex_print_height += 1;  // Increase height
+    if (Window::is_pressed(Keys::KEY_h))
+      tex_print_height -= 1;  // Decrease height
 
-    rend.draw_text({0, 0}, "Press 'i', 'g', 'r', 'b' or 'c'", 0xaaccff);
+    rend.draw_text({0, 0}, "Press 'i', 'k' to change width, 'g', 'h' to change height", 0xaaccff);
     rend.print();
   }
   return 0;

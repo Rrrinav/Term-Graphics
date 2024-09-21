@@ -30,7 +30,7 @@ public:
     _colors.resize(_width * _height, Color());
   }
 
-  char get_char(float x, float y) const
+  char get_char_n(float x, float y) const
   {
     // Clamp x and y to the [0, 1] range and scale to the sprite dimensions
     x = std::fmod(std::fmax(0.0f, x), 1.0f);  // Wrap around if x exceeds 1.0
@@ -43,7 +43,20 @@ public:
     return _characters[ny * _width + nx];
   }
 
-  Color get_color(float x, float y) const
+  char get_char_un(float x, float y, size_t tiling_factor_width, size_t tiling_factor_height) const
+  {
+    float normalized_x = (static_cast<float>(x) / tiling_factor_width);
+    float normalized_y = (static_cast<float>(y) / tiling_factor_height);
+
+    // Wrap coordinates to repeat sprite
+    normalized_x = std::fmod(normalized_x, 1.0f);  // Keeps value between 0 and 1
+    normalized_y = std::fmod(normalized_y, 1.0f);
+
+    // Pass wrapped normalized coordinates to get_char and get_color
+    return get_char_n(normalized_x, normalized_y);
+  }
+
+  Color get_color_n(float x, float y) const
   {
     // Same normalization as get_char for x and y
     x = std::fmod(std::fmax(0.0f, x), 1.0f);  // Wrap around if x exceeds 1.0
@@ -56,6 +69,18 @@ public:
     return _colors[ny * _width + nx];
   }
 
+  Color get_color_un(float x, float y, size_t tiling_factor_width, size_t tiling_factor_height) const
+  {
+    float normalized_x = (static_cast<float>(x) / tiling_factor_width);
+    float normalized_y = (static_cast<float>(y) / tiling_factor_height);
+
+    // Wrap coordinates to repeat sprite
+    normalized_x = std::fmod(normalized_x, 1.0f);  // Keeps value between 0 and 1
+    normalized_y = std::fmod(normalized_y, 1.0f);
+
+    // Pass wrapped normalized coordinates to get_char and get_color
+    return get_color_n(normalized_x, normalized_y);
+  }
   // Format of the file:
   // it will be a txt file with the following format:
   // width height

@@ -7,6 +7,11 @@
 #include "../dependencies/image.hpp"
 #include "../renderer2D/ascii.hpp"
 
+// You will need to have frames of the video in the assets/Frames directory
+// I removed the frames from the repository because they are too large
+// Use ffmpeg to extract frames from the video
+// I will think of a way to do it automatically in the future
+
 std::vector<Sprite> load_video_frames(const std::string &frame_path_pattern, int total_frames)
 {
   std::vector<Sprite> frames;
