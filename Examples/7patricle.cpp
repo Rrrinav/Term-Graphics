@@ -89,7 +89,7 @@ public:
 int main()
 {
   Renderer renderer(150, 80);
-  renderer.set_bg_color(GRAY_3);
+  renderer.set_bg_color(utl::Color_codes::GRAY_3);
   utl::Vec<float, 2> gravity = {0.0f, 9.8f};  // Gravity vector (downward)
   float dragCoefficient = 0.01f;
   ParticleSystem particleSystem;
@@ -100,7 +100,7 @@ int main()
     Window::update_input_states();
     renderer.empty();
     renderer.clear_screen();
-    renderer.draw_text({0, 0}, "Left click to create an explosion", WHITE);
+    renderer.draw_text({0, 0}, "Left click to create an explosion", utl::Color_codes::WHITE);
     // Create an explosion at the center of the screen every second for demonstration
     static float lastExplosionTime = 0.0f;
     float currentTime = static_cast<float>(std::clock()) / CLOCKS_PER_SEC;
@@ -111,8 +111,13 @@ int main()
       auto mouse = Window::get_mouse_event();
       lastExplosionTime = currentTime;
       if (mouse.event == Mouse_event_type::LEFT_CLICK)
-        particleSystem.create_explosion(
-            {(float)mouse.x, (float)mouse.y}, 100, 10.0f, 2.0f, 5.0f, RED, BLUE);  // Adjust parameters as needed
+        particleSystem.create_explosion({(float)mouse.x, (float)mouse.y},
+                                        100,
+                                        10.0f,
+                                        2.0f,
+                                        5.0f,
+                                        utl::Color_codes::RED,
+                                        utl::Color_codes::BLUE);  // Adjust parameters as needed
     }
     // Update and render particles
     particleSystem.update(dt, gravity, dragCoefficient);

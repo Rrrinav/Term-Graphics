@@ -10,6 +10,7 @@
 #define L_GEBRA_IMPLEMENTATION
 #include "../l_gebra/l_gebra.hpp"
 #include "keys.hpp"
+using namespace utl;
 #ifdef _WIN32
 #include <windows.h>
 #else

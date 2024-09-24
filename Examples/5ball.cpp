@@ -7,7 +7,7 @@
 int main()
 {
   Renderer r(120, 90);
-  r.set_bg_color(GRAY_2);
+  r.set_bg_color(utl::Color_codes::GRAY_2);
   r.Init();
 
   Camera2D camera(120, 90, {0, 0});  // Start camera at center position
@@ -47,7 +47,7 @@ int main()
     std::string debug = "delta_time: " + std::to_string(delta_time) + " circle_velocity: " + std::to_string(circle_velocity[0]) + "," +
                         std::to_string(circle_velocity[1]);
 
-    r.draw_text({0, 4}, std::to_string(circle_velocity[0]) + "," + std::to_string(circle_velocity[1]), YELLOW);
+    r.draw_text({0, 4}, std::to_string(circle_velocity[0]) + "," + std::to_string(circle_velocity[1]), utl::Color_codes::YELLOW);
 
     // Handle input for zooming
     if (Window::is_pressed(KEY_w))
@@ -60,24 +60,26 @@ int main()
 
     // Draw the circle at its world position
     auto screen_position = camera.world_to_screen(circle_position);
-    r.draw_fill_circle(screen_position, static_cast<int>(5 * camera.get_zoom()), 'x', CYAN);
+    r.draw_fill_circle(screen_position, static_cast<int>(5 * camera.get_zoom()), 'x', utl::Color_codes::CYAN);
 
     // Display positions and frame rate
-    r.draw_text({0, 0}, "Circle: " + std::to_string(circle_position[0]) + "," + std::to_string(circle_position[1]), YELLOW);
     r.draw_text(
-        {0, 2}, "Camera position: " + std::to_string(camera.get_position()[0]) + "," + std::to_string(camera.get_position()[1]), YELLOW);
-    r.draw_text({0, 6}, "Frame rate: " + std::to_string(frame_rate.get_actual_fps()), YELLOW);
-    r.draw_text({0, 8}, " " + std::to_string(frame_rate.get_actual_fps()) + " " + std::to_string(delta_time), YELLOW);
+        {0, 0}, "Circle: " + std::to_string(circle_position[0]) + "," + std::to_string(circle_position[1]), utl::Color_codes::YELLOW);
+    r.draw_text({0, 2},
+                "Camera position: " + std::to_string(camera.get_position()[0]) + "," + std::to_string(camera.get_position()[1]),
+                utl::Color_codes::YELLOW);
+    r.draw_text({0, 6}, "Frame rate: " + std::to_string(frame_rate.get_actual_fps()), utl::Color_codes::YELLOW);
+    r.draw_text({0, 8}, " " + std::to_string(frame_rate.get_actual_fps()) + " " + std::to_string(delta_time), utl::Color_codes::YELLOW);
 
     auto e_time = frame_rate.get_elapsed_time();
     std::string elapsed_time = "Elapsed time: " + std::to_string(e_time);
-    r.draw_text({0, 10}, elapsed_time, YELLOW);
+    r.draw_text({0, 10}, elapsed_time, utl::Color_codes::YELLOW);
     static utl::Vec<float, 2> last_position = circle_position;
     float actual_velocity = ((circle_position - last_position) * (1 / delta_time)).magnitude();
     last_position = circle_position;
-    r.draw_text({0, 12}, "Actual velocity: " + std::to_string(actual_velocity), YELLOW);
+    r.draw_text({0, 12}, "Actual velocity: " + std::to_string(actual_velocity), utl::Color_codes::YELLOW);
     int fram_count = frame_rate.get_frame_count();
-    r.draw_text({0, 14}, "Frame count: " + std::to_string(fram_count), YELLOW);
+    r.draw_text({0, 14}, "Frame count: " + std::to_string(fram_count), utl::Color_codes::YELLOW);
     // // Render the scene
     r.print();
     frame_rate.end_frame();

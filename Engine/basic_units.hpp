@@ -39,15 +39,15 @@ public:
       : _v1(v1), _v2(v2), _v3(v3), _ch(ch), _color(color)
   {
   }
-  Triangle3D() : _v1({0, 0, 0}), _v2({0, 0, 0}), _v3({0, 0, 0}), _ch('.'), _color(WHITE) {}
-  Triangle3D(std::vector<utl::Vec<float, 3>> vertices) : _v1(vertices[0]), _v2(vertices[1]), _v3(vertices[2]), _ch('.'), _color(WHITE)
+  Triangle3D() : _v1({0, 0, 0}), _v2({0, 0, 0}), _v3({0, 0, 0}), _ch('.'), _color(0xffffff) {}
+  Triangle3D(std::vector<utl::Vec<float, 3>> vertices) : _v1(vertices[0]), _v2(vertices[1]), _v3(vertices[2]), _ch('.'), _color(0xffffff)
   {
     if (vertices.size() != 3)
       throw std::invalid_argument("Triangle3D: Invalid number of vertices");
   }
   Triangle3D(utl::Vec<float, 3> v1, utl::Vec<float, 3> v2, utl::Vec<float, 3> v3) : _v1(v1), _v2(v2), _v3(v3) {}
   Triangle3D(float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3)
-      : _v1({x1, y1, z1}), _v2({x2, y2, z2}), _v3({x3, y3, z3}), _ch('.'), _color(WHITE)
+      : _v1({x1, y1, z1}), _v2({x2, y2, z2}), _v3({x3, y3, z3}), _ch('.'), _color(0xffffff)
   {
   }
 
@@ -88,7 +88,7 @@ public:
       _t3 = *(tex_coords.begin() + 2);
 
     _ch = '.';
-    _color = WHITE;
+    _color = 0xffffff;
   }
 
   void set_v1(utl::Vec<float, 3> v1) { _v1 = v1; }

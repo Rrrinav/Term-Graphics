@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "color_codes.hpp"
+
 #define RESET "\u001b[0m"
 #define RESET_BG "\u001b[49m"
 #define BOLD "\u001b[1m"
@@ -103,7 +105,6 @@ std::string to_ansii_bg_str(Color c)
 #ifndef SIXTEEN_BIT_COLOR
 #define SIXTEEN_BIT_COLOR
 
-#include "color_codes.hpp"
 #define COUT_FG_CODE(i) "\u001b[38;5;" << i << "m"
 #define COUT_BG_CODE(i) "\u001b[48;5;" << i << "m"
 
@@ -120,17 +121,23 @@ public:
   Color(uint8_t r, uint8_t g, uint8_t b) : _r(r), _g(g), _b(b) {}
   Color(const uint32_t &hex_val)
   {
-    if (hex_val == TRANSPARENT)
+    if (hex_val == 0x00000000)
     {
       _r = 0;
       _g = 0;
       _b = 0;
       _a = 0;
     }
-    _r = (hex_val >> 16) & 0xFF;
-    _g = (hex_val >> 8) & 0xFF;
-    _b = (hex_val >> 0) & 0xFF;
+    else
+    {
+      _r = (hex_val >> 16) & 0xFF;
+      _g = (hex_val >> 8) & 0xFF;
+      _b = (hex_val >> 0) & 0xFF;
+      _a = 255;
+    }
   }
+
+  Color(utl::Color_codes code) : Color(static_cast<uint32_t>(code)) {}
 
   Color &operator=(const uint32_t &hex_val)
   {
@@ -249,9 +256,27 @@ public:
 
 #endif  // EIGHT_BIT_COLOR
 
-std::vector<char> char_gradient = { '.', ',', '-', '~', ':', ';', '=', '!', '*', '#', '$', '@'};
-std::vector<Color> grayscale_gradient = {GRAY_2,  GRAY_3,  GRAY_4,  GRAY_5,  GRAY_6,  GRAY_7,  GRAY_8,  GRAY_9,  GRAY_10,
-                                         GRAY_11, GRAY_12, GRAY_13, GRAY_14, GRAY_15, GRAY_16, GRAY_17, GRAY_18, GRAY_19, GRAY_20};
+std::vector<char> char_gradient = {'.', ',', '-', '~', ':', ';', '=', '!', '*', '#', '$', '@'};
+
+std::vector<Color> grayscale_gradient = {Color(utl::Color_codes::GRAY_2),
+                                         Color(utl::Color_codes::GRAY_3),
+                                         Color(utl::Color_codes::GRAY_4),
+                                         Color(utl::Color_codes::GRAY_5),
+                                         Color(utl::Color_codes::GRAY_6),
+                                         Color(utl::Color_codes::GRAY_7),
+                                         Color(utl::Color_codes::GRAY_8),
+                                         Color(utl::Color_codes::GRAY_9),
+                                         Color(utl::Color_codes::GRAY_10),
+                                         Color(utl::Color_codes::GRAY_11),
+                                         Color(utl::Color_codes::GRAY_12),
+                                         Color(utl::Color_codes::GRAY_13),
+                                         Color(utl::Color_codes::GRAY_14),
+                                         Color(utl::Color_codes::GRAY_15),
+                                         Color(utl::Color_codes::GRAY_16),
+                                         Color(utl::Color_codes::GRAY_17),
+                                         Color(utl::Color_codes::GRAY_18),
+                                         Color(utl::Color_codes::GRAY_19),
+                                         Color(utl::Color_codes::GRAY_20)};
 std::vector<Color> heat_map = {
     Color(0x0000FF),  // Blue
     Color(0x0033FF),  // Intermediate between blue and next color

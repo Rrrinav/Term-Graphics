@@ -22,6 +22,8 @@
 #include "../window/window.hpp"
 #include "basic_units.hpp"
 
+#define ANSII_BG_RESET "\033[49m"
+
 //Anti-aliasing will depend on if it top of pixel or bottom of pixel too
 static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
 
@@ -36,9 +38,9 @@ static char anti_aliasing[2][2] = {{'`', '^'}, {'-', 'c'}};
  */
 class Renderer
 {
-  std::shared_ptr<Buffer> _buffer;  //>> The buffer to draw to
-  Color _bg_color = Color(TRANSPARENT); //>> The background color of the renderer
-  Window _window; //>> The window object
+  std::shared_ptr<Buffer> _buffer;      //>> The buffer to draw to
+  Color _bg_color = Color(0x00000000);  //>> The background color of the renderer
+  Window _window;                       //>> The window object
 
 public:
   // Constructors
@@ -75,14 +77,14 @@ public:
   // @param c The character to draw
   // @param color The color of the point, default is white
   // @return True if the point was drawn, false otherwise
-  bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(WHITE));
+  bool draw_point(utl::Vec<int, 2> point, char c, Color color = Color(utl::Color_codes::WHITE));
 
   // Draw a point with two characters
   // @param point The point to draw
   // @param c The character to draw
   // @param c2 The second character to draw
   // @param color The color of the point, default is white
-  bool draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color = Color(WHITE));
+  bool draw_point2(utl::Vec<int, 2> point, char c, char c2, Color color = Color(utl::Color_codes::WHITE));
 
   // Draw a point
   // @param point The point to draw
@@ -94,7 +96,7 @@ public:
   // @param c The character to draw
   // @param left Whether to draw the left or right half
   // @param color The color of the point, default is white
-  bool draw_half_point(utl::Vec<int, 2> point, char c, bool left, Color color = Color(WHITE));
+  bool draw_half_point(utl::Vec<int, 2> point, char c, bool left, Color color = Color(utl::Color_codes::WHITE));
 
   // Draw a half point
   // @param point object The point to draw
@@ -105,7 +107,7 @@ public:
   // @param end The end point of the line
   // @param c The character to draw
   // @param color The color of the line, default is white
-  void draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(WHITE));
+  void draw_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, char c, Color color = Color(utl::Color_codes::WHITE));
 
   // Draw a line
   // @param line object The line to draw
@@ -115,7 +117,7 @@ public:
   // @param start The start point of the line
   // @param end The end point of the line
   // @param color The color of the line, default is white
-  void draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, Color color = Color(WHITE));
+  void draw_anti_aliased_line(utl::Vec<int, 2> start, utl::Vec<int, 2> end, Color color = Color(utl::Color_codes::WHITE));
 
   // Draw an anti-aliased line
   // @param line object The line to draw
@@ -126,7 +128,7 @@ public:
   // @param radius The radius of the circle
   // @param c The character to draw
   // @param color The color of the circle, default is white
-  void draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
+  void draw_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = utl::Color_codes::WHITE);
 
   // Draw a circle
   // @param circle object The circle to draw
@@ -137,7 +139,7 @@ public:
   // @param radius The radius of the circle
   // @param c The character to draw
   // @param color The color of the circle, default is white
-  void draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = WHITE);
+  void draw_fill_circle(utl::Vec<int, 2> center, int radius, char ch, Color color = utl::Color_codes::WHITE);
 
   // Draw a filled circle using a Circle object
   // @param circle The Circle object to draw
@@ -150,7 +152,7 @@ public:
   // @param c The character to draw
   // @param char2 The second character to draw, vertical lines, default is '@'
   // @param color The color of the rectangle, default is white
-  void draw_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, char char2 = '@', Color color = WHITE);
+  void draw_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, char char2 = '@', Color color = utl::Color_codes::WHITE);
 
   // Draw a rectangle
   // @param rectangle object The rectangle to draw
@@ -162,7 +164,7 @@ public:
   // @param height The height of the rectangle
   // @param c The character to draw
   // @param color The color of the rectangle, default is white
-  void draw_fill_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, Color color = WHITE);
+  void draw_fill_rectangle(utl::Vec<int, 2> start, int width, int height, char ch, Color color = utl::Color_codes::WHITE);
 
   // Draw a filled rectangle
   // @param rectangle object The rectangle to draw
@@ -207,7 +209,7 @@ public:
   // @param c The third vertex of the triangle
   // @param ch The character to draw
   // @param color The color of the triangle, default is white
-  void draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+  void draw_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = utl::Color_codes::WHITE);
 
   // Draw a triangle
   // @param triangle object The triangle to draw
@@ -218,7 +220,7 @@ public:
   // @param b The second vertex of the triangle
   // @param c The third vertex of the triangle
   // @param color The color of the triangle, default is white
-  void draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, Color color = WHITE);
+  void draw_antialiased_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, Color color = utl::Color_codes::WHITE);
 
   // Draw an anti-aliased triangle
   // @param triangle object The triangle to draw
@@ -230,7 +232,7 @@ public:
   // @param c The third vertex of the triangle
   // @param ch The character to draw
   // @param color The color of the triangle, default is white
-  void draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+  void draw_fill_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = utl::Color_codes::WHITE);
 
   // Draw a filled triangle
   // @param triangle object The triangle to draw
@@ -242,7 +244,8 @@ public:
   // @param c The third vertex of the triangle
   // @param ch The character to draw
   // @param color The color of the triangle, default is white
-  void draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch, Color color = WHITE);
+  void draw_fill_antialias_triangle(utl::Vec<int, 2> a, utl::Vec<int, 2> b, utl::Vec<int, 2> c, char ch,
+                                    Color color = utl::Color_codes::WHITE);
 
   // Draw a filled anti-aliased triangle
   // @param triangle object The triangle to draw
@@ -252,7 +255,7 @@ public:
   // @param vertices The vertices of the polygon
   // @param ch The character to draw
   // @param color The color of the polygon, default is white
-  void draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color = WHITE);
+  void draw_polygon(std::vector<utl::Vec<int, 2>> vertices, char ch, Color color = utl::Color_codes::WHITE);
 
   // Draw a polygon
   // @param polygon object The polygon to draw
@@ -265,13 +268,14 @@ public:
   // @param end_angle The end angle of the arc
   // @param start_angle The start angle of the arc, default is 0
   // @param color The color of the arc, default is white
-  void draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f, Color color = WHITE);
+  void draw_arc(utl::Vec<int, 2> center, int radius, char ch, float end_angle, float start_angle = 0.0f,
+                Color color = utl::Color_codes::WHITE);
 
   // Draw a text
   // @param start The starting position of the text
   // @param text The text to draw
   // @param color The color of the text, default is white
-  void draw_text(utl::Vec<int, 2> start, const std::string &text, Color color = WHITE);
+  void draw_text(utl::Vec<int, 2> start, const std::string &text, Color color = utl::Color_codes::WHITE);
 
   // Draw text with constraints
   // @param start The starting position of the text
@@ -313,7 +317,7 @@ public:
   // @param start_pos The starting position of the glyph
   // @param glyph The glyph object to draw
   // @param color The color of the glyph, default is white
-  void draw_glyph(utl::Vec<int, 2> start_pos, const Glyph &glyph, Color color = WHITE);
+  void draw_glyph(utl::Vec<int, 2> start_pos, const Glyph &glyph, Color color = utl::Color_codes::WHITE);
 
   // Draw a sprite
   // @param start_pos The starting position of the sprite

@@ -11,6 +11,10 @@
 // I removed the frames from the repository because they are too large
 // Use ffmpeg to extract frames from the video
 // I will think of a way to do it automatically in the future
+//
+// -------------------------------------------------------------------------
+//   You can get them from older commits... Sorry for the inconvenience!   |
+// -------------------------------------------------------------------------
 
 std::vector<Sprite> load_video_frames(const std::string &frame_path_pattern, int total_frames)
 {

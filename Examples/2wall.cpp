@@ -1,5 +1,6 @@
 #define RENDERER_IMPLEMENTATION
 #include "../renderer2D/ascii.hpp"
+using namespace utl;
 
 const int HEIGHT = 40;
 const int WIDTH = 40;
@@ -7,7 +8,7 @@ const int WIDTH = 40;
 int main()
 {
   Renderer rend(WIDTH, HEIGHT);
-  rend.set_bg_color(GRAY_5);
+  rend.set_bg_color(  Color_codes::GRAY_5);
   Sprite s("../assets/wall_sprite.txt");
   int tex_print_width = 10;
   int tex_print_height = 10;

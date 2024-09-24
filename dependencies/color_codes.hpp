@@ -1,170 +1,92 @@
-// We will define color codes here using both ansii and hex values, so we can use them in both ways.
-// #include <cstdint>
-// #include <map>
-// Hex codes
-#define TRANSPARENT 0x00000000
-#define BLACK 0x000000
-#define WHITE 0xFFFFFF
-#define RED 0xFF0000
-#define GREEN 0x00FF00
-#define BLUE 0x0000FF
-#define YELLOW 0xFFFF00
-#define CYAN 0x00FFFF
-#define MAGENTA 0xFF00FF
-#define ORANGE 0xFFA500
-#define PURPLE 0x800080
-#define PINK 0xFFC0CB
-#define GREY 0x808080
-#define BROWN 0xA52A2A
-#define MAROON 0x800000
-#define OLIVE 0x808000
-#define TEAL 0x008080
-#define NAVY 0x000080
-#define DARK_RED 0x8B0000
-#define DARK_GREEN 0x006400
-#define DARK_BLUE 0x00008B
-#define DARK_YELLOW 0x8B8B00
-#define DARK_CYAN 0x008B8B
-#define DARK_MAGENTA 0x8B008B
-#define DARK_ORANGE 0xFF8C00
-#define DARK_PURPLE 0x4B0082
-#define DARK_PINK 0xFF1493
-#define DARK_GREY 0xA9A9A9
-#define DARK_BROWN 0x8B4513
-#define DARK_MAROON 0x800000
-#define DARK_OLIVE 0x556B2F
-#define DARK_TEAL 0x008080
-#define DARK_NAVY 0x000080
-#define LIGHT_RED 0xFF6347
-#define LIGHT_GREEN 0x90EE90
-#define LIGHT_BLUE 0xADD8E6
-#define LIGHT_YELLOW 0xFFFFE0
-#define LIGHT_CYAN 0xE0FFFF
-#define LIGHT_MAGENTA 0xFFC0CB
-#define LIGHT_ORANGE 0xFFA07A
-#define LIGHT_PURPLE 0x9370DB
-#define LIGHT_PINK 0xFFB6C1
-#define LIGHT_GREY 0xD3D3D3
-#define LIGHT_BROWN 0D2B48C
-#define LIGHT_MAROON 0xB03060
-#define LIGHT_OLIVE 0x6B8E23
-#define LIGHT_TEAL 0x008080
-#define LIGHT_NAVY 0x000080
-#define BRIGHT_BLACK 0x808080
-#define BRIGHT_WHITE 0xC0C0C0
-#define BRIGHT_RED 0xFF8080
-#define BRIGHT_GREEN 0x80FF80
-#define BRIGHT_BLUE 0x8080FF
-#define BRIGHT_YELLOW 0xFFFF80
-#define BRIGHT_CYAN 0x80FFFF
-#define BRIGHT_MAGENTA 0xFF80FF
-#define BRIGHT_ORANGE 0xFFD580
-#define BRIGHT_PURPLE 0xC000C0
-#define BRIGHT_PINK 0xFFFFD2
-#define BRIGHT_GREY 0xC0C0C0
-#define GRAY_1 0x080808
-#define GRAY_2 0x121212
-#define GRAY_3 0x1c1c1c
-#define GRAY_4 0x262626
-#define GRAY_5 0x303030
-#define GRAY_6 0x3a3a3a
-#define GRAY_7 0x444444
-#define GRAY_8 0x4e4e4e
-#define GRAY_9 0x585858
-#define GRAY_10 0x626262
-#define GRAY_11 0x6c6c6c
-#define GRAY_12 0x767676
-#define GRAY_13 0x808080
-#define GRAY_14 0x8a8a8a
-#define GRAY_15 0x949494
-#define GRAY_16 0x9e9e9e
-#define GRAY_17 0xa8a8a8
-#define GRAY_18 0xb2b2b2
-#define GRAY_19 0xbcbcbc
-#define GRAY_20 0xc6c6c6
-#define GRAY_21 0xd0d0d0
-#define GRAY_22 0xdadada
-#define GRAY_23 0xe4e4e4
-#define GRAY_24 0xeeeeee
-//Look-up table for hex values from 1-16
+// PRE DEFINED COLOR CODES HEX
+// CHATGPT WROTE THIS, NOT ME! HEHEHE!
 
-// std::map<int, uint32_t> ansii_to_hex_less_than_sixteen = {
-//     {0, BLACK},
-//     {1, RED},
-//     {2, GREEN},
-//     {3, YELLOW},
-//     {4, BLUE},
-//     {5, MAGENTA},
-//     {6, CYAN},
-//     {7, WHITE},
-//     {8, BRIGHT_BLACK},
-//     {9, BRIGHT_RED},
-//     {10, BRIGHT_GREEN},
-//     {11, BRIGHT_YELLOW},
-//     {12, BRIGHT_BLUE},
-//     {13, BRIGHT_MAGENTA},
-//     {14, BRIGHT_CYAN},
-//     {15, BRIGHT_WHITE},
-//     {16, BRIGHT_BLACK},
-// };
-//
-// //from 232 to 255, all are black
-// std::map<int, uint32_t> ansii_to_grayscale = {
-//     {232, GRAY_1},  {233, GRAY_2},  {234, GRAY_3},  {235, GRAY_4},  {236, GRAY_5},  {237, GRAY_6},  {238, GRAY_7},  {239, GRAY_8},
-//     {240, GRAY_9},  {241, GRAY_10}, {242, GRAY_11}, {243, GRAY_12}, {244, GRAY_13}, {245, GRAY_14}, {246, GRAY_15}, {247, GRAY_16},
-//     {248, GRAY_17}, {249, GRAY_18}, {250, GRAY_19}, {251, GRAY_20}, {252, GRAY_21}, {253, GRAY_22}, {254, GRAY_23}, {255, GRAY_24}};
-// // Ansii Terminal codes for 256 colors
-//
-// Basic color codes from 0-15
-
-#define ANSII_BASIC_FG_BLACK "\u001b[38;5;0m"
-
-#define ANSII_FG_BLACK "\u001b[38;5;232m"
-#define ANSII_FG_WHITE "\u001b[38;5;231m"
-#define ANSII_FG_RED "\u001b[38;5;196m"
-#define ANSII_FG_GREEN "\u001b[38;5;46m"
-#define ANSII_FG_BLUE "\u001b[38;5;21m"
-#define ANSII_FG_YELLOW "\u001b[38;5;226m"
-#define ANSII_FG_CYAN "\u001b[38;5;51m"
-#define ANSII_FG_MAGENTA "\u001b[38;5;201m"
-#define ANSII_FG_ORANGE "\u001b[38;5;208m"
-#define ANSII_FG_PURPLE "\u001b[38;5;55m"
-#define ANSII_FG_PINK "\u001b[38;5;213m"
-#define ANSII_FG_GREY "\u001b[38;5;245m"
-#define ANSII_FG_BROWN "\u001b[38;5;130m"
-#define ANSII_FG_MAROON "\u001b[38;5;88m"
-#define ANSII_FG_OLIVE "\u001b[38;5;100m"
-#define ANSII_FG_TEAL "\u001b[38;5;30m"
-#define ANSII_FG_NAVY "\u001b[38;5;18m"
-#define ANSII_FG_DARK_RED "\u001b[38;5;88m"
-#define ANSII_FG_DARK_GREEN "\u001b[38;5;22m"
-#define ANSII_FG_DARK_BLUE "\u001b[38;5;18m"
-#define ANSII_FG_DARK_YELLOW "\u001b[38;5;94m"
-#define ANSII_FG_DARK_CYAN "\u001b[38;5;30m"
-#define ANSII_FG_DARK_MAGENTA "\u001b[38;5;90m"
-#define ANSII_FG_DARK_ORANGE "\u001b[38;5;166m"
-#define ANSII_FG_DARK_PURPLE "\u001b[38;5;55m"
-#define ANSII_FG_DARK_PINK "\u001b[38;5;211m"
-#define ANSII_FG_DARK_GREY "\u001b[38;5;242m"
-#define ANSII_FG_DARK_BROWN "\u001b[38;5;94m"
-#define ANSII_FG_DARK_MAROON "\u001b[38;5;88m"
-#define ANSII_FG_DARK_OLIVE "\u001b[38;5;100m"
-#define ANSII_FG_DARK_TEAL "\u001b[38;5;30m"
-#define ANSII_FG_DARK_NAVY "\u001b[38;5;18m"
-#define ANSII_FG_LIGHT_RED "\u001b[38;5;203m"
-#define ANSII_FG_LIGHT_GREEN "\u001b[38;5;120m"
-#define ANSII_FG_LIGHT_BLUE "\u001b[38;5;117m"
-#define ANSII_FG_LIGHT_YELLOW "\u001b[38;5;229m"
-#define ANSII_FG_LIGHT_CYAN "\u001b[38;5;123m"
-#define ANSII_FG_LIGHT_MAGENTA "\u001b[38;5;211m"
-#define ANSII_FG_LIGHT_ORANGE "\u001b[38;5;208m"
-#define ANSII_FG_LIGHT_PURPLE "\u001b[38;5;140m"
-#define ANSII_FG_LIGHT_PINK "\u001b[38;5;218m"
-#define ANSII_FG_LIGHT_GREY "\u001b[38;5;250m"
-#define ANSII_FG_LIGHT_BROWN "\u001b[38;5;130m"
-#define ANSII_FG_LIGHT_MAROON "\u001b[38;5;88m"
-#define ANSII_FG_LIGHT_OLIVE "\u001b[38;5;100m"
-#define ANSII_FG_LIGHT_TEAL "\u001b[38;5;30m"
-#define ANSII_FG_LIGHT_NAVY "\u001b[38;5;18m"
-#define ANSII_FG_RESET "\u001b[0m"
-#define ANSII_BG_RESET "\u001b[0m"
+namespace utl
+{
+  enum class Color_codes
+  {
+    BLACK = 0x000000,
+    WHITE = 0xFFFFFF,
+    RED = 0xFF0000,
+    GREEN = 0x00FF00,
+    BLUE = 0x0000FF,
+    YELLOW = 0xFFFF00,
+    CYAN = 0x00FFFF,
+    MAGENTA = 0xFF00FF,
+    ORANGE = 0xFFA500,
+    PURPLE = 0x800080,
+    PINK = 0xFFC0CB,
+    GREY = 0x808080,
+    BROWN = 0xA52A2A,
+    MAROON = 0x800000,
+    OLIVE = 0x808000,
+    TEAL = 0x008080,
+    NAVY = 0x000080,
+    DARK_RED = 0x8B0000,
+    DARK_GREEN = 0x006400,
+    DARK_BLUE = 0x00008B,
+    DARK_YELLOW = 0x8B8B00,
+    DARK_CYAN = 0x008B8B,
+    DARK_MAGENTA = 0x8B008B,
+    DARK_ORANGE = 0xFF8C00,
+    DARK_PURPLE = 0x4B0082,
+    DARK_PINK = 0xFF1493,
+    DARK_GREY = 0xA9A9A9,
+    DARK_BROWN = 0x8B4513,
+    DARK_MAROON = 0x800000,
+    DARK_OLIVE = 0x556B2F,
+    DARK_TEAL = 0x008080,
+    DARK_NAVY = 0x000080,
+    LIGHT_RED = 0xFF6347,
+    LIGHT_GREEN = 0x90EE90,
+    LIGHT_BLUE = 0xADD8E6,
+    LIGHT_YELLOW = 0xFFFFE0,
+    LIGHT_CYAN = 0xE0FFFF,
+    LIGHT_MAGENTA = 0xFFC0CB,
+    LIGHT_ORANGE = 0xFFA07A,
+    LIGHT_PURPLE = 0x9370DB,
+    LIGHT_PINK = 0xFFB6C1,
+    LIGHT_GREY = 0xD3D3D3,
+    LIGHT_BROWN = 0xD2B48C,
+    LIGHT_MAROON = 0xB03060,
+    LIGHT_OLIVE = 0x6B8E23,
+    LIGHT_TEAL = 0x008080,
+    LIGHT_NAVY = 0x000080,
+    BRIGHT_BLACK = 0x808080,
+    BRIGHT_WHITE = 0xC0C0C0,
+    BRIGHT_RED = 0xFF8080,
+    BRIGHT_GREEN = 0x80FF80,
+    BRIGHT_BLUE = 0x8080FF,
+    BRIGHT_YELLOW = 0xFFFF80,
+    BRIGHT_CYAN = 0x80FFFF,
+    BRIGHT_MAGENTA = 0xFF80FF,
+    BRIGHT_ORANGE = 0xFFD580,
+    BRIGHT_PURPLE = 0xC000C0,
+    BRIGHT_PINK = 0xFFFFD2,
+    BRIGHT_GREY = 0xC0C0C0,
+    GRAY_1 = 0x080808,
+    GRAY_2 = 0x121212,
+    GRAY_3 = 0x1C1C1C,
+    GRAY_4 = 0x262626,
+    GRAY_5 = 0x303030,
+    GRAY_6 = 0x3A3A3A,
+    GRAY_7 = 0x444444,
+    GRAY_8 = 0x4E4E4E,
+    GRAY_9 = 0x585858,
+    GRAY_10 = 0x626262,
+    GRAY_11 = 0x6C6C6C,
+    GRAY_12 = 0x767676,
+    GRAY_13 = 0x808080,
+    GRAY_14 = 0x8A8A8A,
+    GRAY_15 = 0x949494,
+    GRAY_16 = 0x9E9E9E,
+    GRAY_17 = 0xA8A8A8,
+    GRAY_18 = 0xB2B2B2,
+    GRAY_19 = 0xBCBCBC,
+    GRAY_20 = 0xC6C6C6,
+    GRAY_21 = 0xD0D0D0,
+    GRAY_22 = 0xDADADA,
+    GRAY_23 = 0xE4E4E4,
+    GRAY_24 = 0xEEEEEE
+  };
+}
