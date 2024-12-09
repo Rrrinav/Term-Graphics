@@ -10,7 +10,7 @@
 int main()
 {
   Engine3D r(150, 150);
-  r.set_bg_color(GRAY_2);
+  r.set_bg_color(utl::Color_codes::GRAY_1);
   Mesh mesh;
   mesh.load_from_obj("./assets/Mario.obj");
   r.set_mesh(mesh);
@@ -118,7 +118,7 @@ int main()
       listTriangles = r.tri_clip_against_screen(triToRaster);
       for (auto &t : listTriangles)
       {
-        r.draw_fill_triangle({(int)t.get_v1()[0], (int)t.get_v1()[1]},
+        r.draw_triangle({(int)t.get_v1()[0], (int)t.get_v1()[1]},
                         {(int)t.get_v2()[0], (int)t.get_v2()[1]},
                         {(int)t.get_v3()[0], (int)t.get_v3()[1]},
                         t.get_char(),

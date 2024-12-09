@@ -103,4 +103,6 @@ All contributions are welcome and appreciated. For major changes, please open an
 [Stb libraries](https://github.com/nothings/stb) (used stb_image for image loading)
 
 ### STILL IN DEVELOPMENT
-Testing and proper development on windows still not done
+
+- [ ] Testing and proper development on windows still not done
+- [ ] Only update the points that are changed
