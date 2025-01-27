@@ -106,3 +106,4 @@ All contributions are welcome and appreciated. For major changes, please open an
 
 - [ ] Testing and proper development on windows still not done
 - [ ] Only update the points that are changed
+- [ ] Hot Reloading
