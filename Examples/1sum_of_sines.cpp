@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstddef>
 #include <string>
 #define RENDERER_IMPLEMENTATION
 #include "../renderer2D/ascii.hpp"
@@ -7,7 +8,8 @@ using namespace utl;
 
 int main()
 {
-  auto b = Renderer::create_buffer(120, 40);
+  constexpr size_t width = 120;
+  auto b = Renderer::create_buffer(width, 40);
   Renderer ascii(b);
   ascii.set_bg_color(Color_codes::GRAY_5);
   const int target_fps = 60;
@@ -27,7 +29,7 @@ int main()
     if (Window::is_pressed(Keys::KEY_s))
       ascii.draw_text({1, 3}, "<s> pressed", Color_codes::WHITE);
     ascii.draw_text({1, 1}, "<b> pressed", Color_codes::WHITE);
-    for (x = 0; x < 120; x++)
+    for (x = 0; x < width; x++)
     {
       int y = 30 - 2 * (std::exp(std::sin((float)x / 3 + 5 * fps.get_elapsed_time())) +
                         std::exp(std::sin((float)x / 4 + 0.5 * fps.get_elapsed_time())) +

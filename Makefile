@@ -1,5 +1,5 @@
 cc := g++
-flags := -ggdb -Wall -Wextra
+flags := -Wall -Wextra -O3
 build_dir := build
 
 # Create the build directory if it doesn't exist
@@ -11,7 +11,7 @@ main: main.cpp
 
 # Target for debugging
 debug: main.cpp
-	$(cc) main.cpp -o $(build_dir)/main $(flags) && gdb ./$(build_dir)/main
+	$(cc) main.cpp -o $(build_dir)/main -ggdb $(flags) && gdb ./$(build_dir)/main
 
 # Target for the color executable
 color: color.cpp

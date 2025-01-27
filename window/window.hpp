@@ -131,7 +131,9 @@ public:
     DWORD written;
     WriteConsoleOutputCharacter(hConsole, output.c_str(), output.length(), {0, 0}, &written);
 #else
-    std::cout << "\033[H" << output << std::flush;
+    const std::string resetCursor = "\033[H"; // ANSI escape code to reset the cursor position
+    write(STDOUT_FILENO, resetCursor.c_str(), resetCursor.length());
+    write(STDOUT_FILENO, output.c_str(), output.length());
 #endif
   }
 

@@ -113,7 +113,7 @@ public:
 
 int main()
 {
-  const int width = 120;
+  constexpr int width = 80;
   Renderer r(width, 80);
   r.set_bg_color(utl::Color_codes::GRAY_20);
   Perlin_noise perlin(width, width, 80);
